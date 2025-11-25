@@ -40,6 +40,7 @@ We have successfully implemented the Protocol layer and Debug tools.
 
 ## 🚧 Current Context
 - All infrastructure layers (`core`, `storage`, `llm`, `protocol`, `debug`) are implemented.
+- Performed maintenance: Upgraded ESLint to v9, removed unused dependencies, and ensured clean build/test pipeline.
 - We are ready to build the **Game Loop** and **CLI Client**.
 
 ## 📋 Next Steps (Immediate)
