@@ -1,10 +1,12 @@
 import { Command } from 'commander';
+import { input, select } from '@inquirer/prompts';
 import { GameMaster } from './GameMaster';
 import { GameLoop } from './GameLoop';
-import { OllamaAdapter } from '@llmrpg/llm';
-import { SessionWriter, FileSystemAdapter } from '@llmrpg/storage';
+import { OllamaAdapter, MockAdapter, LLMProvider } from '@llmrpg/llm';
+import { SessionWriter, SessionLoader, FileSystemAdapter } from '@llmrpg/storage';
 import path from 'path';
 import dotenv from 'dotenv';
+import chalk from 'chalk';
 
 dotenv.config();
 
@@ -17,28 +19,78 @@ program
 
 program.command('start')
   .description('Start a new game session')
-  .action(async () => {
-    const sessionId = `session-${Date.now()}`;
-    const storagePath = path.join(process.cwd(), 'sessions');
+  .option('--mock', 'Use mock LLM adapter')
+  .option('--theme <theme>', 'Specify the world theme')
+  .option('--run <commands...>', 'Run specific commands and exit')
+  .option('--load <sessionId>', 'Load an existing session')
+  .action(async (options) => {
+    console.log(chalk.green.bold('Welcome to LLMRPGv2!'));
+
+    const storagePath = process.cwd();
     
     // Initialize dependencies
     const fsAdapter = new FileSystemAdapter(storagePath);
     const sessionWriter = new SessionWriter(fsAdapter);
-    await sessionWriter.createSession(sessionId, {
-        startTime: Date.now(),
-        player: "Player"
-    });
+    const sessionLoader = new SessionLoader(fsAdapter);
 
-    // Initialize LLM (using Ollama for now as default)
-    const llmProvider = new OllamaAdapter({
-        model: 'llama3', // Default model
-        host: 'http://localhost:11434'
-    });
+    let sessionId = options.load;
+    if (!sessionId) {
+        sessionId = `session-${Date.now()}`;
+        await sessionWriter.createSession(sessionId, {
+            startTime: Date.now(),
+            player: "Player"
+        });
+    } else {
+        console.log(chalk.blue(`Resuming session: ${sessionId}`));
+    }
 
-    const gameMaster = new GameMaster(sessionId, llmProvider, sessionWriter);
+    // Initialize LLM
+    let llmProvider: LLMProvider;
+    if (options.mock) {
+        console.log(chalk.yellow('Using Mock LLM Adapter'));
+        llmProvider = new MockAdapter();
+    } else {
+        llmProvider = new OllamaAdapter({
+            model: 'llama3', // Default model
+            host: 'http://localhost:11434'
+        });
+    }
+
+    const gameMaster = new GameMaster(sessionId, llmProvider, sessionWriter, sessionLoader);
+    
+    if (options.load) {
+        await gameMaster.loadState();
+    } else {
+        // World Generation Phase
+        let themeInput = options.theme;
+        if (!themeInput) {
+            themeInput = await input({ 
+              message: 'Enter a genre or theme for your world (e.g., "Cyberpunk Noir", "High Fantasy"):',
+              default: 'High Fantasy'
+            });
+        }
+
+        await gameMaster.initializeWorld(themeInput);
+
+        // Character Creation Phase
+        let characterConcept = "A generic hero";
+        if (!options.run) {
+            characterConcept = await input({
+                message: 'Describe your character concept (e.g., "A grizzled detective with a cybernetic eye"):',
+                default: 'A wandering adventurer'
+            });
+        }
+        
+        await gameMaster.createCharacter(characterConcept);
+    }
+
     const gameLoop = new GameLoop(gameMaster);
-
-    await gameLoop.start();
+    
+    if (options.run) {
+        await gameLoop.start({ initialCommands: options.run, exitAfter: true });
+    } else {
+        await gameLoop.start();
+    }
   });
 
 program.parse();

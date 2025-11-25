@@ -19,11 +19,11 @@ Thumbs.db
 # IDEs
 .vscode/*
 !.vscode/extensions.json
-!.vscode/launch.json
-!.vscode/tasks.json
-.idea
-*.swp
-*.swo
+!.vscode/settings.json
+
+# Session Data
+packages/cli/sessions/
+packages/cli/tests/temp_sessions*/
 
 # LLM/AI
 .cursor/

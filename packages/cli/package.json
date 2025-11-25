@@ -12,6 +12,8 @@
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
     "test": "vitest run",
+    "test:ollama": "vitest run tests/ollama_playthrough.test.ts",
+    "test:actions": "vitest run tests/action_validation.test.ts",
     "clean": "rimraf dist"
   },
   "dependencies": {

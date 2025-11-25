@@ -50,20 +50,29 @@ We are refining the system, improving prompts, and adding robustness.
 - **World Manager**: Implemented `WorldManager` in `packages/cli` with full `WorldState` support from `@llmrpg/protocol`.
 - **Prompt Engineering**: Refined `ContextBuilder` to include detailed character info (personality, backstory). Updated system prompts in `NarrativeEngine`, `DecisionEngine`, and `ContentGenerator` to align with `docs/LLM_CONTEXT_AND_PROMPTS.md`.
 - **Error Handling**: Added try-catch blocks and fallbacks to LLM-based engines to handle generation failures gracefully.
+- **CLI Automation**: Added `--theme` and `--run` flags to the CLI to support automated testing and non-interactive execution.
+
+### 8. Advanced Features & Content (Phase 8)
+- **World Generation**: Implemented `generateStartingScenario` in `ContentGenerator` and integrated it into `GameMaster`. The system now generates a theme, starting location, and an initial scenario with a hook.
+- **Character Creation**: Implemented `generateCharacter` in `ContentGenerator` and `createCharacter` in `GameMaster`. The CLI now prompts for a character concept and generates a full `PlayerCharacter` with aspects, skills, stunts, and personality.
+- **Save/Load**: Implemented `saveState` and `loadState` in `GameMaster`. Added `--load` flag to CLI to resume sessions. Fixed directory structure for session storage.
+- **Testing**: Added `tests/save_load.test.ts` to verify the save/load cycle and delta generation.
+- **Ollama Integration Testing**: Added `tests/ollama_playthrough.test.ts` to verify full system functionality with local LLMs (specifically tested with Granite4:3b). Added `test:ollama` script to `packages/cli`.
+- **Action Validation Testing**: Added `tests/action_validation.test.ts` to verify specific LLM decisions (difficulty setting) and GM event generation. Added `test:actions` script.
 
 ## 🚧 Current Context
 - `packages/cli` is built and compiles.
+- World Generation, Character Creation, and Save/Load are implemented and verified.
 - `WorldManager` is now fully implemented.
 - Prompts are more robust and aligned with documentation.
 - Error handling is in place for LLM calls.
+- CLI supports automated execution for testing.
 
 ## 📋 Next Steps (Immediate)
 
 ### Phase 8: Advanced Features & Content
-1.  **World Generation**: Implement logic to generate a starting world/scenario using `ContentGenerator` and `WorldManager`.
-2.  **Character Creation**: Implement a CLI flow to create a character (interactive character generation).
-3.  **Save/Load**: Ensure `GameMaster` can load an existing session and restore state.
-4.  **Documentation**: Continue updating documentation.
+1.  **Documentation**: Continue updating documentation.
+2.  **Refinement**: Polish the narrative output and ensure consistency.
 
 ## 🐛 Known Issues / Notes
 - None currently.
