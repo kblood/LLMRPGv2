@@ -212,4 +212,65 @@ JSON with fields:
       return { action: "attack", description: `${npc.name} attacks blindly!`, target: "Player" };
     }
   }
+
+  async determineKnowledgeGain(context: DecisionContext, outcome: string): Promise<any | null> {
+    if (outcome === 'failure') return null;
+
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Determine if the player gained any new knowledge from their action.
+
+CONTEXT:
+Action: ${context.action.description}
+Outcome: ${outcome}
+
+INSTRUCTIONS:
+- If the action was about gathering information (investigating, searching, talking) and it was successful, generate a knowledge update.
+- If no significant knowledge was gained, return null.
+
+OUTPUT FORMAT:
+Return a JSON object representing the knowledge gained, or null if nothing was learned.
+The JSON should follow this structure:
+{
+  "category": "locations" | "npcs" | "quests" | "factions" | "secrets" | "items" | "topics",
+  "id": "string (unique identifier, e.g., 'loc-sewers', 'npc-luna')",
+  "data": {
+    "name": "Name of the thing",
+    "details": "What was learned",
+    "known": true,
+    "confidence": "high"
+  }
+}
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      characterDefinition: context.player,
+      worldState: context.worldState ? JSON.stringify(context.worldState, null, 2) : undefined,
+      history: context.history,
+      immediateContext: `Action: "${context.action.description}"\nOutcome: ${outcome}\n\nDid they learn anything?`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1
+      });
+
+      const content = response.content.trim();
+      if (content === 'null' || content.toLowerCase() === 'no') return null;
+
+      try {
+        return JSON.parse(content);
+      } catch (e) {
+        console.warn("Failed to parse knowledge gain JSON:", content);
+        return null;
+      }
+    } catch (error) {
+      console.error("Knowledge determination failed:", error);
+      return null;
+    }
+  }
 }

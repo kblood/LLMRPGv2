@@ -7,6 +7,7 @@ import {
   ConsequenceSchema,
   FatePointsSchema,
 } from './fate.js';
+import { KnowledgeProfileSchema } from './knowledge.js';
 
 // Personality Definition (for LLM context)
 export const PersonalitySchema = z.object({
@@ -63,23 +64,7 @@ export const VoiceSchema = z.object({
 export type Voice = z.infer<typeof VoiceSchema>;
 
 // Knowledge - what the character knows
-export const KnowledgeSchema = z.object({
-  // Facts they know (path → truth)
-  facts: z.record(z.string(), z.unknown()),
-  
-  // Beliefs that may or may not be true
-  beliefs: z.record(z.string(), z.unknown()),
-  
-  // Secrets they know about others
-  secrets: z.array(z.object({
-    subject: z.string(), // Who the secret is about
-    content: z.string(),
-    source: z.string(),  // How they learned it
-  })).default([]),
-  
-  // Skills/expertise areas
-  expertise: z.array(z.string()).default([]),
-});
+export const KnowledgeSchema = KnowledgeProfileSchema;
 
 export type Knowledge = z.infer<typeof KnowledgeSchema>;
 

@@ -64,10 +64,11 @@ We are refining the system, improving prompts, and adding robustness.
 - **Testing**: Added `tests/save_load.test.ts` to verify the save/load cycle and delta generation.
 - **Ollama Integration Testing**: Added `tests/ollama_playthrough.test.ts` to verify full system functionality with local LLMs (specifically tested with Granite4:3b). Added `test:ollama` script to `packages/cli`.
 - **Action Validation Testing**: Added `tests/action_validation.test.ts` to verify specific LLM decisions (difficulty setting) and GM event generation. Added `test:actions` script.
+- **Knowledge System**: Implemented comprehensive knowledge tracking (`KnowledgeProfile`, `KnowledgeManager`) in `packages/protocol` and `packages/core`. Integrated with `GameMaster` and `DecisionEngine` to allow players to discover locations, NPCs, and secrets via gameplay actions. Added `knowledge_gain` event type. Verified with `tests/knowledge_system.test.ts`.
 
 ## 🚧 Current Context
 - `packages/cli` is built and compiles.
-- World Generation, Character Creation, and Save/Load are implemented and verified.
+- World Generation, Character Creation, Save/Load, and Knowledge System are implemented and verified.
 - `WorldManager` is now fully implemented.
 - **Combat System**: Fully implemented and tested. The system now supports structured combat encounters with initiative, turns, and NPC AI.
 - **Storage**: Updated to persist NPC states alongside player and world state.
@@ -79,10 +80,9 @@ We are refining the system, improving prompts, and adding robustness.
 ## 📋 Next Steps (Immediate)
 
 ### Phase 8: Advanced Features & Content
-1.  **Knowledge System**: Implement NPC knowledge tracking and discovery mechanics.
-2.  **Quest/Goal System**: Implement objective tracking.
-3.  **Social Conflict**: Adapt the combat engine for social encounters.
-4.  **Documentation**: Update documentation to reflect the new Combat System architecture.
+1.  **Quest/Goal System**: Implement objective tracking.
+2.  **Social Conflict**: Adapt the combat engine for social encounters.
+3.  **Documentation**: Update documentation to reflect the new Combat System architecture.
 
 ## 🐛 Known Issues / Notes
 - None currently.

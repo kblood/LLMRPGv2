@@ -22,3 +22,5 @@ export * from './session.js';
 
 // Re-export Zod for convenience
 export { z } from 'zod';
+
+export * from './knowledge.js';

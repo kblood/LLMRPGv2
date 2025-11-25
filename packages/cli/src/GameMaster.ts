@@ -1,7 +1,7 @@
-import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome } from '@llmrpg/core';
+import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager } from '@llmrpg/core';
 import { LLMProvider } from '@llmrpg/llm';
 import { SessionWriter, SessionLoader } from '@llmrpg/storage';
-import { SceneState, PlayerCharacter } from '@llmrpg/protocol';
+import { SceneState, PlayerCharacter, KnowledgeProfile } from '@llmrpg/protocol';
 import { NarrativeEngine } from './systems/NarrativeEngine';
 import { ContentGenerator } from './systems/ContentGenerator';
 import { DecisionEngine } from './systems/DecisionEngine';
@@ -136,10 +136,13 @@ export class GameMaster {
       fatePoints: this.player.fatePoints.current,
       relationships: [],
       knowledge: {
-        knownLocations: [],
-        knownCharacters: [],
-        knownSecrets: [],
-        knownQuests: []
+        locations: {},
+        npcs: {},
+        quests: {},
+        factions: {},
+        secrets: {},
+        items: {},
+        topics: {}
       }
     } as CharacterDefinition;
   }
@@ -225,10 +228,13 @@ export class GameMaster {
         backstory: charData.backstory,
         voice: charData.voice,
         knowledge: {
-            facts: {},
-            beliefs: {},
-            secrets: [],
-            expertise: []
+            locations: {},
+            npcs: {},
+            quests: {},
+            factions: {},
+            secrets: {},
+            items: {},
+            topics: {}
         },
         relationships: [],
         currentLocation: this.worldManager.state.locations[Object.keys(this.worldManager.state.locations)[0]]?.id || "unknown",
@@ -327,6 +333,20 @@ export class GameMaster {
     });
 
     await this.applyActionConsequences(fateAction, resolution, turn);
+
+    // Check for Knowledge Gain
+    if (resolution.outcome === 'success' || resolution.outcome === 'success_with_style') {
+        const knowledgeGain = await this.decisionEngine.determineKnowledgeGain({
+            action: { type: fateAction, description: playerAction },
+            player: characterDefinition,
+            worldState,
+            history: this.history
+        }, resolution.outcome);
+
+        if (knowledgeGain) {
+            this.applyKnowledgeUpdate(knowledgeGain, turn);
+        }
+    }
 
     // 8. Narrate
     const narration = await this.narrativeEngine.narrate({
@@ -563,5 +583,62 @@ export class GameMaster {
         narration,
         result: resolution.outcome
     };
+  }
+
+  private applyKnowledgeUpdate(knowledgeGain: any, turn: Turn) {
+    if (!this.player) return;
+
+    const { category, id, data } = knowledgeGain;
+    // Extract numeric turn ID if possible, otherwise use timestamp
+    const turnNum = typeof turn.turnId === 'number' ? turn.turnId : Date.now();
+
+    // Update Knowledge using KnowledgeManager
+    switch (category) {
+        case 'locations':
+            KnowledgeManager.updateLocation(this.player.knowledge, id, data, turnNum);
+            break;
+        case 'npcs':
+            KnowledgeManager.updateNPC(this.player.knowledge, id, data, turnNum);
+            break;
+        case 'quests':
+            KnowledgeManager.updateQuest(this.player.knowledge, id, data, turnNum);
+            break;
+        case 'factions':
+            KnowledgeManager.updateFaction(this.player.knowledge, id, data, turnNum);
+            break;
+        case 'secrets':
+            KnowledgeManager.updateSecret(this.player.knowledge, id, data, turnNum);
+            break;
+        case 'items':
+            KnowledgeManager.updateItem(this.player.knowledge, id, data, turnNum);
+            break;
+        case 'topics':
+            KnowledgeManager.updateTopic(this.player.knowledge, id, data, turnNum);
+            break;
+    }
+
+    // Log Event
+    this.turnManager.addEvent('knowledge_gain', category, {
+        description: `Learned about ${data.name || id}`,
+        metadata: {
+            id,
+            category,
+            details: data
+        }
+    });
+
+    // Collect Delta
+    // We need to cast to any to access the dynamic property safely for the delta path
+    const knowledgeCategory = (this.player.knowledge as any)[category];
+    
+    this.deltaCollector.collect({
+        target: 'player',
+        operation: 'set',
+        path: ['knowledge', category, id],
+        previousValue: null, // Ideally we'd capture this before update
+        newValue: knowledgeCategory[id],
+        cause: 'knowledge_gain',
+        eventId: turn.events[turn.events.length - 1].eventId
+    });
   }
 }

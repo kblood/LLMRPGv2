@@ -9,7 +9,8 @@ export type EventType =
   | 'combat_defend'
   | 'skill_check'
   | 'state_change'
-  | 'narrative';
+  | 'narrative'
+  | 'knowledge_gain';
 
 export interface GameEvent {
   eventId: string; // Unique: "{sessionId}-{turnId}-{seq}"
@@ -33,5 +34,6 @@ export interface GameEvent {
   description: string;
   
   // Metadata
+  metadata?: Record<string, any>;
   timestamp: number;
 }

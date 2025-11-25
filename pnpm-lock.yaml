@@ -84,6 +84,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@llmrpg/protocol':
+        specifier: workspace:*
+        version: link:../protocol
       zod:
         specifier: ^3.22.0
         version: 3.25.76
@@ -125,6 +128,9 @@ importers:
       '@llmrpg/core':
         specifier: workspace:*
         version: link:../core
+      '@llmrpg/protocol':
+        specifier: workspace:*
+        version: link:../protocol
       ollama:
         specifier: ^0.6.3
         version: 0.6.3

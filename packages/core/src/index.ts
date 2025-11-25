@@ -16,3 +16,5 @@ export * from './state/DeltaApplier';
 
 
 
+
+export * from './engine/KnowledgeManager';

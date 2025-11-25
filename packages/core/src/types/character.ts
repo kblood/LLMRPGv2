@@ -1,3 +1,5 @@
+import { KnowledgeProfile } from '@llmrpg/protocol';
+
 export interface Stunt {
   name: string;
   description: string;
@@ -60,10 +62,5 @@ export interface CharacterDefinition {
   relationships: Relationship[];
 
   // === KNOWLEDGE ===
-  knowledge: {
-    knownLocations: string[];
-    knownCharacters: string[];
-    knownSecrets: string[];
-    knownQuests: string[];
-  };
+  knowledge: KnowledgeProfile;
 }
