@@ -47,9 +47,10 @@ export class SessionWriter {
     await this.adapter.writeJson(filePath, state);
   }
 
-  async updateCurrentState(sessionId: string, worldState: any, playerState: any): Promise<void> {
+  async updateCurrentState(sessionId: string, worldState: any, playerState: any, npcsState: any = {}): Promise<void> {
     const sessionPath = this.getSessionPath(sessionId);
     await this.adapter.writeJson(path.join(sessionPath, 'world.state.json'), worldState);
     await this.adapter.writeJson(path.join(sessionPath, 'player.state.json'), playerState);
+    await this.adapter.writeJson(path.join(sessionPath, 'npcs.state.json'), npcsState);
   }
 }

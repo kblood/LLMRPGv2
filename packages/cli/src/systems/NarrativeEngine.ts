@@ -1,4 +1,12 @@
 import { LLMProvider, ContextBuilder } from '@llmrpg/llm';
+import { CharacterDefinition, Turn } from '@llmrpg/core';
+
+export interface NarrativeContext {
+  events: any[];
+  player?: CharacterDefinition;
+  worldState?: any;
+  history?: Turn[];
+}
 
 export class NarrativeEngine {
   private contextBuilder: ContextBuilder;
@@ -7,7 +15,7 @@ export class NarrativeEngine {
     this.contextBuilder = new ContextBuilder();
   }
 
-  async narrate(events: any[]): Promise<string> {
+  async narrate(context: NarrativeContext): Promise<string> {
     const systemPrompt = this.contextBuilder.buildSystemPrompt(
       "Game Master",
       `You are the Game Master for an RPG using Fate Core mechanics.
@@ -36,7 +44,10 @@ CONSTRAINTS:
 
     const prompt = this.contextBuilder.assemblePrompt({
       systemPrompt,
-      immediateContext: `Events to narrate:\n${JSON.stringify(events, null, 2)}`
+      characterDefinition: context.player,
+      worldState: context.worldState ? JSON.stringify(context.worldState, null, 2) : undefined,
+      history: context.history,
+      immediateContext: `Events to narrate:\n${JSON.stringify(context.events, null, 2)}`
     });
 
     try {

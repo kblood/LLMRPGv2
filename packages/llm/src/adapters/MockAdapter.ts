@@ -1,7 +1,21 @@
 import { LLMProvider, LLMRequest, LLMResponse } from '../types';
 
 export class MockAdapter implements LLMProvider {
+  private responseQueue: string[] = [];
+
+  setNextResponse(response: string) {
+    this.responseQueue.push(response);
+  }
+
   async generate(request: LLMRequest): Promise<LLMResponse> {
+    if (this.responseQueue.length > 0) {
+        return {
+            content: this.responseQueue.shift()!,
+            usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+            model: "mock-model"
+        };
+    }
+
     let content = "This is a mock response.";
     
     if (request.jsonMode) {

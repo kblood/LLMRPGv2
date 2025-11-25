@@ -1,6 +1,6 @@
 # Project Status
 
-**Last Updated:** November 25, 2025
+**Last Updated:** November 26, 2025
 
 ## 📍 Current Phase: Phase 7 - Refinement & Polish (In Progress)
 
@@ -51,6 +51,11 @@ We are refining the system, improving prompts, and adding robustness.
 - **Prompt Engineering**: Refined `ContextBuilder` to include detailed character info (personality, backstory). Updated system prompts in `NarrativeEngine`, `DecisionEngine`, and `ContentGenerator` to align with `docs/LLM_CONTEXT_AND_PROMPTS.md`.
 - **Error Handling**: Added try-catch blocks and fallbacks to LLM-based engines to handle generation failures gracefully.
 - **CLI Automation**: Added `--theme` and `--run` flags to the CLI to support automated testing and non-interactive execution.
+- **Context Integration**: Updated `GameMaster`, `DecisionEngine`, and `NarrativeEngine` to fully utilize the 5-layer context system (System, Character, World, History, Immediate). Implemented `getCharacterDefinition` mapper and history tracking in `GameMaster`.
+- **Action Classification**: Implemented `classifyAction` in `DecisionEngine` to dynamically map player intent to Fate Core actions (Overcome, Create Advantage, Attack, Defend) using the LLM.
+- **Skill Selection**: Implemented `selectSkill` in `DecisionEngine` to intelligently pick the most relevant character skill for an action.
+- **Action Resolution**: Integrated `ActionResolver` into `GameMaster` to handle dice rolls, skill ratings, and opposition, determining outcomes (Success, Failure, Tie, Style).
+- **Consequence Handling**: Added `applyActionConsequences` to `GameMaster` to handle specific mechanical results of actions (e.g., logging damage for Attacks, noting advantages).
 
 ### 8. Advanced Features & Content (Phase 8)
 - **World Generation**: Implemented `generateStartingScenario` in `ContentGenerator` and integrated it into `GameMaster`. The system now generates a theme, starting location, and an initial scenario with a hook.
@@ -64,6 +69,9 @@ We are refining the system, improving prompts, and adding robustness.
 - `packages/cli` is built and compiles.
 - World Generation, Character Creation, and Save/Load are implemented and verified.
 - `WorldManager` is now fully implemented.
+- **Combat System**: Fully implemented and tested. The system now supports structured combat encounters with initiative, turns, and NPC AI.
+- **Storage**: Updated to persist NPC states alongside player and world state.
+- **Mocking**: Enhanced `MockAdapter` to support response queuing for deterministic testing of complex flows.
 - Prompts are more robust and aligned with documentation.
 - Error handling is in place for LLM calls.
 - CLI supports automated execution for testing.
@@ -71,8 +79,10 @@ We are refining the system, improving prompts, and adding robustness.
 ## 📋 Next Steps (Immediate)
 
 ### Phase 8: Advanced Features & Content
-1.  **Documentation**: Continue updating documentation.
-2.  **Refinement**: Polish the narrative output and ensure consistency.
+1.  **Knowledge System**: Implement NPC knowledge tracking and discovery mechanics.
+2.  **Quest/Goal System**: Implement objective tracking.
+3.  **Social Conflict**: Adapt the combat engine for social encounters.
+4.  **Documentation**: Update documentation to reflect the new Combat System architecture.
 
 ## 🐛 Known Issues / Notes
 - None currently.

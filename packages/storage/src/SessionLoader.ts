@@ -13,11 +13,18 @@ export class SessionLoader {
     return await this.adapter.readJson(path.join(this.getSessionPath(sessionId), 'session.meta.json'));
   }
 
-  async loadCurrentState(sessionId: string): Promise<{ world: any, player: any }> {
+  async loadCurrentState(sessionId: string): Promise<{ world: any, player: any, npcs: any }> {
     const sessionPath = this.getSessionPath(sessionId);
     const world = await this.adapter.readJson(path.join(sessionPath, 'world.state.json'));
     const player = await this.adapter.readJson(path.join(sessionPath, 'player.state.json'));
-    return { world, player };
+    
+    let npcs = {};
+    const npcsPath = path.join(sessionPath, 'npcs.state.json');
+    if (await this.adapter.exists(npcsPath)) {
+        npcs = await this.adapter.readJson(npcsPath);
+    }
+    
+    return { world, player, npcs };
   }
 
   async loadTurns(sessionId: string, startTurn: number, endTurn: number): Promise<Turn[]> {

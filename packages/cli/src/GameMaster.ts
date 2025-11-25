@@ -1,4 +1,4 @@
-import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime } from '@llmrpg/core';
+import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome } from '@llmrpg/core';
 import { LLMProvider } from '@llmrpg/llm';
 import { SessionWriter, SessionLoader } from '@llmrpg/storage';
 import { SceneState, PlayerCharacter } from '@llmrpg/protocol';
@@ -6,6 +6,7 @@ import { NarrativeEngine } from './systems/NarrativeEngine';
 import { ContentGenerator } from './systems/ContentGenerator';
 import { DecisionEngine } from './systems/DecisionEngine';
 import { WorldManager } from './systems/WorldManager';
+import { CombatManager } from './systems/CombatManager';
 
 export class GameMaster {
   private turnManager: TurnManager;
@@ -15,10 +16,13 @@ export class GameMaster {
   private contentGenerator: ContentGenerator;
   private decisionEngine: DecisionEngine;
   private worldManager: WorldManager;
+  private combatManager: CombatManager;
   private sessionWriter: SessionWriter;
   private sessionLoader: SessionLoader | undefined;
   private currentScene: SceneState | undefined;
   private player: PlayerCharacter | undefined;
+  private npcs: Record<string, CharacterDefinition> = {};
+  private history: Turn[] = [];
 
   private fateDice: FateDice;
 
@@ -39,6 +43,12 @@ export class GameMaster {
     this.narrativeEngine = new NarrativeEngine(llmProvider);
     this.contentGenerator = new ContentGenerator(llmProvider);
     this.decisionEngine = new DecisionEngine(llmProvider);
+    this.combatManager = new CombatManager(
+      this.turnManager,
+      this.decisionEngine,
+      this.narrativeEngine,
+      this.fateDice
+    );
   }
 
   async start() {
@@ -50,7 +60,7 @@ export class GameMaster {
         ...this.worldManager.state,
         currentScene: this.currentScene
     };
-    await this.sessionWriter.updateCurrentState(this.sessionId, worldStateToSave, this.player || {});
+    await this.sessionWriter.updateCurrentState(this.sessionId, worldStateToSave, this.player || {}, this.npcs);
     console.log("Game state saved.");
   }
 
@@ -67,10 +77,16 @@ export class GameMaster {
     // Restore Player
     this.player = state.player;
 
+    // Restore NPCs
+    this.npcs = state.npcs || {};
+
     // Restore Current Scene (if saved in world state)
     if ((state.world as any).currentScene) {
         this.currentScene = (state.world as any).currentScene;
     }
+
+    // TODO: Load history from session logs if needed for context
+    // For now, history starts empty on load
 
     console.log("Game state loaded.");
     if (this.player) {
@@ -79,6 +95,53 @@ export class GameMaster {
     if (this.currentScene) {
         console.log(`Current Scene: ${this.currentScene.name}`);
     }
+  }
+
+  private getCharacterDefinition(): CharacterDefinition | undefined {
+    if (!this.player) return undefined;
+
+    // Map PlayerCharacter (Protocol) to CharacterDefinition (Core/LLM)
+    return {
+      id: this.player.id,
+      name: this.player.name,
+      highConcept: this.player.aspects.find(a => a.type === 'high_concept')?.name || this.player.aspects[0]?.name || "Unknown",
+      trouble: this.player.aspects.find(a => a.type === 'trouble')?.name || this.player.aspects[1]?.name || "Unknown",
+      aspects: this.player.aspects.map(a => a.name),
+      personality: {
+        ...this.player.personality,
+        speechPattern: this.player.voice.speechPattern
+      },
+      backstory: {
+        summary: this.player.backstory.summary,
+        origin: this.player.backstory.origin,
+        motivation: "Unknown",
+        secrets: [this.player.backstory.secret || ""],
+        keyEvents: [this.player.backstory.formativeEvent]
+      },
+      skills: this.player.skills.reduce((acc, s) => ({ ...acc, [s.name]: s.rank }), {}),
+      stunts: this.player.stunts.map(s => ({
+        name: s.name,
+        description: s.description,
+        mechanical: ""
+      })),
+      stress: {
+        physical: this.player.stressTracks.find(t => t.type === 'physical')?.boxes || [],
+        mental: this.player.stressTracks.find(t => t.type === 'mental')?.boxes || []
+      },
+      consequences: {
+        mild: this.player.consequences.find(c => c.severity === 'mild')?.name,
+        moderate: this.player.consequences.find(c => c.severity === 'moderate')?.name,
+        severe: this.player.consequences.find(c => c.severity === 'severe')?.name
+      },
+      fatePoints: this.player.fatePoints.current,
+      relationships: [],
+      knowledge: {
+        knownLocations: [],
+        knownCharacters: [],
+        knownSecrets: [],
+        knownQuests: []
+      }
+    } as CharacterDefinition;
   }
 
   async initializeWorld(themeInput: string) {
@@ -190,6 +253,11 @@ export class GameMaster {
   }
 
   async processPlayerAction(playerAction: string) {
+    // Check for Combat
+    if (this.currentScene?.conflict && !this.currentScene.conflict.isResolved) {
+        return this.processCombatTurn(playerAction);
+    }
+
     // 1. Start Turn
     const gameTime: GameTime = {
         day: 1,
@@ -203,29 +271,46 @@ export class GameMaster {
     // Update DeltaCollector with new turn ID
     this.deltaCollector = new DeltaCollector(this.sessionId, turn.turnId);
 
-    // 2. Determine Fate Action (Simplified)
-    // In a real implementation, we'd use the LLM to classify the action
-    const fateAction = "overcome"; 
+    // 2. Determine Fate Action
+    const characterDefinition = this.getCharacterDefinition();
+    const worldState = this.worldManager.state;
 
-    // 3. Set Opposition
-    const opposition = await this.decisionEngine.setOpposition({ action: fateAction });
-
-    // 4. Roll Dice
-    // Assuming player has +1 skill for now
-    const playerSkill = 1;
-    const roll = this.fateDice.roll();
-    const total = roll.total + playerSkill;
-    const shifts = total - opposition;
-
-    // 5. Generate Events
-    this.turnManager.addEvent('skill_check', fateAction, {
-        description: `Player attempted to ${playerAction}`,
-        roll,
-        difficulty: opposition,
-        shifts
+    const fateAction = await this.decisionEngine.classifyAction(playerAction, {
+        action: playerAction,
+        player: characterDefinition,
+        worldState,
+        history: this.history
     });
 
-    // 6. Collect Deltas
+    // 3. Select Skill
+    const skillSelection = await this.decisionEngine.selectSkill({
+        action: { type: fateAction, description: playerAction },
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    });
+
+    // 4. Set Opposition
+    const opposition = await this.decisionEngine.setOpposition({
+        action: { type: fateAction, description: playerAction, skill: skillSelection.name },
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    });
+
+    // 5. Roll Dice
+    const roll = this.fateDice.roll();
+    const resolution = ActionResolver.resolve(roll, skillSelection.rating, opposition);
+
+    // 6. Generate Events
+    this.turnManager.addEvent('skill_check', fateAction, {
+        description: `Player attempted to ${playerAction} using ${skillSelection.name}. Outcome: ${resolution.outcome}`,
+        roll,
+        difficulty: opposition,
+        shifts: resolution.shifts
+    });
+
+    // 7. Collect Deltas & Apply Consequences
     // Always record time passing
     const oldTime = this.worldManager.state.time.value;
     // Simplified time increment
@@ -241,28 +326,23 @@ export class GameMaster {
         eventId: turn.events[0]?.eventId || 'unknown'
     });
 
-    if (this.player) {
-        // Example: Player gains a Fate Point on success with style (shifts >= 3)
-        if (shifts >= 3) {
-            const oldFP = this.player.fatePoints.current;
-            this.player.fatePoints.current += 1;
-            
-            this.deltaCollector.collect({
-                target: 'player',
-                operation: 'increment',
-                path: ['fatePoints', 'current'],
-                previousValue: oldFP,
-                newValue: this.player.fatePoints.current,
-                cause: 'success_with_style',
-                eventId: turn.events[turn.events.length - 1].eventId
-            });
-        }
+    await this.applyActionConsequences(fateAction, resolution, turn);
+
+    // 8. Narrate
+    const narration = await this.narrativeEngine.narrate({
+        events: turn.events,
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    });
+
+    // Update history
+    this.history.push(turn);
+    if (this.history.length > 10) {
+        this.history.shift();
     }
 
-    // 7. Narrate
-    const narration = await this.narrativeEngine.narrate(turn.events);
-
-    // 8. Save Turn and Deltas
+    // 9. Save Turn and Deltas
     await this.sessionWriter.writeTurn(this.sessionId, turn);
     
     const deltas = this.deltaCollector.getDeltas();
@@ -275,7 +355,213 @@ export class GameMaster {
     return {
         turn,
         narration,
-        result: shifts >= 0 ? "Success" : "Failure"
+        result: resolution.outcome
+    };
+  }
+
+  private async applyActionConsequences(action: string, resolution: any, turn: Turn) {
+    if (!this.player) return;
+
+    const lastEventId = turn.events[turn.events.length - 1].eventId;
+
+    // Handle Success with Style (General)
+    if (resolution.outcome === 'success_with_style') {
+        // Grant a boost (simplified as a Fate Point for now if no boost system)
+        // Or just log it.
+        // For now, let's stick to the previous logic of granting a FP on style
+        /*
+        const oldFP = this.player.fatePoints.current;
+        this.player.fatePoints.current += 1;
+        
+        this.deltaCollector.collect({
+            target: 'player',
+            operation: 'increment',
+            path: ['fatePoints', 'current'],
+            previousValue: oldFP,
+            newValue: this.player.fatePoints.current,
+            cause: 'success_with_style',
+            eventId: lastEventId
+        });
+        */
+       // Actually, Success with Style usually gives a Boost, not a FP.
+       // But let's keep it simple.
+    }
+
+    // Handle Create Advantage
+    if (action === 'create_advantage') {
+        if (resolution.outcome === 'success' || resolution.outcome === 'success_with_style') {
+            // Create a temporary aspect
+            // We'd need the LLM to name the aspect based on the action
+            // For now, we'll just log it
+            this.turnManager.addEvent('state_change', 'create_advantage', {
+                description: `Advantage created! (Placeholder for Aspect generation)`,
+            });
+        }
+    }
+
+    // Handle Attack
+    if (action === 'attack') {
+        if (resolution.outcome === 'success' || resolution.outcome === 'success_with_style') {
+            // Deal stress
+            const damage = resolution.shifts;
+            this.turnManager.addEvent('state_change', 'attack', {
+                description: `Dealt ${damage} shifts of damage (Placeholder for target application)`,
+            });
+        }
+    }
+  }
+
+  async startCombat(opponents: CharacterDefinition[]) {
+    if (!this.currentScene || !this.player) return;
+    
+    // Add opponents to tracked NPCs
+    opponents.forEach(npc => {
+        this.npcs[npc.id] = npc;
+    });
+
+    const conflict = await this.combatManager.startConflict(
+      this.currentScene,
+      'physical',
+      opponents,
+      this.player
+    );
+    
+    console.log(`Combat started! ID: ${conflict.id}`);
+    return conflict;
+  }
+
+  private async processCombatTurn(playerAction: string) {
+    if (!this.currentScene?.conflict || !this.player) throw new Error("Invalid combat state");
+    const conflict = this.currentScene.conflict;
+
+    // 1. Player Turn
+    // Verify it's player's turn
+    const currentActorId = conflict.turnOrder[conflict.currentTurnIndex];
+    if (currentActorId !== this.player.id) {
+        // It's not player's turn. This shouldn't happen if we loop correctly, 
+        // but if it does, we should probably just process NPC turns until it IS player's turn.
+        // For now, assume we are in sync.
+    }
+
+    // Process Player Action (similar to normal turn but with combat context)
+    const characterDefinition = this.getCharacterDefinition();
+    const worldState = this.worldManager.state;
+
+    // Classify Action
+    const fateAction = await this.decisionEngine.classifyAction(playerAction, {
+        action: playerAction,
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    });
+
+    // Select Skill
+    const skillSelection = await this.decisionEngine.selectSkill({
+        action: { type: fateAction, description: playerAction },
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    });
+
+    // Set Opposition
+    const opposition = await this.decisionEngine.setOpposition({
+        action: { type: fateAction, description: playerAction, skill: skillSelection.name },
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    });
+
+    // Roll Dice
+    const roll = this.fateDice.roll();
+    const resolution = ActionResolver.resolve(roll, skillSelection.rating, opposition);
+
+    // Generate Event
+    const turn = this.turnManager.startTurn("player", this.currentScene.id, { day: 1, timeOfDay: 'morning', timestamp: Date.now() });
+    this.turnManager.addEvent('skill_check', fateAction, {
+        description: `Player attempted to ${playerAction} using ${skillSelection.name}. Outcome: ${resolution.outcome}`,
+        roll,
+        difficulty: opposition,
+        shifts: resolution.shifts
+    });
+
+    // Apply Consequences
+    await this.applyActionConsequences(fateAction, resolution, turn);
+
+    // Narrate Player Action
+    let narration = await this.narrativeEngine.narrate({
+        events: turn.events,
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    });
+
+    // Save Player Turn
+    await this.sessionWriter.writeTurn(this.sessionId, turn);
+    this.history.push(turn);
+
+    // Advance Turn
+    let nextActorId = this.combatManager.nextTurn(conflict);
+
+    // Loop NPC Turns
+    while (nextActorId !== this.player.id && !conflict.isResolved) {
+        const npc = this.npcs[nextActorId];
+        if (npc) {
+            const npcTurn = this.turnManager.startTurn(npc.name, this.currentScene.id, { day: 1, timeOfDay: 'morning', timestamp: Date.now() });
+            
+            // Decide NPC Action
+            const decision = await this.decisionEngine.decideNPCAction(npc, {
+                action: null,
+                player: characterDefinition,
+                worldState,
+                history: this.history
+            });
+
+            // Resolve NPC Action
+            // Simplified: Assume NPC uses their best skill for the action or Mediocre
+            // We need to map action string to skill.
+            // For now, just give them a flat rating or look up a skill if we can guess it.
+            const npcSkillRating = 2; // Fair default
+            const npcOpposition = 2; // Fair defense by player (simplified)
+            
+            const npcRoll = this.fateDice.roll();
+            const npcResolution = ActionResolver.resolve(npcRoll, npcSkillRating, npcOpposition);
+
+            this.turnManager.addEvent('skill_check', decision.action, {
+                description: `${npc.name} ${decision.description}. Outcome: ${npcResolution.outcome}`,
+                roll: npcRoll,
+                difficulty: npcOpposition,
+                shifts: npcResolution.shifts
+            });
+
+            // Narrate NPC Action
+            const npcNarration = await this.narrativeEngine.narrate({
+                events: npcTurn.events,
+                player: characterDefinition,
+                worldState,
+                history: this.history
+            });
+            
+            narration += `\n\n${npcNarration}`;
+            
+            await this.sessionWriter.writeTurn(this.sessionId, npcTurn);
+            this.history.push(npcTurn);
+        }
+
+        nextActorId = this.combatManager.nextTurn(conflict);
+        
+        // Check Resolution (simplified)
+        if (this.combatManager.checkResolution(conflict, [], this.player)) {
+            narration += `\n\nCombat Ended: ${conflict.resolution}`;
+            break;
+        }
+    }
+
+    await this.saveState();
+
+    return {
+        turn,
+        narration,
+        result: resolution.outcome
     };
   }
 }
