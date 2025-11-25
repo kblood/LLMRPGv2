@@ -1,0 +1,19 @@
+{
+  "name": "@llmrpg/protocol",
+  "version": "0.0.1",
+  "description": "Shared types and schemas for LLMRPGv2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.0"
+  }
+}

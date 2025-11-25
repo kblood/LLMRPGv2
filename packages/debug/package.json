@@ -1,0 +1,21 @@
+{
+  "name": "@llmrpg/debug",
+  "version": "0.0.1",
+  "description": "Debug tools and state inspectors for LLMRPGv2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@llmrpg/core": "workspace:*",
+    "@llmrpg/storage": "workspace:*",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.0"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@llmrpg/storage",
+  "version": "0.0.1",
+  "description": "Persistence layer for LLMRPGv2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@llmrpg/core": "workspace:*",
+    "better-sqlite3": "^9.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "rimraf": "^5.0.0"
+  }
+}

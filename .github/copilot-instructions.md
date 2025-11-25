@@ -147,3 +147,14 @@ Recommended development order to minimize dependency cycles:
 - Cross-reference documents heavily; they're designed to work together
 - The Fate Core SRD (https://fate-srd.com) is the mechanical foundation
 - "Frames" is deprecated terminology—use "Turns" and "Events"
+
+## Project Status Tracking
+
+Maintain a `PROJECT_STATUS.md` file in the root directory to track progress between sessions.
+- **Read this file first** when starting a new session to understand the current state.
+- **Update this file** at the end of a session with:
+  - Current Phase/Milestone
+  - Recent Accomplishments (files created, features implemented)
+  - Current Context (what was just worked on)
+  - Next Steps (immediate tasks for the next agent)
+  - Known Issues or Blockers
