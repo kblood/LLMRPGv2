@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "clean": "rimraf dist"
   },
   "dependencies": {

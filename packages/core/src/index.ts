@@ -12,6 +12,7 @@ export * from './engine/TurnManager';
 export * from './types/state';
 export * from './types/character';
 export * from './state/DeltaCollector';
+export * from './state/DeltaApplier';
 
 
 

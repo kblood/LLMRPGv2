@@ -7,12 +7,16 @@
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "clean": "rimraf dist"
   },
   "dependencies": {
     "@llmrpg/core": "workspace:*",
+    "@llmrpg/llm": "workspace:*",
+    "@llmrpg/protocol": "workspace:*",
     "@llmrpg/storage": "workspace:*",
+    "@types/deep-diff": "^1.0.5",
+    "deep-diff": "^1.0.2",
     "zod": "^3.22.0"
   },
   "devDependencies": {
