@@ -15,7 +15,7 @@ export class TurnManager {
     
     this.currentTurn = {
       turnId: this.turnCounter,
-      turnNumber: 0, // TODO: Track scene turn numbers
+      turnNumber: this.turnCounter, // Using global counter as default for now
       actor,
       sceneId,
       timestamp: Date.now(),

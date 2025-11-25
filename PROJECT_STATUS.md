@@ -2,9 +2,9 @@
 
 **Last Updated:** November 25, 2025
 
-## 📍 Current Phase: Phase 5 - Protocol & Debug (Completed)
+## 📍 Current Phase: Phase 7 - Refinement & Polish (In Progress)
 
-We have successfully implemented the Protocol layer and Debug tools.
+We are refining the system, improving prompts, and adding robustness.
 
 ## ✅ Recent Accomplishments
 
@@ -38,18 +38,32 @@ We have successfully implemented the Protocol layer and Debug tools.
 - **Debug Package**: Implemented `StateInspector`, `ReplayDebugger`, and `ContextDebugger` in `packages/debug`.
 - **Integration**: Verified system integration with `examples/demo.ts`.
 
+### 6. Game Loop & CLI (Phase 6)
+- **CLI Package**: Created `packages/cli` with dependencies.
+- **GameMaster**: Implemented `GameMaster` class to orchestrate the game.
+- **GameLoop**: Implemented `GameLoop` class for the main input loop.
+- **Systems**: Implemented `NarrativeEngine`, `ContentGenerator`, `DecisionEngine` with real LLM integration.
+- **Testing**: Verified end-to-end flow with `MockAdapter`. `full_playthrough.test.ts` verifies turn generation, event logging, and file storage.
+- **Entry Point**: Implemented `index.ts` with `commander` and `inquirer`.
+
+### 7. Refinement & Polish (Phase 7)
+- **World Manager**: Implemented `WorldManager` in `packages/cli` with full `WorldState` support from `@llmrpg/protocol`.
+- **Prompt Engineering**: Refined `ContextBuilder` to include detailed character info (personality, backstory). Updated system prompts in `NarrativeEngine`, `DecisionEngine`, and `ContentGenerator` to align with `docs/LLM_CONTEXT_AND_PROMPTS.md`.
+- **Error Handling**: Added try-catch blocks and fallbacks to LLM-based engines to handle generation failures gracefully.
+
 ## 🚧 Current Context
-- All infrastructure layers (`core`, `storage`, `llm`, `protocol`, `debug`) are implemented.
-- Performed maintenance: Upgraded ESLint to v9, removed unused dependencies, and ensured clean build/test pipeline.
-- We are ready to build the **Game Loop** and **CLI Client**.
+- `packages/cli` is built and compiles.
+- `WorldManager` is now fully implemented.
+- Prompts are more robust and aligned with documentation.
+- Error handling is in place for LLM calls.
 
 ## 📋 Next Steps (Immediate)
 
-### Phase 6: Game Loop & CLI (`packages/cli`?)
-1.  **Game Loop**: Implement the main game loop that orchestrates turns, LLM calls, and state updates.
-2.  **CLI Client**: Create a playable command-line interface.
-3.  **Full Playthrough**: Run a complete session.
-
+### Phase 8: Advanced Features & Content
+1.  **World Generation**: Implement logic to generate a starting world/scenario using `ContentGenerator` and `WorldManager`.
+2.  **Character Creation**: Implement a CLI flow to create a character (interactive character generation).
+3.  **Save/Load**: Ensure `GameMaster` can load an existing session and restore state.
+4.  **Documentation**: Continue updating documentation.
 
 ## 🐛 Known Issues / Notes
-- None currently. Build and tests are green.
+- None currently.

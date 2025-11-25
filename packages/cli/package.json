@@ -1,0 +1,35 @@
+{
+  "name": "@llmrpg/cli",
+  "version": "0.1.0",
+  "description": "CLI client for LLMRPGv2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "llmrpg": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@llmrpg/core": "workspace:*",
+    "@llmrpg/debug": "workspace:*",
+    "@llmrpg/llm": "workspace:*",
+    "@llmrpg/protocol": "workspace:*",
+    "@llmrpg/storage": "workspace:*",
+    "@inquirer/prompts": "^5.0.0",
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "rimraf": "^5.0.5",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}

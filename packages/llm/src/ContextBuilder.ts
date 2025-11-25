@@ -14,12 +14,31 @@ export class ContextBuilder {
   }
 
   buildCharacterContext(character: CharacterDefinition): string {
+    const personality = character.personality;
+    const backstory = character.backstory;
+
     return `
+## CHARACTER IDENTITY
 NAME: ${character.name}
 HIGH CONCEPT: ${character.highConcept}
 TROUBLE: ${character.trouble}
 ASPECTS: ${character.aspects.join(', ')}
-SKILLS: ${JSON.stringify(character.skills)}
+
+## PERSONALITY
+TRAITS: ${personality.traits.join(', ')}
+VALUES: ${personality.values.join(', ')}
+FEARS: ${personality.fears.join(', ')}
+QUIRKS: ${personality.quirks.join(', ')}
+SPEECH PATTERN: ${personality.speechPattern}
+
+## BACKSTORY
+SUMMARY: ${backstory.summary}
+MOTIVATION: ${backstory.motivation}
+ORIGIN: ${backstory.origin}
+
+## CAPABILITIES
+SKILLS: ${Object.entries(character.skills).map(([k, v]) => `${k} (+${v})`).join(', ')}
+STUNTS: ${character.stunts.map(s => `${s.name} (${s.description})`).join('; ')}
     `.trim();
   }
 
