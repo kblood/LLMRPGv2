@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { PlayerCharacterSchema, NPCSchema } from './characters.js';
 import { AspectSchema } from './fate.js';
+import { QuestSchema } from './quests.js';
 
 // Location in the world
 export const LocationSchema = z.object({
@@ -129,6 +130,9 @@ export const WorldStateSchema = z.object({
     status: z.enum(['active', 'paused', 'resolved']),
     priority: z.enum(['main', 'side', 'background']),
   })).default([]),
+
+  // Active quests
+  quests: z.array(QuestSchema).default([]),
   
   // World-level facts that have been established
   establishedFacts: z.record(z.string(), z.unknown()),

@@ -22,6 +22,7 @@ export class WorldManager {
         period: "Day" 
       },
       plotThreads: [],
+      quests: [],
       establishedFacts: {}
     };
   }

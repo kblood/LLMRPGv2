@@ -54,7 +54,15 @@ Return ONLY the exact name of the skill.`
       });
 
       const skillName = response.content.trim();
-      const rating = context.player.skills[skillName] || 0;
+      
+      let rating = 0;
+      // Handle both Record<string, number> and Array<{name: string, rating/rank: number}>
+      if (Array.isArray(context.player.skills)) {
+          const skill = context.player.skills.find((s: any) => s.name === skillName);
+          rating = skill ? (skill.rating || skill.rank || skill.level || 0) : 0;
+      } else {
+          rating = (context.player.skills as any)[skillName] || 0;
+      }
       
       return { name: skillName, rating };
     } catch (error) {
@@ -270,6 +278,76 @@ The JSON should follow this structure:
       }
     } catch (error) {
       console.error("Knowledge determination failed:", error);
+      return null;
+    }
+  }
+
+  async determineQuestUpdate(context: DecisionContext, outcome: string): Promise<any> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Analyze the player's action and the outcome to determine if any quests are affected.
+
+GUIDELINES:
+- Check if the action satisfies any active quest objectives.
+- Check if the action triggers a new quest.
+- Check if the action fails a quest.
+- If a new quest is started, provide title, description, and objectives.
+
+OUTPUT FORMAT:
+Return a JSON object with the update details, or null if no update.
+Types: "new", "update_objective", "complete_quest", "fail_quest"
+
+Example (Update):
+{
+  "type": "update_objective",
+  "questId": "quest-123",
+  "objectiveId": "obj-1",
+  "count": 1, // Amount to ADD to current count
+  "status": "completed" // Optional, force status
+}
+
+Example (New):
+{
+  "type": "new",
+  "quest": {
+    "id": "generated-id", // Suggest an ID
+    "title": "Quest Title",
+    "description": "Quest Description",
+    "objectives": [
+      { "id": "obj-1", "description": "Do the thing", "type": "custom", "requiredCount": 1 }
+    ]
+  }
+}
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      characterDefinition: context.player,
+      worldState: context.worldState ? JSON.stringify(context.worldState, null, 2) : undefined,
+      history: context.history,
+      immediateContext: `Action: "${context.action.description}"\nOutcome: ${outcome}\n\nAre there any quest updates? Return JSON or null.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1,
+        jsonMode: true
+      });
+
+      const content = response.content.trim();
+      if (content === 'null' || content.toLowerCase() === 'no') return null;
+
+      try {
+        return JSON.parse(content);
+      } catch (e) {
+        console.warn("Failed to parse quest update JSON:", content);
+        return null;
+      }
+    } catch (error) {
+      console.error("Quest determination failed:", error);
       return null;
     }
   }

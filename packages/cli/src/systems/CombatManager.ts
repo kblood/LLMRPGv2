@@ -86,8 +86,14 @@ export class CombatManager {
    * Checks if the conflict is resolved.
    */
   checkResolution(conflict: ConflictState, opponents: CharacterDefinition[], player: PlayerCharacter): boolean {
+    const stressType = conflict.type;
+    const npcStressProp = conflict.type === 'physical' ? 'physical' : 'mental';
+
     // Check if player is taken out
-    const playerTakenOut = player.stressTracks.every(t => t.boxes.every(b => b)) && player.consequences.length >= 3; // Simplified check
+    const playerTrack = player.stressTracks.find(t => t.type === stressType);
+    const playerTakenOut = playerTrack 
+        ? playerTrack.boxes.every(b => b) && player.consequences.length >= 3 
+        : false;
     
     if (playerTakenOut) {
       conflict.isResolved = true;
@@ -97,9 +103,10 @@ export class CombatManager {
     }
 
     // Check if all opponents are taken out
-    const allOpponentsDefeated = opponents.every(npc => 
-      npc.stress.physical.every(b => b) // Simplified check
-    );
+    const allOpponentsDefeated = opponents.every(npc => {
+        const boxes = (npc.stress as any)[npcStressProp];
+        return boxes ? boxes.every((b: boolean) => b) : true;
+    });
 
     if (allOpponentsDefeated) {
       conflict.isResolved = true;

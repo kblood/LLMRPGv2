@@ -24,6 +24,8 @@ This document describes how all RPG systems integrate together, built on **Fate 
 │  • Content Generator (Creates locations, NPCs, items)          │
 │  • Decision Engine (Compels, Opposition, Consequences)         │
 │  • World Manager (Manages state, time, persistence)            │
+│  • Quest Manager (Tracks quests and objectives)                │
+│  • Combat Manager (Handles physical and social conflicts)      │
 │  • Delta Collector (Tracks all state changes)                  │
 └──────────┬──────────────────────────────────────────────────────┘
            │
@@ -250,248 +252,82 @@ class WorldManager {
     
     return content;
   }
-  
-  // NPC Management
-  getNPCsAt(locationId) {
-    const currentTime = this.time.current;
-    return this.npcs.filter(npc => 
-      npc.getLocationAt(currentTime) === locationId
-    );
+}
+
+### 3. Quest Manager System
+
+```javascript
+class QuestManager {
+  constructor(worldState) {
+    this.worldState = worldState;
   }
-  
-  updateNPCPositions() {
-    // Update all NPC locations based on schedules
-    // Generate deltas for each movement
-    for (const npc of this.npcs.all()) {
-      const newLocation = npc.getLocationAt(this.time.current);
-      if (newLocation !== npc.currentLocation) {
-        this.deltaCollector.add({
-          scope: 'world',
-          op: 'set',
-          path: `npcs.${npc.id}.currentLocation`,
-          value: newLocation,
-          previousValue: npc.currentLocation
-        });
-        npc.currentLocation = newLocation;
-      }
+
+  addQuest(quest) {
+    // Add new quest to state
+    this.worldState.quests.push(quest);
+  }
+
+  updateObjective(questId, objectiveId, count) {
+    // Update progress
+    const quest = this.getQuest(questId);
+    const objective = quest.objectives.find(o => o.id === objectiveId);
+    objective.currentCount = count;
+    
+    // Check completion
+    if (objective.currentCount >= objective.requiredCount) {
+      objective.status = 'completed';
+      this.checkQuestCompletion(quest);
     }
   }
-  
-  // Time Management
-  advanceTurn() {
-    this.time.advance();
-    this.updateNPCPositions();
-    this.checkScheduledEvents();
+
+  checkQuestCompletion(quest) {
+    if (quest.objectives.every(o => o.status === 'completed')) {
+      quest.status = 'completed';
+    }
   }
 }
 ```
 
-### 3. NPC System with Fate Aspects
+### 4. Combat Manager System (Physical & Social)
 
 ```javascript
-class NPC {
-  constructor() {
-    this.id = uuid();
-    this.name = "";
-    this.role = "";
-    
-    // Fate character elements
-    this.highConcept = "";     // Core aspect
-    this.trouble = "";         // Complication aspect
-    this.aspects = [];         // Additional aspects
-    this.skills = {};          // Fate skill ratings
-    this.stunts = [];          // Special abilities
-    this.stress = { physical: [], mental: [] };
-    this.consequences = {};
-    
-    // Location & schedule
-    this.currentLocation = "";
-    this.schedule = [];        // Time-based location schedule
-    
-    // Knowledge system
-    this.knownQuests = [];
-    this.knownLocations = [];
-    this.knownNPCs = [];
-    this.relationships = new Map();
-    this.memory = new MemorySystem();
+class CombatManager {
+  constructor(turnManager, decisionEngine, narrativeEngine, fateDice) {
+    // ...
   }
-  
-  // Fate skill check
-  getSkillRating(skill) {
-    return this.skills[skill] || 0;
-  }
-  
-  // Location-based
-  getLocationAt(gameTime) {
-    const entry = this.schedule.find(s => 
-      s.timeOfDay === gameTime.timeOfDay
-    );
-    return entry ? entry.location : this.currentLocation;
-  }
-  
-  // Knowledge Management
-  knowsAboutQuest(questId) {
-    return this.knownQuests.some(q => q.id === questId);
-  }
-  
-  canReferPlayerTo(topic) {
-    // Can this NPC point player to someone who knows more?
-    for (const npc of this.knownNPCs) {
-      if (npc.knowsAbout?.includes(topic)) {
-        return { canRefer: true, referTo: npc.id };
-      }
-    }
-    return { canRefer: false };
-  }
-  
-  // Interaction using Fate
-  async respondToQuery(player, query, gameState) {
-    // Response quality depends on:
-    // - Roll outcome (did player Create Advantage successfully?)
-    // - Relationship aspects
-    // - NPC's knowledge
-    
-    const context = {
-      npc: this,
-      player: player,
-      query: query,
-      relationship: this.relationships.get(player.id),
-      npcAspects: [this.highConcept, this.trouble, ...this.aspects],
-      sceneAspects: gameState.currentScene.aspects
+
+  async startConflict(scene, type, opponents, player) {
+    // Initialize conflict state
+    // type: 'physical' | 'social' | 'mental'
+    const conflict = {
+      id: generateId(),
+      type,
+      participants: [player, ...opponents],
+      turnOrder: this.rollInitiative(player, opponents),
+      isResolved: false
     };
     
-    return await LLM.generateNPCResponse(context);
+    scene.conflict = conflict;
+    return conflict;
   }
-}
-```
 
-### 4. Conflict System (Fate Core)
-
-```javascript
-class ConflictSystem {
-  constructor() {
-    this.deltaCollector = new DeltaCollector();
-  }
-  
-  async initiateConflict(participants, context) {
-    // 1. Create conflict scene
-    const scene = this.createConflictScene(context);
+  checkResolution(conflict, opponents, player) {
+    // Check stress tracks based on conflict type
+    const stressType = conflict.type === 'physical' ? 'physical' : 'mental';
     
-    // 2. Determine turn order (Notice skill)
-    const turnOrder = this.determineTurnOrder(participants);
-    
-    // 3. Set up zones
-    const zones = this.setupZones(context.location);
-    
-    // 4. Begin conflict loop
-    return await this.runConflict(participants, turnOrder, scene);
-  }
-  
-  async runConflict(participants, turnOrder, scene) {
-    let exchange = 1;
-    
-    while (!this.isConflictOver(participants)) {
-      // Each participant acts once per exchange
-      for (const participant of turnOrder) {
-        if (participant.takenOut) continue;
-        
-        // Get action (player input or AI decision)
-        const action = await this.getAction(participant, scene);
-        
-        // Resolve Fate action
-        const result = await this.resolveFateAction(action, scene);
-        
-        // Collect deltas
-        this.collectConflictDeltas(result);
-        
-        // Check for taken out / concession
-        await this.checkConflictStatus(participants);
-      }
-      
-      exchange++;
+    // Check if player is taken out
+    if (this.isTakenOut(player, stressType)) {
+      conflict.winner = 'opposition';
+      return true;
     }
     
-    return await this.resolveConflictEnd(participants, scene);
-  }
-  
-  async resolveFateAction(action, scene) {
-    switch (action.type) {
-      case 'attack':
-        return this.resolveAttack(action);
-      case 'defend':
-        return this.resolveDefend(action);
-      case 'createAdvantage':
-        return this.resolveCreateAdvantage(action, scene);
-      case 'overcome':
-        return this.resolveOvercome(action, scene);
-    }
-  }
-  
-  resolveAttack(action) {
-    // Roll: 4dF + Attack skill (Fight, Shoot, etc.)
-    // vs: Defender's 4dF + Defense skill (Athletics, etc.)
-    
-    const attackRoll = this.rollFateDice(action.attacker, action.skill);
-    const defendRoll = this.rollFateDice(action.target, 'Athletics');
-    
-    const shifts = attackRoll.total - defendRoll.total;
-    
-    if (shifts > 0) {
-      // Hit! Apply stress
-      const stress = shifts + (action.weapon?.rating || 0);
-      return this.applyStress(action.target, stress);
-    } else {
-      return { hit: false, shifts: 0 };
-    }
-  }
-  
-  applyStress(target, amount) {
-    // Target chooses: stress boxes or consequences
-    // AI/rules decide automatically
-    
-    // Check stress boxes
-    if (target.stress.physical[amount - 1] === false) {
-      target.stress.physical[amount - 1] = true;
-      
-      this.deltaCollector.add({
-        scope: 'player',  // or 'world' for NPCs
-        op: 'set',
-        path: `stress.physical[${amount - 1}]`,
-        value: true
-      });
-      
-      return { absorbed: true, method: 'stress' };
+    // Check if opponents are taken out
+    if (opponents.every(o => this.isTakenOut(o, stressType))) {
+      conflict.winner = 'player';
+      return true;
     }
     
-    // Or take consequence
-    return this.offerConsequence(target, amount);
-  }
-  
-  async resolveConflictEnd(participants, scene) {
-    const winner = participants.find(p => !p.takenOut && !p.conceded);
-    const loser = participants.find(p => p.takenOut || p.conceded);
-    
-    if (loser.conceded) {
-      // Concession: loser gets Fate point, winner narrates
-      this.deltaCollector.add({
-        scope: loser.isPlayer ? 'player' : 'world',
-        op: 'increment',
-        path: 'fatePoints',
-        value: 1
-      });
-    }
-    
-    // Winner narrates outcome
-    const narration = await this.narrateConflictEnd(winner, loser, scene);
-    
-    // Create snapshot after conflict
-    return {
-      winner,
-      loser,
-      narration,
-      createSnapshot: true,
-      snapshotReason: 'conflict_end'
-    };
+    return false;
   }
 }
 ```

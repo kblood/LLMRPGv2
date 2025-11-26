@@ -1,4 +1,4 @@
-import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager } from '@llmrpg/core';
+import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager } from '@llmrpg/core';
 import { LLMProvider } from '@llmrpg/llm';
 import { SessionWriter, SessionLoader } from '@llmrpg/storage';
 import { SceneState, PlayerCharacter, KnowledgeProfile } from '@llmrpg/protocol';
@@ -118,7 +118,7 @@ export class GameMaster {
         secrets: [this.player.backstory.secret || ""],
         keyEvents: [this.player.backstory.formativeEvent]
       },
-      skills: this.player.skills.reduce((acc, s) => ({ ...acc, [s.name]: s.rank }), {}),
+      skills: this.player.skills.reduce((acc, s) => ({ ...acc, [s.name]: s.rank || (s as any).rating || 0 }), {}),
       stunts: this.player.stunts.map(s => ({
         name: s.name,
         description: s.description,
@@ -210,7 +210,7 @@ export class GameMaster {
         })),
         skills: charData.skills.map((s: any) => ({
             name: s.name,
-            rating: s.level
+            rank: s.level || s.rating || 0
         })),
         stunts: charData.stunts.map((s: any) => ({
             name: s.name,
@@ -226,7 +226,12 @@ export class GameMaster {
         fatePoints: { current: 3, refresh: 3 },
         personality: charData.personality,
         backstory: charData.backstory,
-        voice: charData.voice,
+        voice: charData.voice || {
+            tone: "Neutral",
+            speechPattern: charData.personality?.speechPattern || "Normal",
+            vocabulary: "Average",
+            commonPhrases: []
+        },
         knowledge: {
             locations: {},
             npcs: {},
@@ -348,6 +353,18 @@ export class GameMaster {
         }
     }
 
+    // Check for Quest Updates
+    const questUpdate = await this.decisionEngine.determineQuestUpdate({
+        action: { type: fateAction, description: playerAction },
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    }, resolution.outcome);
+
+    if (questUpdate) {
+        this.applyQuestUpdate(questUpdate, turn);
+    }
+
     // 8. Narrate
     const narration = await this.narrativeEngine.narrate({
         events: turn.events,
@@ -450,6 +467,25 @@ export class GameMaster {
     return conflict;
   }
 
+  async startSocialConflict(opponents: CharacterDefinition[]) {
+    if (!this.currentScene || !this.player) return;
+    
+    // Add opponents to tracked NPCs
+    opponents.forEach(npc => {
+        this.npcs[npc.id] = npc;
+    });
+
+    const conflict = await this.combatManager.startConflict(
+      this.currentScene,
+      'social',
+      opponents,
+      this.player
+    );
+    
+    console.log(`Social Conflict started! ID: ${conflict.id}`);
+    return conflict;
+  }
+
   private async processCombatTurn(playerAction: string) {
     if (!this.currentScene?.conflict || !this.player) throw new Error("Invalid combat state");
     const conflict = this.currentScene.conflict;
@@ -493,7 +529,9 @@ export class GameMaster {
 
     // Roll Dice
     const roll = this.fateDice.roll();
+    console.log(`DEBUG: Roll=${roll.total}, Skill=${skillSelection.name}:${skillSelection.rating}, Opp=${opposition}`);
     const resolution = ActionResolver.resolve(roll, skillSelection.rating, opposition);
+    console.log(`DEBUG: Resolution=${JSON.stringify(resolution)}`);
 
     // Generate Event
     const turn = this.turnManager.startTurn("player", this.currentScene.id, { day: 1, timeOfDay: 'morning', timestamp: Date.now() });
@@ -585,10 +623,64 @@ export class GameMaster {
     };
   }
 
-  private applyKnowledgeUpdate(knowledgeGain: any, turn: Turn) {
+  private applyQuestUpdate(update: any, turn: Turn) {
+    if (!update) return;
+
+    const worldState = this.worldManager.state;
+
+    if (update.type === 'new' && update.quest) {
+      QuestManager.addQuest(worldState, update.quest);
+      this.turnManager.addEvent('quest_update', 'new_quest', {
+        description: `New Quest: ${update.quest.title}`,
+        metadata: update.quest
+      });
+      
+      this.deltaCollector.collect({
+        target: 'world',
+        operation: 'append',
+        path: ['quests'],
+        previousValue: null,
+        newValue: update.quest,
+        cause: 'quest_start',
+        eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
+      });
+    } else if (update.type === 'update_objective') {
+      const quest = QuestManager.getQuest(worldState, update.questId);
+      if (quest) {
+        const objective = quest.objectives.find(o => o.id === update.objectiveId);
+        if (objective) {
+            const newCount = objective.currentCount + (update.count || 0);
+            QuestManager.updateObjective(worldState, update.questId, update.objectiveId, newCount);
+            
+            if (update.status) {
+                QuestManager.setObjectiveStatus(worldState, update.questId, update.objectiveId, update.status);
+            }
+
+            this.turnManager.addEvent('quest_update', 'objective_update', {
+                description: `Quest Update: ${quest.title} - ${objective.description}`,
+                metadata: { questId: update.questId, objectiveId: update.objectiveId, status: objective.status }
+            });
+        }
+      }
+    } else if (update.type === 'complete_quest') {
+        QuestManager.setQuestStatus(worldState, update.questId, 'completed');
+        this.turnManager.addEvent('quest_update', 'quest_completed', {
+            description: `Quest Completed: ${update.questId}`,
+            metadata: { questId: update.questId }
+        });
+    } else if (update.type === 'fail_quest') {
+        QuestManager.setQuestStatus(worldState, update.questId, 'failed');
+        this.turnManager.addEvent('quest_update', 'quest_failed', {
+            description: `Quest Failed: ${update.questId}`,
+            metadata: { questId: update.questId }
+        });
+    }
+  }
+
+  private applyKnowledgeUpdate(update: any, turn: Turn) {
     if (!this.player) return;
 
-    const { category, id, data } = knowledgeGain;
+    const { category, id, data } = update;
     // Extract numeric turn ID if possible, otherwise use timestamp
     const turnNum = typeof turn.turnId === 'number' ? turn.turnId : Date.now();
 

@@ -65,10 +65,14 @@ We are refining the system, improving prompts, and adding robustness.
 - **Ollama Integration Testing**: Added `tests/ollama_playthrough.test.ts` to verify full system functionality with local LLMs (specifically tested with Granite4:3b). Added `test:ollama` script to `packages/cli`.
 - **Action Validation Testing**: Added `tests/action_validation.test.ts` to verify specific LLM decisions (difficulty setting) and GM event generation. Added `test:actions` script.
 - **Knowledge System**: Implemented comprehensive knowledge tracking (`KnowledgeProfile`, `KnowledgeManager`) in `packages/protocol` and `packages/core`. Integrated with `GameMaster` and `DecisionEngine` to allow players to discover locations, NPCs, and secrets via gameplay actions. Added `knowledge_gain` event type. Verified with `tests/knowledge_system.test.ts`.
+- **Quest/Goal System**: Implemented `QuestManager` and integrated it into `GameMaster`. Added unit tests in `quest_system.test.ts`.
+- **Social Conflict**: Implemented social conflict mechanics in `CombatManager` and `GameMaster`. Added unit tests in `social_conflict.test.ts`.
+- **Bug Fixes**: Fixed type mismatches in `GameMaster` (Skills array vs Record) and `DecisionEngine`. Fixed mock data synchronization in tests.
+- **Testing**: All tests passing (Core, Storage, LLM, CLI).
 
 ## 🚧 Current Context
 - `packages/cli` is built and compiles.
-- World Generation, Character Creation, Save/Load, and Knowledge System are implemented and verified.
+- World Generation, Character Creation, Save/Load, Knowledge System, Quest System, and Social Conflict are implemented.
 - `WorldManager` is now fully implemented.
 - **Combat System**: Fully implemented and tested. The system now supports structured combat encounters with initiative, turns, and NPC AI.
 - **Storage**: Updated to persist NPC states alongside player and world state.
@@ -80,9 +84,8 @@ We are refining the system, improving prompts, and adding robustness.
 ## 📋 Next Steps (Immediate)
 
 ### Phase 8: Advanced Features & Content
-1.  **Quest/Goal System**: Implement objective tracking.
-2.  **Social Conflict**: Adapt the combat engine for social encounters.
-3.  **Documentation**: Update documentation to reflect the new Combat System architecture.
+1.  **Documentation**: Update documentation to reflect the new Combat System architecture and Quest System.
+2.  **Testing**: Add tests for Quest System and Social Conflict.
 
 ## 🐛 Known Issues / Notes
 - None currently.

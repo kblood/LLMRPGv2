@@ -24,3 +24,4 @@ export * from './session.js';
 export { z } from 'zod';
 
 export * from './knowledge.js';
+export * from './quests.js';

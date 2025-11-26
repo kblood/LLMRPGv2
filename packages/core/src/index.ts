@@ -14,7 +14,5 @@ export * from './types/character';
 export * from './state/DeltaCollector';
 export * from './state/DeltaApplier';
 
-
-
-
 export * from './engine/KnowledgeManager';
+export * from './engine/QuestManager';

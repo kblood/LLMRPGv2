@@ -190,6 +190,9 @@ type EventType =
   | "knowledge_share"    // Tell someone something
   | "relationship_change"// Relationship modifier
   
+  // Quests
+  | "quest_update"       // Quest started, updated, or completed
+
   // Inventory & Resources
   | "item_gain"          // Acquire item
   | "item_lose"          // Lose/use item

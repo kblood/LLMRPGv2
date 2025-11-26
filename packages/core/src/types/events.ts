@@ -10,7 +10,8 @@ export type EventType =
   | 'skill_check'
   | 'state_change'
   | 'narrative'
-  | 'knowledge_gain';
+  | 'knowledge_gain'
+  | 'quest_update';
 
 export interface GameEvent {
   eventId: string; // Unique: "{sessionId}-{turnId}-{seq}"
