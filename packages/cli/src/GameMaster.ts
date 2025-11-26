@@ -7,6 +7,7 @@ import { ContentGenerator } from './systems/ContentGenerator';
 import { DecisionEngine } from './systems/DecisionEngine';
 import { WorldManager } from './systems/WorldManager';
 import { CombatManager } from './systems/CombatManager';
+import { DialogueSystem } from './systems/DialogueSystem';
 
 export class GameMaster {
   private turnManager: TurnManager;
@@ -17,6 +18,7 @@ export class GameMaster {
   private decisionEngine: DecisionEngine;
   private worldManager: WorldManager;
   private combatManager: CombatManager;
+  private dialogueSystem: DialogueSystem;
   private sessionWriter: SessionWriter;
   private sessionLoader: SessionLoader | undefined;
   private currentScene: SceneState | undefined;
@@ -43,6 +45,7 @@ export class GameMaster {
     this.narrativeEngine = new NarrativeEngine(llmProvider);
     this.contentGenerator = new ContentGenerator(llmProvider);
     this.decisionEngine = new DecisionEngine(llmProvider);
+    this.dialogueSystem = new DialogueSystem(llmProvider);
     this.combatManager = new CombatManager(
       this.turnManager,
       this.decisionEngine,
@@ -263,7 +266,29 @@ export class GameMaster {
     return this.worldManager.state;
   }
 
+  private findNPCByName(name: string): CharacterDefinition | undefined {
+    // First check active NPCs in the current location
+    if (this.currentScene) {
+        const location = this.worldManager.getLocation(this.currentScene.locationId);
+        if (location && location.presentNPCs) {
+            for (const npcId of location.presentNPCs) {
+                const npc = this.npcs[npcId];
+                if (npc && npc.name.toLowerCase().includes(name.toLowerCase())) {
+                    return npc;
+                }
+            }
+        }
+    }
+    // Then check all known NPCs
+    return Object.values(this.npcs).find(npc => npc.name.toLowerCase().includes(name.toLowerCase()));
+  }
+
   async processPlayerAction(playerAction: string) {
+    // Check for Meta Commands
+    if (playerAction.startsWith('/')) {
+        return this.handleMetaCommand(playerAction);
+    }
+
     // Check for Combat
     if (this.currentScene?.conflict && !this.currentScene.conflict.isResolved) {
         return this.processCombatTurn(playerAction);
@@ -285,6 +310,15 @@ export class GameMaster {
     // 2. Determine Fate Action
     const characterDefinition = this.getCharacterDefinition();
     const worldState = this.worldManager.state;
+
+    // Identify Target for potential social interaction
+    const targetName = await this.decisionEngine.identifyTarget({
+        action: { description: playerAction },
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    });
+    const targetNPC = targetName ? this.findNPCByName(targetName) : undefined;
 
     const fateAction = await this.decisionEngine.classifyAction(playerAction, {
         action: playerAction,
@@ -365,6 +399,52 @@ export class GameMaster {
         this.applyQuestUpdate(questUpdate, turn);
     }
 
+    // Check for World Updates
+    const worldUpdates = await this.decisionEngine.determineWorldUpdates({
+        action: { type: fateAction, description: playerAction },
+        player: characterDefinition,
+        worldState,
+        history: this.history
+    }, resolution.outcome);
+
+    if (worldUpdates.length > 0) {
+        this.applyWorldUpdates(worldUpdates, turn);
+    }
+
+    // Generate NPC Dialogue if applicable
+    if (targetNPC) {
+        const isSocial = ["Rapport", "Provoke", "Deceive", "Empathy", "Contacts"].includes(skillSelection.name) 
+                         || fateAction === "create_advantage" 
+                         || fateAction === "overcome";
+
+        if (isSocial && characterDefinition) {
+             // Find relationship
+             // Note: CharacterDefinition in core might not have relationships array fully typed as in protocol
+             // We'll cast or check safely
+             const relationships = (characterDefinition as any).relationships || [];
+             const relationship = relationships.find((r: any) => r.targetId === targetNPC.id);
+
+             const npcDialogue = await this.dialogueSystem.generateDialogue(playerAction, {
+                npc: targetNPC,
+                player: characterDefinition,
+                history: this.history,
+                relationship
+             });
+
+             if (npcDialogue) {
+                this.turnManager.addEvent('dialogue', 'npc_speak', {
+                    actor: targetNPC.name,
+                    target: characterDefinition.name,
+                    description: `${targetNPC.name} says: "${npcDialogue}"`,
+                    metadata: {
+                        speaker: targetNPC.name,
+                        text: npcDialogue
+                    }
+                });
+             }
+        }
+    }
+
     // 8. Narrate
     const narration = await this.narrativeEngine.narrate({
         events: turn.events,
@@ -394,6 +474,63 @@ export class GameMaster {
         narration,
         result: resolution.outcome
     };
+  }
+
+  private applyWorldUpdates(updates: any[], turn: Turn) {
+    const lastEventId = turn.events[turn.events.length - 1]?.eventId || 'unknown';
+    
+    for (const update of updates) {
+        if (this.currentScene) {
+            const location = this.worldManager.getLocation(this.currentScene.locationId);
+            if (!location) continue;
+
+            if (update.type === 'add_aspect') {
+                const newAspect = {
+                    id: `asp-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                    name: update.data.name,
+                    type: update.data.type || 'situational',
+                    freeInvokes: 0
+                };
+                location.aspects.push(newAspect);
+                
+                this.deltaCollector.collect({
+                    target: 'world', // Simplified target
+                    operation: 'append',
+                    path: ['locations', location.id, 'aspects'],
+                    newValue: newAspect,
+                    previousValue: null,
+                    cause: 'world_update',
+                    eventId: lastEventId
+                });
+                
+                this.turnManager.addEvent('state_change', 'add_aspect', {
+                    description: `New aspect created: ${newAspect.name}`,
+                    metadata: { aspect: newAspect }
+                });
+            } else if (update.type === 'modify_feature') {
+                const feature = location.features.find(f => f.name.toLowerCase() === update.targetId.toLowerCase());
+                if (feature) {
+                    const oldDesc = feature.description;
+                    feature.description = update.data.description;
+                    
+                    this.deltaCollector.collect({
+                        target: 'world',
+                        operation: 'set',
+                        path: ['locations', location.id, 'features', location.features.indexOf(feature).toString(), 'description'],
+                        previousValue: oldDesc,
+                        newValue: feature.description,
+                        cause: 'world_update',
+                        eventId: lastEventId
+                    });
+
+                    this.turnManager.addEvent('state_change', 'modify_feature', {
+                        description: `Feature updated: ${feature.name}`,
+                        metadata: { feature }
+                    });
+                }
+            }
+        }
+    }
   }
 
   private async applyActionConsequences(action: string, resolution: any, turn: Turn) {
@@ -732,5 +869,59 @@ export class GameMaster {
         cause: 'knowledge_gain',
         eventId: turn.events[turn.events.length - 1].eventId
     });
+  }
+
+  private async handleMetaCommand(command: string) {
+    const [cmd, ...args] = command.slice(1).split(' ');
+    
+    switch (cmd.toLowerCase()) {
+        case 'save':
+            await this.saveState();
+            return { 
+                turn: null,
+                narration: "Game saved successfully.", 
+                result: "meta_command_success" 
+            };
+        
+        case 'load':
+            await this.loadState();
+            return { 
+                turn: null,
+                narration: "Game loaded from last save.", 
+                result: "meta_command_success" 
+            };
+
+        case 'inventory':
+        case 'inv':
+            if (!this.player) return { turn: null, narration: "No character found.", result: "error" };
+            const items = this.player.inventory.map(i => `- ${i.name}: ${i.description || ''}`).join('\n');
+            return { 
+                turn: null,
+                narration: items.length > 0 ? `**Inventory:**\n${items}` : "Your inventory is empty.", 
+                result: "meta_command_success" 
+            };
+
+        case 'status':
+        case 'stats':
+            if (!this.player) return { turn: null, narration: "No character found.", result: "error" };
+            const aspects = this.player.aspects.map(a => `- ${a.name} (${a.type})`).join('\n');
+            const skills = this.player.skills.map(s => `- ${s.name}: +${s.rank}`).join('\n');
+            const fp = this.player.fatePoints.current;
+            return {
+                turn: null,
+                narration: `**${this.player.name}**\n\n**Fate Points:** ${fp}\n\n**Aspects:**\n${aspects}\n\n**Skills:**\n${skills}`,
+                result: "meta_command_success"
+            };
+
+        case 'help':
+            return {
+                turn: null,
+                narration: `**Available Commands:**\n- /save: Save the game\n- /load: Load the last save\n- /inventory: Show inventory\n- /status: Show character sheet\n- /help: Show this message\n- exit: Quit the game`,
+                result: "meta_command_success"
+            };
+
+        default:
+            return { turn: null, narration: `Unknown command: ${cmd}`, result: "error" };
+    }
   }
 }

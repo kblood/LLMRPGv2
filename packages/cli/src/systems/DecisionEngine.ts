@@ -8,6 +8,12 @@ export interface DecisionContext {
   history?: Turn[];
 }
 
+export interface WorldUpdate {
+  type: 'add_aspect' | 'remove_aspect' | 'modify_feature' | 'add_feature' | 'remove_feature';
+  targetId: string; // Location ID or Feature ID
+  data?: any; // Aspect name, Feature description, etc.
+}
+
 export class DecisionEngine {
   private contextBuilder: ContextBuilder;
 
@@ -349,6 +355,90 @@ Example (New):
     } catch (error) {
       console.error("Quest determination failed:", error);
       return null;
+    }
+  }
+
+  async identifyTarget(context: DecisionContext): Promise<string | null> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `Identify the target of the player's action.
+
+CONTEXT:
+World State: ${JSON.stringify(context.worldState, null, 2)}
+
+INSTRUCTIONS:
+- Return the name of the NPC or Object being targeted.
+- If no specific target, return "null".
+- If targeting the environment/scene, return "scene".
+
+OUTPUT FORMAT:
+Return ONLY the target name or "null".`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      characterDefinition: context.player,
+      immediateContext: `Action: "${context.action.description}"\n\nIdentify target.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1
+      });
+      
+      const target = response.content.trim();
+      return target.toLowerCase() === "null" ? null : target;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async determineWorldUpdates(context: DecisionContext, outcome: string): Promise<WorldUpdate[]> {
+    if (outcome === 'fail') return [];
+
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `Analyze the action's impact on the world state.
+
+CONTEXT:
+Action: ${context.action.description}
+Outcome: ${outcome}
+World State: ${JSON.stringify(context.worldState, null, 2)}
+
+INSTRUCTIONS:
+- Determine if the action physically changed the environment (e.g., broke a door, lit a fire, dropped an item).
+- Determine if a new situational aspect was created (e.g., "On Fire", "Crowded").
+- Ignore minor changes that don't affect gameplay.
+
+OUTPUT FORMAT:
+JSON array of updates:
+[
+  { "type": "add_aspect", "targetId": "location_id", "data": { "name": "Aspect Name", "type": "situational" } },
+  { "type": "modify_feature", "targetId": "feature_name", "data": { "description": "New description" } },
+  ...
+]
+Return empty array [] if no significant changes.`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      characterDefinition: context.player,
+      immediateContext: `Action: "${context.action.description}"\nOutcome: ${outcome}\n\nDetermine world updates.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1,
+        jsonMode: true
+      });
+
+      return JSON.parse(response.content);
+    } catch (error) {
+      return [];
     }
   }
 }

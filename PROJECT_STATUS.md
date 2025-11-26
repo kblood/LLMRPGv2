@@ -69,6 +69,7 @@ We are refining the system, improving prompts, and adding robustness.
 - **Social Conflict**: Implemented social conflict mechanics in `CombatManager` and `GameMaster`. Added unit tests in `social_conflict.test.ts`.
 - **Bug Fixes**: Fixed type mismatches in `GameMaster` (Skills array vs Record) and `DecisionEngine`. Fixed mock data synchronization in tests.
 - **Testing**: All tests passing (Core, Storage, LLM, CLI).
+- **Meta-Commands**: Implemented in-game commands for `/save`, `/load`, `/inventory`, `/help`, and `/status`. Added `tests/meta_commands.test.ts`.
 
 ## 🚧 Current Context
 - `packages/cli` is built and compiles.
@@ -80,12 +81,14 @@ We are refining the system, improving prompts, and adding robustness.
 - Prompts are more robust and aligned with documentation.
 - Error handling is in place for LLM calls.
 - CLI supports automated execution for testing.
+- **NPC Interaction**: Implemented `DialogueSystem` and integrated it into `GameMaster`. NPCs now respond with generated dialogue based on personality and relationship. Added `tests/npc_interaction.test.ts`.
+- **World Persistence**: Implemented `determineWorldUpdates` in `DecisionEngine` and `applyWorldUpdates` in `GameMaster`. Actions can now permanently alter the world state (e.g., adding aspects). Added `tests/world_persistence.test.ts`.
 
 ## 📋 Next Steps (Immediate)
 
 ### Phase 8: Advanced Features & Content
-1.  **Documentation**: Update documentation to reflect the new Combat System architecture and Quest System.
-2.  **Testing**: Add tests for Quest System and Social Conflict.
+1.  **Complex Quests**: Implement multi-stage quests with branching paths.
+2.  **Faction System**: Implement factions and reputation tracking.
 
 ## 🐛 Known Issues / Notes
 - None currently.
