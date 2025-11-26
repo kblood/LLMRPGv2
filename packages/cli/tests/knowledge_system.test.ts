@@ -80,13 +80,17 @@ describe('Knowledge System', () => {
     await gameMaster.createCharacter("Hacker");
 
     // Action: Investigate
-    // 1. Classify Action
-    mockLLM.setNextResponse("create_advantage");
-    // 2. Select Skill
+    // 0. Classify Intent (NEW)
+    mockLLM.setNextResponse("fate_action");
+    // 1. Identify Target
+    mockLLM.setNextResponse("null");
+    // 2. Classify Action
+    mockLLM.setNextResponse("overcome");
+    // 3. Select Skill
     mockLLM.setNextResponse("Investigate");
-    // 3. Set Opposition
+    // 4. Set Opposition
     mockLLM.setNextResponse("2"); // Fair difficulty
-    // 4. Knowledge Gain Check
+    // 5. Knowledge Gain Check
     mockLLM.setNextResponse(JSON.stringify({
         category: "locations",
         id: "loc-secret-lab",
@@ -97,7 +101,11 @@ describe('Knowledge System', () => {
             confidence: "high"
         }
     }));
-    // 5. Narrate
+    // 6. Quest Update
+    mockLLM.setNextResponse("null");
+    // 7. World Updates
+    mockLLM.setNextResponse("[]");
+    // 8. Narrate
     mockLLM.setNextResponse("You find a secret lab behind the bookshelf.");
 
     const result = await gameMaster.processPlayerAction("I search the room carefully.");

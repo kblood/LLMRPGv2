@@ -31,6 +31,7 @@ export const LocationSchema = z.object({
     id: z.string(),
     name: z.string(),
     description: z.string(),
+    type: z.enum(['generic', 'shop', 'crafting_station', 'container', 'exit']).default('generic'),
     interactable: z.boolean().default(true),
     aspectId: z.string().optional(),
   })).default([]),

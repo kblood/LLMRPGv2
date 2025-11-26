@@ -288,6 +288,8 @@ export class GameMaster {
     console.log(`High Concept: ${this.player.aspects.find(a => a.name === charData.aspects.find((ca: any) => ca.type === 'highConcept')?.name)?.name}`);
     
     await this.saveState();
+    
+    return this.player;
   }
 
   // Economy Methods
@@ -394,6 +396,23 @@ export class GameMaster {
     // Update DeltaCollector with new turn ID
     this.deltaCollector = new DeltaCollector(this.sessionId, turn.turnId);
 
+    // 2. Classify Intent (only if player exists for inventory/status)
+    const intent = await this.decisionEngine.classifyIntent(playerAction);
+
+    if (intent === 'trade' && this.player) {
+        return this.processTradeTurn(playerAction, turn);
+    } else if (intent === 'craft' && this.player) {
+        return this.processCraftTurn(playerAction, turn);
+    } else if (intent === 'inventory' && this.player) {
+        return this.processInventoryTurn(turn);
+    } else if (intent === 'status' && this.player) {
+        return this.processStatusTurn(turn);
+    }
+
+    return this.processFateAction(playerAction, turn);
+  }
+
+  private async processFateAction(playerAction: string, turn: Turn) {
     // 2. Determine Fate Action
     const characterDefinition = this.getCharacterDefinition();
     const worldState = this.worldManager.state;
@@ -485,7 +504,7 @@ export class GameMaster {
             history: this.history
         }, resolution.outcome);
 
-        if (knowledgeGain) {
+        if (knowledgeGain && knowledgeGain.data) {
             this.applyKnowledgeUpdate(knowledgeGain, turn);
         }
     }
@@ -510,7 +529,7 @@ export class GameMaster {
         history: this.history
     }, resolution.outcome);
 
-    if (worldUpdates.length > 0) {
+    if (worldUpdates && worldUpdates.length > 0) {
         this.applyWorldUpdates(worldUpdates, turn);
     }
 
@@ -557,13 +576,17 @@ export class GameMaster {
         history: this.history
     });
 
+    return this.finalizeTurn(turn, narration, resolution.outcome);
+  }
+
+  private async finalizeTurn(turn: Turn, narration: string, result: string) {
     // Update history
     this.history.push(turn);
     if (this.history.length > 10) {
         this.history.shift();
     }
 
-    // 9. Save Turn and Deltas
+    // Save Turn and Deltas
     await this.sessionWriter.writeTurn(this.sessionId, turn);
     
     const deltas = this.deltaCollector.getDeltas();
@@ -576,8 +599,116 @@ export class GameMaster {
     return {
         turn,
         narration,
-        result: resolution.outcome
+        result
     };
+  }
+
+  private async processInventoryTurn(turn: Turn) {
+    if (!this.player) throw new Error("No player");
+    
+    const inventoryList = this.player.inventory.map(i => `${i.name} (x${i.quantity})`).join(", ") || "Nothing";
+    const wealth = this.player.wealth;
+    
+    const description = `Inventory: ${inventoryList}. Wealth: ${wealth} coins.`;
+    
+    this.turnManager.addEvent('system', 'inventory_check', {
+        description,
+        metadata: { inventory: this.player.inventory, wealth }
+    });
+    
+    const narration = `You check your belongings. You have ${wealth} coins. In your pack, you find: ${inventoryList}.`;
+    
+    return this.finalizeTurn(turn, narration, "success");
+  }
+
+  private async processStatusTurn(turn: Turn) {
+    if (!this.player) throw new Error("No player");
+    
+    const physical = this.player.stressTracks.find(t => t.type === 'physical');
+    const mental = this.player.stressTracks.find(t => t.type === 'mental');
+    
+    const consequences = this.player.consequences.map(c => `${c.severity}: ${c.name}`).join(", ") || "None";
+    
+    const description = `Status Check. Physical Stress: ${physical?.boxes.filter(b=>b).length}/${physical?.capacity}. Mental Stress: ${mental?.boxes.filter(b=>b).length}/${mental?.capacity}. Consequences: ${consequences}.`;
+    
+    this.turnManager.addEvent('system', 'status_check', {
+        description,
+        metadata: { physical, mental, consequences }
+    });
+    
+    const narration = `You take a moment to assess your condition. ${description}`;
+    
+    return this.finalizeTurn(turn, narration, "success");
+  }
+
+  private async processTradeTurn(playerAction: string, turn: Turn) {
+    if (!this.player) throw new Error("No player");
+    
+    // 1. Check for Shop
+    // For now, assume shops are features in the location or scene
+    // We need to check if there is a shop available.
+    // Let's assume the current location has a 'shops' property or we check features.
+    // Since Location schema might not have explicit shops, we check features with type 'shop'.
+    
+    const location = this.worldManager.getLocation(this.currentScene?.locationId || "");
+    const shopFeature = location?.features.find(f => f.type === 'shop');
+    
+    if (!shopFeature) {
+        const narration = "There are no shops here.";
+        this.turnManager.addEvent('system', 'trade_failed', { description: narration });
+        return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // 2. Parse Intent
+    const intent = await this.decisionEngine.parseTradeIntent(playerAction);
+    
+    let narration = "";
+    let result = "success";
+
+    if (intent.type === 'list') {
+        // List items in shop
+        // We need to get the shop inventory. 
+        // Since we don't have a persistent Shop object in memory linked to the feature yet,
+        // we might need to generate one or retrieve it.
+        // For this implementation, let's assume the EconomyManager can generate a shop if needed or we use a mock one.
+        // TODO: Implement persistent shops. For now, generate a random stock based on location.
+        
+        const shopItems = ["Health Potion (50g)", "Iron Sword (100g)", "Leather Armor (80g)"]; // Placeholder
+        narration = `The shopkeeper shows you their wares: ${shopItems.join(", ")}.`;
+        
+        this.turnManager.addEvent('system', 'trade_list', { description: narration });
+    } else if (intent.type === 'buy') {
+        // Handle Buy
+        // Placeholder logic
+        narration = `You try to buy ${intent.quantity} ${intent.itemName}, but the shop system is still under construction.`;
+        this.turnManager.addEvent('system', 'trade_buy', { description: narration });
+    } else if (intent.type === 'sell') {
+        // Handle Sell
+        narration = `You try to sell ${intent.quantity} ${intent.itemName}, but the shop system is still under construction.`;
+        this.turnManager.addEvent('system', 'trade_sell', { description: narration });
+    }
+
+    return this.finalizeTurn(turn, narration, result);
+  }
+
+  private async processCraftTurn(playerAction: string, turn: Turn) {
+    if (!this.player) throw new Error("No player");
+
+    // 1. Parse Intent
+    const intent = await this.decisionEngine.parseCraftIntent(playerAction);
+    
+    let narration = "";
+    let result = "success";
+
+    if (intent.type === 'list') {
+        narration = "You consider what you can craft. (Recipe system under construction)";
+        this.turnManager.addEvent('system', 'craft_list', { description: narration });
+    } else {
+        narration = `You attempt to craft ${intent.recipeName}, but the crafting system is still under construction.`;
+        this.turnManager.addEvent('system', 'craft_attempt', { description: narration });
+    }
+
+    return this.finalizeTurn(turn, narration, result);
   }
 
   /**

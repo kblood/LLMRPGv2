@@ -89,6 +89,9 @@ We are refining the system, improving prompts, and adding robustness.
 - **Economy System**: Implemented `EconomyManager` in `packages/core` and defined economy types (`Currency`, `Item`, `Shop`, `Transaction`) in `packages/protocol`. Integrated economy into `GameMaster` and updated character schemas to include wealth and inventory. Added `tests/economy.test.ts`.
 - **Advanced Combat (Zones)**: Defined `Zone`, `ZoneConnection`, and `ZoneMap` types in `packages/protocol`. Updated `SceneState` to include zones. Implemented `moveCharacter` in `CombatManager` and `movePlayer` in `GameMaster` to handle movement between zones.
 - **Crafting System**: Implemented `CraftingManager` in `packages/core` and defined crafting types (`Recipe`, `Ingredient`, `CraftingStation`) in `packages/protocol`. Integrated crafting into `GameMaster` and added `tests/crafting.test.ts`.
+- **Intent Classification**: Implemented `classifyIntent` in `DecisionEngine` to route player actions to appropriate handlers (Fate actions, Trade, Craft, Inventory, Status).
+- **System Event Type**: Added 'system' event type to support non-Fate mechanical events (inventory checks, status checks, trade, craft).
+- **Location Feature Types**: Extended `LocationSchema` features to include `type` field for 'generic', 'shop', 'crafting_station', 'container', and 'exit'.
 
 ## 📋 Next Steps (Immediate)
 

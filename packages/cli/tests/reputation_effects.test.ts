@@ -57,9 +57,12 @@ describe('Reputation Effects', () => {
 
     // 4. Mock Responses
     // Identify Target
+    // Classify Intent (NEW)
+    mockAdapter.setNextResponse("fate_action");
+    // Identify Target
     mockAdapter.setNextResponse("Thug");
     // Classify Action
-    mockAdapter.setNextResponse("talk"); // Should be "create_advantage" or "overcome" but let's say talk -> overcome
+    mockAdapter.setNextResponse("overcome"); // Social action -> overcome
     // Select Skill
     mockAdapter.setNextResponse("Rapport");
     // Set Opposition (Difficulty) - Set low to ensure success
@@ -72,6 +75,8 @@ describe('Reputation Effects', () => {
     mockAdapter.setNextResponse("[]");
     // Dialogue Generation
     mockAdapter.setNextResponse("Get lost, scum. The Syndicate doesn't like your face.");
+    // Narration
+    mockAdapter.setNextResponse("The thug glares at you.");
 
     // 5. Process Action
     await gameMaster.processPlayerAction("I try to talk to the Thug.");

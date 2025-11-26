@@ -79,6 +79,120 @@ Return ONLY the exact name of the skill.`
     }
   }
 
+  async classifyIntent(playerInput: string): Promise<'fate_action' | 'trade' | 'craft' | 'inventory' | 'status'> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Classify the player's intent into one of the following categories:
+
+CATEGORIES:
+1. Trade: Buying, selling, or browsing goods at a shop. (e.g., "Buy a sword", "Sell my loot", "What do you have for sale?")
+2. Craft: Creating items, potions, or gear. (e.g., "Craft a potion", "Make a sword", "What can I build?")
+3. Inventory: Checking carried items or wealth. (e.g., "Check inventory", "What do I have?", "Look in bag")
+4. Status: Checking health, stress, or character sheet. (e.g., "Status", "How am I doing?", "Check health")
+5. Fate Action: Any other gameplay action (fighting, talking, exploring, moving, using skills).
+
+OUTPUT FORMAT:
+Return ONLY the category key: "trade", "craft", "inventory", "status", or "fate_action".`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Player Input: "${playerInput}"\n\nClassify this intent.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1
+      });
+
+      const intent = response.content.trim().toLowerCase();
+      if (["trade", "craft", "inventory", "status"].includes(intent)) {
+        return intent as any;
+      }
+      return "fate_action";
+    } catch (error) {
+      console.error("Intent classification failed:", error);
+      return "fate_action";
+    }
+  }
+
+  async parseTradeIntent(playerInput: string): Promise<{ type: 'buy' | 'sell' | 'list'; itemName?: string; quantity?: number }> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Parse the player's trading intent.
+
+OUTPUT FORMAT:
+Return a JSON object with:
+- type: "buy", "sell", or "list"
+- itemName: (string, optional) The name of the item to buy/sell
+- quantity: (number, optional) The quantity (default 1)
+
+Examples:
+"Buy a sword" -> {"type": "buy", "itemName": "sword", "quantity": 1}
+"Sell 5 potions" -> {"type": "sell", "itemName": "potion", "quantity": 5}
+"What do you have?" -> {"type": "list"}
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Player Input: "${playerInput}"\n\nParse trade intent.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1,
+        jsonMode: true
+      });
+
+      return JSON.parse(response.content);
+    } catch (error) {
+      console.error("Trade intent parsing failed:", error);
+      return { type: 'list' };
+    }
+  }
+
+  async parseCraftIntent(playerInput: string): Promise<{ type: 'craft' | 'list'; recipeName?: string }> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Parse the player's crafting intent.
+
+OUTPUT FORMAT:
+Return a JSON object with:
+- type: "craft" or "list"
+- recipeName: (string, optional) The name of the item/recipe to craft
+
+Examples:
+"Craft a potion" -> {"type": "craft", "recipeName": "potion"}
+"Make a sword" -> {"type": "craft", "recipeName": "sword"}
+"What can I make?" -> {"type": "list"}
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Player Input: "${playerInput}"\n\nParse crafting intent.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1,
+        jsonMode: true
+      });
+
+      return JSON.parse(response.content);
+    } catch (error) {
+      console.error("Craft intent parsing failed:", error);
+      return { type: 'list' };
+    }
+  }
+
   async classifyAction(playerInput: string, context: DecisionContext): Promise<string> {
     const systemPrompt = this.contextBuilder.buildSystemPrompt(
       "Game Master",

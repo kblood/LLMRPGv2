@@ -11,7 +11,8 @@ export type EventType =
   | 'state_change'
   | 'narrative'
   | 'knowledge_gain'
-  | 'quest_update';
+  | 'quest_update'
+  | 'system';
 
 export interface GameEvent {
   eventId: string; // Unique: "{sessionId}-{turnId}-{seq}"

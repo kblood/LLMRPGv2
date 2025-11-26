@@ -1,23 +1,23 @@
 {
-  "id": "player-1764142245730",
+  "id": "player-1764175661376",
   "type": "player",
   "name": "Mock Character",
   "appearance": "A mock appearance.",
   "aspects": [
     {
-      "id": "asp-t12jj4ymy",
+      "id": "asp-mr1maadvh",
       "name": "Mock High Concept",
       "kind": "character",
       "isTemporary": false
     },
     {
-      "id": "asp-zmw4ma7x7",
+      "id": "asp-51503q8im",
       "name": "Mock Trouble",
       "kind": "character",
       "isTemporary": false
     },
     {
-      "id": "asp-2bll879dp",
+      "id": "asp-048lp56da",
       "name": "Mock Aspect 3",
       "kind": "character",
       "isTemporary": false
@@ -107,11 +107,12 @@
     "topics": {}
   },
   "relationships": [],
-  "currentLocation": "loc-1764142245728",
+  "currentLocation": "loc-1764175661366",
   "isAlive": true,
-  "createdAt": "2025-11-26T07:30:45.731Z",
-  "updatedAt": "2025-11-26T07:30:45.731Z",
+  "createdAt": "2025-11-26T16:47:41.376Z",
+  "updatedAt": "2025-11-26T16:47:41.376Z",
   "goals": [],
+  "wealth": 100,
   "inventory": [],
   "milestones": {
     "minor": 0,

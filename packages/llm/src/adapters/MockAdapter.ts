@@ -88,6 +88,12 @@ export class MockAdapter implements LLMProvider {
         }
     } else if (request.systemPrompt.includes("difficulty")) {
         content = "2";
+    } else if (request.systemPrompt.includes("Classify the player's intent")) {
+        content = "fate_action";
+    } else if (request.systemPrompt.includes("Classify the player's intended action")) {
+        content = "overcome";
+    } else if (request.systemPrompt.includes("Select the most relevant skill")) {
+        content = "Fight";
     } else if (request.systemPrompt.includes("Game Master")) {
         content = "The Game Master narrates: You successfully performed the action.";
     }

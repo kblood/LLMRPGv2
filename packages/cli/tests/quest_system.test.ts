@@ -86,19 +86,23 @@ describe('Quest System', () => {
 
     // --- Action Phase ---
 
-    // 5. Classify Action
+    // 4.5 Classify Intent (NEW)
+    mockLLM.setNextResponse("fate_action");
+    // 5. Identify Target
+    mockLLM.setNextResponse("null");
+    // 6. Classify Action
     mockLLM.setNextResponse("overcome");
 
-    // 6. Select Skill
+    // 7. Select Skill
     mockLLM.setNextResponse("Rapport");
 
-    // 7. Set Opposition
+    // 8. Set Opposition
     mockLLM.setNextResponse("2");
 
-    // 8. Knowledge Gain (None)
+    // 9. Knowledge Gain (None)
     mockLLM.setNextResponse("null");
 
-    // 9. Quest Update (NEW QUEST)
+    // 10. Quest Update (NEW QUEST)
     mockLLM.setNextResponse(JSON.stringify({
         type: "new",
         quest: {
@@ -112,7 +116,10 @@ describe('Quest System', () => {
         }
     }));
 
-    // 10. Narration
+    // 11. World Updates
+    mockLLM.setNextResponse("[]");
+
+    // 12. Narration
     mockLLM.setNextResponse("You agree to find the cat. The keeper is relieved.");
 
     await gameMaster.processPlayerAction("I agree to find the cat.");
@@ -155,16 +162,20 @@ describe('Quest System', () => {
 
     // --- Action Phase ---
 
-    // 5. Classify Action
+    // 4.5 Classify Intent (NEW)
+    mockLLM.setNextResponse("fate_action");
+    // 5. Identify Target
+    mockLLM.setNextResponse("null");
+    // 6. Classify Action
     mockLLM.setNextResponse("overcome");
-    // 6. Select Skill
-    mockLLM.setNextResponse(JSON.stringify({ name: "Investigate", rating: 3 }));
-    // 7. Set Opposition
+    // 7. Select Skill
+    mockLLM.setNextResponse("Investigate");
+    // 8. Set Opposition
     mockLLM.setNextResponse("2");
-    // 8. Knowledge Gain
+    // 9. Knowledge Gain
     mockLLM.setNextResponse("null");
     
-    // 9. Quest Update (UPDATE OBJECTIVE)
+    // 10. Quest Update (UPDATE OBJECTIVE)
     mockLLM.setNextResponse(JSON.stringify({
         type: "update_objective",
         questId: "quest-1",
@@ -173,7 +184,10 @@ describe('Quest System', () => {
         status: "completed"
     }));
 
-    // 10. Narration
+    // 11. World Updates
+    mockLLM.setNextResponse("[]");
+
+    // 12. Narration
     mockLLM.setNextResponse("You found the cat under a table!");
 
     await gameMaster.processPlayerAction("I look for the cat.");
