@@ -10,6 +10,15 @@ export * from './state.js';
 // Faction types
 export * from './factions.js';
 
+// Economy types
+export * from './economy.js';
+
+// Combat types
+export * from './combat.js';
+
+// Crafting types
+export * from './crafting.js';
+
 // Delta types
 export * from './delta.js';
 

@@ -3,6 +3,7 @@ import { PlayerCharacterSchema, NPCSchema } from './characters.js';
 import { AspectSchema } from './fate.js';
 import { QuestSchema } from './quests.js';
 import { FactionSchema } from './factions.js';
+import { ZoneMapSchema } from './combat.js';
 
 // Location in the world
 export const LocationSchema = z.object({
@@ -88,6 +89,9 @@ export const SceneStateSchema = z.object({
   // Scene aspects
   aspects: z.array(AspectSchema),
   
+  // Zones (for combat/movement)
+  zones: ZoneMapSchema.optional(),
+
   // Active conflict if any
   conflict: ConflictStateSchema.optional(),
   

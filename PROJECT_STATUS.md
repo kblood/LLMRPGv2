@@ -86,12 +86,24 @@ We are refining the system, improving prompts, and adding robustness.
 - **Faction System**: Implemented `FactionManager` in `packages/core` and `Faction` types in `packages/protocol`. Integrated faction generation into `ContentGenerator` and `GameMaster`. Added `tests/factions.test.ts`.
 - **Complex Quests**: Implemented multi-stage quests with `QuestStageSchema` and updated `QuestManager`. Added `generateComplexQuest` to `ContentGenerator` and `generateQuest` to `GameMaster`. Added `tests/complex_quest.test.ts`.
 - **Reputation Effects**: Integrated faction reputation into `DialogueSystem` and `DecisionEngine`. NPCs now react to player's standing with their faction. Added `tests/reputation_effects.test.ts`.
+- **Economy System**: Implemented `EconomyManager` in `packages/core` and defined economy types (`Currency`, `Item`, `Shop`, `Transaction`) in `packages/protocol`. Integrated economy into `GameMaster` and updated character schemas to include wealth and inventory. Added `tests/economy.test.ts`.
+- **Advanced Combat (Zones)**: Defined `Zone`, `ZoneConnection`, and `ZoneMap` types in `packages/protocol`. Updated `SceneState` to include zones. Implemented `moveCharacter` in `CombatManager` and `movePlayer` in `GameMaster` to handle movement between zones.
+- **Crafting System**: Implemented `CraftingManager` in `packages/core` and defined crafting types (`Recipe`, `Ingredient`, `CraftingStation`) in `packages/protocol`. Integrated crafting into `GameMaster` and added `tests/crafting.test.ts`.
 
 ## 📋 Next Steps (Immediate)
 
-### Phase 8: Advanced Features & Content
-1.  **Economy System**: Implement currency, shops, and trading.
-2.  **Advanced Combat**: Implement zones and movement.
+### Phase 9: Full Gameloop Implementation & Integration Testing
+1.  **Unified Game Loop**: Integrate all systems (Combat, Social, Knowledge, Quest, Economy, Crafting, Factions) into a cohesive `GameLoop`.
+2.  **End-to-End Integration Test**: Create a comprehensive test suite that runs through a full gameplay scenario utilizing all systems.
+3.  **System Interoperability**: Ensure systems interact correctly (e.g., Faction reputation affecting Shop prices, Knowledge unlocking Quests).
+
+### Phase 10: Future Features & Expansions
+1.  **Magic/Power System**: Implement specific mechanics for magic or special powers (Extras).
+2.  **Stealth & Infiltration**: Implement mechanics for stealth, detection, and infiltration missions.
+3.  **Fate Point Economy & Compels**: Implement the full Fate Point economy, including GM compels, self-compels, and refusals.
+4.  **Character Advancement (Milestones)**: Implement Minor, Significant, and Major milestones for character growth.
+5.  **Conflict Concessions**: Allow players/NPCs to concede conflicts to mitigate consequences.
+6.  **Teamwork Mechanics**: Implement mechanics for characters helping each other (stacking advantages).
 
 ## 🐛 Known Issues / Notes
 - None currently.

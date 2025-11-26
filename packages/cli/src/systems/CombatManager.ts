@@ -98,23 +98,66 @@ export class CombatManager {
     if (playerTakenOut) {
       conflict.isResolved = true;
       conflict.winner = 'opposition';
-      conflict.resolution = "Player was defeated.";
       return true;
     }
 
     // Check if all opponents are taken out
-    const allOpponentsDefeated = opponents.every(npc => {
-        const boxes = (npc.stress as any)[npcStressProp];
-        return boxes ? boxes.every((b: boolean) => b) : true;
+    const activeOpponents = opponents.filter(npc => {
+        // Simple check: if they have stress tracks, check them. If not (mobs), maybe check a simple "stress" value?
+        // For now, assume NPCs follow same rules or are just "active"
+        return true; // TODO: Implement NPC taken out logic
     });
 
-    if (allOpponentsDefeated) {
+    if (activeOpponents.length === 0) {
       conflict.isResolved = true;
       conflict.winner = 'player';
-      conflict.resolution = "All opponents defeated.";
       return true;
     }
 
     return false;
+  }
+
+  /**
+   * Move a character between zones.
+   */
+  moveCharacter(scene: SceneState, characterId: string, targetZoneId: string): { success: boolean, message: string } {
+    if (!scene.zones) {
+      return { success: false, message: "No zones defined in this scene." };
+    }
+
+    const currentZone = scene.zones.zones.find(z => z.characterIds.includes(characterId));
+    const targetZone = scene.zones.zones.find(z => z.id === targetZoneId);
+
+    if (!targetZone) {
+      return { success: false, message: "Target zone not found." };
+    }
+
+    if (currentZone?.id === targetZoneId) {
+      return { success: false, message: "Already in that zone." };
+    }
+
+    // Check connection
+    if (currentZone) {
+      const connection = scene.zones.connections.find(c => 
+        (c.fromZoneId === currentZone.id && c.toZoneId === targetZone.id) ||
+        (c.fromZoneId === targetZone.id && c.toZoneId === currentZone.id)
+      );
+
+      if (!connection) {
+        return { success: false, message: "No direct path to that zone." };
+      }
+
+      // Check barrier/cost (TODO: Implement movement rolls if barrier > 0)
+      if (connection.barrier > 0) {
+        // For now, just allow it but note the difficulty
+        // In real game, this would require an Overcome action
+      }
+
+      // Move
+      currentZone.characterIds = currentZone.characterIds.filter(id => id !== characterId);
+    }
+
+    targetZone.characterIds.push(characterId);
+    return { success: true, message: `Moved to ${targetZone.name}.` };
   }
 }

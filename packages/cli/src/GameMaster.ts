@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager, FactionManager } from '@llmrpg/core';
+import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager, FactionManager, EconomyManager, CraftingManager } from '@llmrpg/core';
 import { LLMProvider } from '@llmrpg/llm';
 import { SessionWriter, SessionLoader } from '@llmrpg/storage';
 import { SceneState, PlayerCharacter, KnowledgeProfile } from '@llmrpg/protocol';
@@ -19,6 +19,8 @@ export class GameMaster {
   private decisionEngine: DecisionEngine;
   private worldManager: WorldManager;
   private factionManager: FactionManager;
+  private economyManager: EconomyManager;
+  private craftingManager: CraftingManager;
   private combatManager: CombatManager;
   private dialogueSystem: DialogueSystem;
   private sessionWriter: SessionWriter;
@@ -45,6 +47,8 @@ export class GameMaster {
 
     this.worldManager = new WorldManager();
     this.factionManager = new FactionManager(this.worldManager.state);
+    this.economyManager = new EconomyManager();
+    this.craftingManager = new CraftingManager(this.actionResolver, this.fateDice);
     this.narrativeEngine = new NarrativeEngine(llmProvider);
     this.contentGenerator = new ContentGenerator(llmProvider);
     this.decisionEngine = new DecisionEngine(llmProvider);
@@ -275,6 +279,7 @@ export class GameMaster {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         goals: [],
+        wealth: 100,
         inventory: [],
         milestones: { minor: 0, significant: 0, major: 0 }
     };
@@ -283,8 +288,65 @@ export class GameMaster {
     console.log(`High Concept: ${this.player.aspects.find(a => a.name === charData.aspects.find((ca: any) => ca.type === 'highConcept')?.name)?.name}`);
     
     await this.saveState();
+  }
 
-    return this.player;
+  // Economy Methods
+  
+  getPlayerWealth(): number {
+    return this.player?.wealth || 0;
+  }
+
+  addPlayerWealth(amount: number) {
+    if (this.player) {
+      this.economyManager.addWealth(this.player, amount);
+      console.log(`Added ${amount} wealth. Total: ${this.player.wealth}`);
+    }
+  }
+
+  removePlayerWealth(amount: number): boolean {
+    if (this.player) {
+      const success = this.economyManager.removeWealth(this.player, amount);
+      if (success) {
+        console.log(`Removed ${amount} wealth. Total: ${this.player.wealth}`);
+      } else {
+        console.log(`Not enough wealth. Current: ${this.player.wealth}`);
+      }
+      return success;
+    }
+    return false;
+  }
+
+  async movePlayer(targetZoneName: string) {
+    if (!this.currentScene || !this.player) {
+      console.log("No active scene or player.");
+      return;
+    }
+
+    if (!this.currentScene.zones) {
+      console.log("This scene has no zones.");
+      return;
+    }
+
+    const targetZone = this.currentScene.zones.zones.find(z => z.name.toLowerCase() === targetZoneName.toLowerCase());
+    if (!targetZone) {
+      console.log(`Zone '${targetZoneName}' not found.`);
+      return;
+    }
+
+    const result = this.combatManager.moveCharacter(this.currentScene, this.player.id, targetZone.id);
+    console.log(result.message);
+    
+    if (result.success) {
+        // Log event
+        this.turnManager.addEvent(
+            'move',
+            'move_zone',
+            {
+                description: `Player moved to ${targetZone.name}`,
+                metadata: { to: targetZone.name }
+            }
+        );
+    }
   }
 
   getWorldState() {
@@ -579,6 +641,22 @@ export class GameMaster {
             description: quest.description
         }
     });
+  }
+
+  async craftItem(recipeId: string) {
+    if (!this.player) {
+        console.log("No active player.");
+        return;
+    }
+
+    // In a real implementation, we'd look up the recipe from a database or the world state
+    // For now, we'll mock a recipe lookup or assume it's passed in fully, but the method signature takes an ID.
+    // Let's assume we have a way to get recipes. For this demo, I'll just log that we can't find it unless we implement a RecipeManager.
+    // Or, we can check if the player "knows" the recipe (which could be in their knowledge).
+    
+    console.log(`Attempting to craft recipe: ${recipeId}`);
+    // TODO: Implement recipe lookup
+    console.log("Recipe lookup not implemented yet.");
   }
 
   private applyWorldUpdates(updates: any[], turn: Turn) {

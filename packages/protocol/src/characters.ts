@@ -8,6 +8,7 @@ import {
   FatePointsSchema,
 } from './fate.js';
 import { KnowledgeProfileSchema } from './knowledge.js';
+import { ItemSchema } from './economy.js';
 
 // Personality Definition (for LLM context)
 export const PersonalitySchema = z.object({
@@ -111,6 +112,10 @@ export const BaseCharacterSchema = z.object({
   // Current state
   currentLocation: z.string(),
   isAlive: z.boolean().default(true),
+
+  // Economy
+  wealth: z.number().int().min(0).default(0),
+  inventory: z.array(ItemSchema).default([]),
   
   // Timestamps
   createdAt: z.string().datetime(),
@@ -128,14 +133,6 @@ export const PlayerCharacterSchema = BaseCharacterSchema.extend({
     description: z.string(),
     priority: z.enum(['primary', 'secondary', 'background']),
     progress: z.string().optional(),
-  })).default([]),
-  
-  // Inventory (simplified for now)
-  inventory: z.array(z.object({
-    id: z.string().uuid(),
-    name: z.string(),
-    description: z.string().optional(),
-    aspectId: z.string().uuid().optional(), // If item grants an aspect
   })).default([]),
   
   // Experience/advancement
