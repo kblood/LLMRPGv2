@@ -1,4 +1,5 @@
-import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager } from '@llmrpg/core';
+import { v4 as uuidv4 } from 'uuid';
+import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager, FactionManager } from '@llmrpg/core';
 import { LLMProvider } from '@llmrpg/llm';
 import { SessionWriter, SessionLoader } from '@llmrpg/storage';
 import { SceneState, PlayerCharacter, KnowledgeProfile } from '@llmrpg/protocol';
@@ -17,6 +18,7 @@ export class GameMaster {
   private contentGenerator: ContentGenerator;
   private decisionEngine: DecisionEngine;
   private worldManager: WorldManager;
+  private factionManager: FactionManager;
   private combatManager: CombatManager;
   private dialogueSystem: DialogueSystem;
   private sessionWriter: SessionWriter;
@@ -42,6 +44,7 @@ export class GameMaster {
     this.sessionLoader = sessionLoader;
 
     this.worldManager = new WorldManager();
+    this.factionManager = new FactionManager(this.worldManager.state);
     this.narrativeEngine = new NarrativeEngine(llmProvider);
     this.contentGenerator = new ContentGenerator(llmProvider);
     this.decisionEngine = new DecisionEngine(llmProvider);
@@ -76,6 +79,7 @@ export class GameMaster {
     
     // Restore World State
     this.worldManager.state = state.world;
+    this.factionManager = new FactionManager(this.worldManager.state);
     
     // Restore Player
     this.player = state.player;
@@ -184,6 +188,27 @@ export class GameMaster {
     console.log(`World initialized at ${startingLocation.name}`);
     console.log(`Scenario: ${scenario.title}`);
     console.log(`Hook: ${scenario.hook}`);
+    
+    // Generate Factions
+    console.log("Generating factions...");
+    const factionsData = await this.contentGenerator.generateFactions(theme);
+    
+    for (const fData of factionsData) {
+        this.factionManager.createFaction({
+            name: fData.name,
+            description: fData.description,
+            aspects: fData.aspects.map((a: string) => ({ 
+                id: uuidv4(),
+                name: a, 
+                type: 'situational', 
+                freeInvokes: 0 
+            })),
+            goals: fData.goals,
+            resources: fData.resources,
+            isHidden: fData.isHidden
+        });
+    }
+    console.log(`Generated ${factionsData.length} factions.`);
     
     await this.saveState();
 
@@ -320,6 +345,20 @@ export class GameMaster {
     });
     const targetNPC = targetName ? this.findNPCByName(targetName) : undefined;
 
+    // Get Faction Reputation if target exists
+    let factionReputation: { factionName: string; reputation: number; rank: string }[] | undefined = undefined;
+    if (targetNPC && targetNPC.affiliations && characterDefinition) {
+         factionReputation = targetNPC.affiliations.map(aff => {
+             const rep = this.factionManager.getReputation(aff.factionId, characterDefinition.id);
+             const rank = this.factionManager.getRank(aff.factionId, characterDefinition.id);
+             return {
+                 factionName: aff.factionName,
+                 reputation: rep,
+                 rank
+             };
+         });
+    }
+
     const fateAction = await this.decisionEngine.classifyAction(playerAction, {
         action: playerAction,
         player: characterDefinition,
@@ -340,7 +379,9 @@ export class GameMaster {
         action: { type: fateAction, description: playerAction, skill: skillSelection.name },
         player: characterDefinition,
         worldState,
-        history: this.history
+        history: this.history,
+        targetNPC,
+        factionReputation
     });
 
     // 5. Roll Dice
@@ -428,7 +469,8 @@ export class GameMaster {
                 npc: targetNPC,
                 player: characterDefinition,
                 history: this.history,
-                relationship
+                relationship,
+                factionReputation
              });
 
              if (npcDialogue) {
@@ -474,6 +516,69 @@ export class GameMaster {
         narration,
         result: resolution.outcome
     };
+  }
+
+  /**
+   * Generate and start a new complex quest based on context
+   */
+  async generateQuest(context: string): Promise<void> {
+    console.log(`Generating quest for context: ${context}...`);
+    const theme = this.worldManager.state.theme;
+    const questData = await this.contentGenerator.generateComplexQuest(theme, context);
+
+    if (!questData) {
+        console.log("Failed to generate quest.");
+        return;
+    }
+
+    const quest: any = {
+      id: uuidv4(),
+      title: questData.title,
+      description: questData.description,
+      status: 'active',
+      stages: {},
+      currentStageId: questData.stages[0].id,
+      objectives: [],
+      isHidden: false,
+      rewards: questData.rewards
+    };
+
+    // Populate stages map
+    questData.stages.forEach((s: any) => {
+      if (!quest.stages) quest.stages = {};
+      quest.stages[s.id] = {
+        id: s.id,
+        description: s.description,
+        objectives: s.objectives.map((o: any) => ({
+          id: uuidv4(),
+          ...o,
+          status: 'active',
+          currentCount: 0
+        })),
+        nextStageId: s.nextStageId
+      };
+    });
+
+    // Initialize first stage objectives
+    if (quest.stages && quest.currentStageId) {
+      const firstStage = quest.stages[quest.currentStageId];
+      quest.objectives = firstStage.objectives.map((o: any) => ({ ...o }));
+      quest.description = firstStage.description;
+    }
+
+    QuestManager.addQuest(this.worldManager.state, quest);
+    console.log(`New Quest Added: ${quest.title}`);
+    console.log(`Objective: ${quest.description}`);
+    
+    // Add event for quest start
+    this.turnManager.addEvent('quest_update', 'quest_started', {
+        description: `Quest Started: ${quest.title}`,
+        metadata: {
+            questId: quest.id,
+            title: quest.title,
+            description: quest.description
+        }
+    });
   }
 
   private applyWorldUpdates(updates: any[], turn: Turn) {

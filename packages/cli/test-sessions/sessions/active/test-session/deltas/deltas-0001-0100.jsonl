@@ -1,0 +1,1 @@
+{"deltaId":"test-session-1-1","turnId":1,"sequence":1,"timestamp":1764142245735,"target":"world","operation":"set","path":["time","value"],"previousValue":"Start","newValue":"NaN","cause":"time_pass","eventId":"test-session-1-1"}

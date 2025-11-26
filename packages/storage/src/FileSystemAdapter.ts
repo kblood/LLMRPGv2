@@ -29,7 +29,9 @@ export class FileSystemAdapter {
    * Appends a string line to a file. Useful for .jsonl files.
    */
   async appendLine(filePath: string, line: string): Promise<void> {
-    await fs.appendFile(path.join(this.basePath, filePath), line + '\n');
+    const fullPath = path.join(this.basePath, filePath);
+    await fs.ensureDir(path.dirname(fullPath));
+    await fs.appendFile(fullPath, line + '\n');
   }
   
   /**

@@ -8,6 +8,7 @@ export interface DialogueContext {
   history: Turn[];
   relationship?: Relationship;
   topic?: string;
+  factionReputation?: { factionName: string; reputation: number; rank: string }[];
 }
 
 export class DialogueSystem {
@@ -49,12 +50,17 @@ VOICE & SPEECH:
 RELATIONSHIP WITH PLAYER:
 - Trust: ${context.relationship?.trust || 0}
 - Type: ${context.relationship?.type || 'neutral'}
+${context.factionReputation ? `
+FACTION REPUTATION:
+${context.factionReputation.map(f => `- ${f.factionName}: ${f.rank} (${f.reputation})`).join('\n')}
+` : ''}
 
 INSTRUCTIONS:
 - Respond to the player's input as this character.
 - Stay in character at all times.
 - Use the defined voice and speech patterns.
 - Reflect the current relationship and trust level.
+- Consider FACTION REPUTATION: If the player is hostile to your faction, be guarded or aggressive. If allied, be helpful.
 - Be concise (1-3 sentences usually).
 - Do not describe actions, ONLY speak dialogue (unless actions are subtle body language).`
     );

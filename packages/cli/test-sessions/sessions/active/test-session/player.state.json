@@ -1,0 +1,121 @@
+{
+  "id": "player-1764142245730",
+  "type": "player",
+  "name": "Mock Character",
+  "appearance": "A mock appearance.",
+  "aspects": [
+    {
+      "id": "asp-t12jj4ymy",
+      "name": "Mock High Concept",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-zmw4ma7x7",
+      "name": "Mock Trouble",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-2bll879dp",
+      "name": "Mock Aspect 3",
+      "kind": "character",
+      "isTemporary": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "Fight",
+      "rank": 4
+    },
+    {
+      "name": "Athletics",
+      "rank": 3
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Mock Stunt",
+      "description": "A mock stunt.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Mock Trait"
+    ],
+    "values": [
+      "Mock Value"
+    ],
+    "quirks": [
+      "Mock Quirk"
+    ],
+    "fears": [
+      "Mock Fear"
+    ],
+    "desires": [
+      "Mock Desire"
+    ]
+  },
+  "backstory": {
+    "origin": "Mock Origin",
+    "formativeEvent": "Mock Event",
+    "secret": "Mock Secret",
+    "summary": "Mock Summary"
+  },
+  "voice": {
+    "speechPattern": "Mock Speech",
+    "vocabulary": "simple",
+    "phrases": [
+      "Mock Phrase"
+    ],
+    "quirks": [
+      "Mock Quirk"
+    ]
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764142245728",
+  "isAlive": true,
+  "createdAt": "2025-11-26T07:30:45.731Z",
+  "updatedAt": "2025-11-26T07:30:45.731Z",
+  "goals": [],
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

@@ -313,4 +313,108 @@ JSON with fields:
       };
     }
   }
+
+  async generateFactions(theme: WorldState['theme'], count: number = 3): Promise<any[]> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "World Builder",
+      `You are an expert World Builder for a Fate Core RPG. Generate ${count} major factions for the world.
+
+THEME CONTEXT:
+Name: ${theme.name}
+Genre: ${theme.genre}
+Tone: ${theme.tone}
+Keywords: ${theme.keywords.join(", ")}
+
+GUIDELINES:
+- Factions should be distinct and have conflicting goals.
+- Include a mix of powerful organizations and smaller, scrappy groups.
+- Define their goals and resources.
+
+OUTPUT FORMAT:
+JSON array of objects with fields:
+- name: string
+- description: string
+- aspects: string[] (2-3 Fate aspects)
+- goals: string[] (1-2 goals)
+- resources: { type: string, level: number }[] (1-2 resources, level 1-5)
+- isHidden: boolean`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Generate ${count} factions for this world.\nReturn JSON.`
+    });
+
+    const response = await this.llm.generate({
+      systemPrompt: prompt.system,
+      userPrompt: prompt.user,
+      temperature: 0.8,
+      jsonMode: true
+    });
+
+    try {
+      const data = JSON.parse(response.content);
+      let factions = [];
+      if (Array.isArray(data)) {
+          factions = data;
+      } else if (data.factions && Array.isArray(data.factions)) {
+          factions = data.factions;
+      }
+      
+      return factions;
+    } catch (e) {
+      console.error("Failed to parse generated factions:", e);
+      return [];
+    }
+  }
+
+  async generateComplexQuest(theme: WorldState['theme'], context: string): Promise<any> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Quest Designer",
+      `You are an expert Quest Designer for a Fate Core RPG. Generate a multi-stage quest based on the context.
+
+THEME CONTEXT:
+Name: ${theme.name}
+Genre: ${theme.genre}
+Tone: ${theme.tone}
+
+GUIDELINES:
+- The quest should have 2-3 distinct stages.
+- Each stage should have clear objectives.
+- The story should evolve as stages progress.
+
+OUTPUT FORMAT:
+JSON object with fields:
+- title: string
+- description: string
+- stages: Array of objects:
+  - id: string (e.g., "stage_1")
+  - description: string (Narrative for this stage)
+  - objectives: Array of objects:
+    - description: string
+    - type: "visit" | "kill" | "collect" | "talk" | "interact"
+    - requiredCount: number
+  - nextStageId: string (optional, ID of next stage)
+- rewards: { xp: number, items: string[] }`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Generate a complex quest based on this context: "${context}".\nReturn JSON.`
+    });
+
+    const response = await this.llm.generate({
+      systemPrompt: prompt.system,
+      userPrompt: prompt.user,
+      temperature: 0.8,
+      jsonMode: true
+    });
+
+    try {
+      return JSON.parse(response.content);
+    } catch (e) {
+      console.error("Failed to parse generated quest:", e);
+      return null;
+    }
+  }
 }

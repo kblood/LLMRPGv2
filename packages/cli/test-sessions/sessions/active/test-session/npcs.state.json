@@ -1,0 +1,52 @@
+{
+  "4321c49f-d7b4-439f-b399-53054cd6a310": {
+    "id": "4321c49f-d7b4-439f-b399-53054cd6a310",
+    "name": "Thug",
+    "type": "npc",
+    "highConcept": "Syndicate Enforcer",
+    "trouble": "Short temper",
+    "aspects": [],
+    "personality": {
+      "traits": [
+        "Aggressive"
+      ],
+      "values": [
+        "Power"
+      ],
+      "fears": [
+        "Weakness"
+      ],
+      "quirks": [],
+      "speechPattern": "Rough"
+    },
+    "backstory": {
+      "summary": "Born in the slums",
+      "origin": "Slums",
+      "motivation": "Money",
+      "secrets": [],
+      "keyEvents": []
+    },
+    "skills": {
+      "Fight": 3
+    },
+    "stunts": [],
+    "stress": {
+      "physical": {
+        "capacity": 2,
+        "boxes": []
+      },
+      "mental": {
+        "capacity": 2,
+        "boxes": []
+      }
+    },
+    "affiliations": [
+      {
+        "factionId": "0c209b5e-e963-420b-9412-85e800b1ba2e",
+        "factionName": "The Syndicate",
+        "role": "Member",
+        "loyalty": 3
+      }
+    ]
+  }
+}

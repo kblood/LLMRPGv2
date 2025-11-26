@@ -193,12 +193,4 @@ export class KnowledgeManager {
     const cat = profile[category] as Record<string, { known: boolean }>;
     return cat[id]?.known || false;
   }
-
-  /**
-   * Get all known items in a category
-   */
-  static getKnown(profile: KnowledgeProfile, category: keyof KnowledgeProfile): any[] {
-    const cat = profile[category] as Record<string, { known: boolean }>;
-    return Object.values(cat).filter(item => item.known);
-  }
 }

@@ -23,6 +23,7 @@ export class WorldManager {
       },
       plotThreads: [],
       quests: [],
+      factions: {},
       establishedFacts: {}
     };
   }

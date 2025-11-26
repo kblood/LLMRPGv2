@@ -7,6 +7,9 @@ export * from './characters.js';
 // State types
 export * from './state.js';
 
+// Faction types
+export * from './factions.js';
+
 // Delta types
 export * from './delta.js';
 

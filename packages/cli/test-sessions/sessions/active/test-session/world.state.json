@@ -1,0 +1,78 @@
+{
+  "theme": {
+    "name": "Mock World",
+    "genre": "Mock Genre",
+    "tone": "Mock Tone",
+    "keywords": [
+      "Mock",
+      "Test",
+      "Debug"
+    ]
+  },
+  "locations": {
+    "loc-1764142245728": {
+      "id": "loc-1764142245728",
+      "name": "Mock Location",
+      "description": "A mock location description.",
+      "aspects": [
+        {
+          "id": "asp-8c9wy3h13",
+          "name": "Mock Aspect 1",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-isubcp59v",
+          "name": "Mock Aspect 2",
+          "kind": "environment",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-uc0kwvmhi",
+          "name": "Mock Feature 1",
+          "description": "A mock feature.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "NaN",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [],
+  "factions": {
+    "0c209b5e-e963-420b-9412-85e800b1ba2e": {
+      "id": "0c209b5e-e963-420b-9412-85e800b1ba2e",
+      "name": "The Syndicate",
+      "description": "Criminal organization",
+      "aspects": [],
+      "goals": [],
+      "members": [],
+      "relationships": {
+        "player-1764142245730": -50
+      },
+      "territory": [],
+      "resources": [],
+      "isHidden": false
+    }
+  },
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764142245728",
+    "name": "Mock Scenario",
+    "description": "A mock scenario description.",
+    "locationId": "loc-1764142245728",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

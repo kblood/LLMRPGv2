@@ -83,12 +83,15 @@ We are refining the system, improving prompts, and adding robustness.
 - CLI supports automated execution for testing.
 - **NPC Interaction**: Implemented `DialogueSystem` and integrated it into `GameMaster`. NPCs now respond with generated dialogue based on personality and relationship. Added `tests/npc_interaction.test.ts`.
 - **World Persistence**: Implemented `determineWorldUpdates` in `DecisionEngine` and `applyWorldUpdates` in `GameMaster`. Actions can now permanently alter the world state (e.g., adding aspects). Added `tests/world_persistence.test.ts`.
+- **Faction System**: Implemented `FactionManager` in `packages/core` and `Faction` types in `packages/protocol`. Integrated faction generation into `ContentGenerator` and `GameMaster`. Added `tests/factions.test.ts`.
+- **Complex Quests**: Implemented multi-stage quests with `QuestStageSchema` and updated `QuestManager`. Added `generateComplexQuest` to `ContentGenerator` and `generateQuest` to `GameMaster`. Added `tests/complex_quest.test.ts`.
+- **Reputation Effects**: Integrated faction reputation into `DialogueSystem` and `DecisionEngine`. NPCs now react to player's standing with their faction. Added `tests/reputation_effects.test.ts`.
 
 ## 📋 Next Steps (Immediate)
 
 ### Phase 8: Advanced Features & Content
-1.  **Complex Quests**: Implement multi-stage quests with branching paths.
-2.  **Faction System**: Implement factions and reputation tracking.
+1.  **Economy System**: Implement currency, shops, and trading.
+2.  **Advanced Combat**: Implement zones and movement.
 
 ## 🐛 Known Issues / Notes
 - None currently.

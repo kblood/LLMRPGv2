@@ -6,6 +6,8 @@ export interface DecisionContext {
   player?: CharacterDefinition;
   worldState?: any;
   history?: Turn[];
+  targetNPC?: CharacterDefinition;
+  factionReputation?: { factionName: string; reputation: number; rank: string }[];
 }
 
 export interface WorldUpdate {
@@ -148,9 +150,14 @@ GUIDELINES:
 - Average (+1) is routine for competent people.
 - Fair (+2) is a challenge for professionals.
 - Great (+4) is a serious challenge.
-- Superb (+5) and above are heroic feats.
 
-Output ONLY the number representing the difficulty.`
+CONTEXT:
+${context.targetNPC ? `Target NPC: ${context.targetNPC.name}` : ''}
+${context.factionReputation ? `Faction Reputation: ${context.factionReputation.map(f => `${f.factionName}: ${f.rank} (${f.reputation})`).join(', ')}` : ''}
+If the player has poor reputation with the target's faction, increase difficulty for social actions.
+
+OUTPUT FORMAT:
+Return ONLY the integer number (e.g., 2).`
     );
 
     const prompt = this.contextBuilder.assemblePrompt({

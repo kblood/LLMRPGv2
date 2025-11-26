@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { PlayerCharacterSchema, NPCSchema } from './characters.js';
 import { AspectSchema } from './fate.js';
 import { QuestSchema } from './quests.js';
+import { FactionSchema } from './factions.js';
 
 // Location in the world
 export const LocationSchema = z.object({
@@ -133,6 +134,9 @@ export const WorldStateSchema = z.object({
 
   // Active quests
   quests: z.array(QuestSchema).default([]),
+  
+  // Factions in the world
+  factions: z.record(z.string(), FactionSchema).default({}),
   
   // World-level facts that have been established
   establishedFacts: z.record(z.string(), z.unknown()),

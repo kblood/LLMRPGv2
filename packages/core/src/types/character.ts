@@ -46,6 +46,14 @@ export interface CharacterDefinition {
   skills: Record<string, number>;
   stunts: Stunt[];
 
+  // === AFFILIATIONS ===
+  affiliations?: {
+    factionId: string;
+    factionName: string;
+    role: string;
+    loyalty: number;
+  }[];
+
   // === CURRENT STATE ===
   stress: {
     physical: boolean[];

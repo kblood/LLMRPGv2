@@ -19,12 +19,28 @@ export const ObjectiveSchema = z.object({
 
 export type Objective = z.infer<typeof ObjectiveSchema>;
 
+export const QuestStageSchema = z.object({
+  id: z.string(),
+  description: z.string(),
+  objectives: z.array(ObjectiveSchema),
+  nextStageId: z.string().optional(), // ID of the next stage upon completion
+});
+
+export type QuestStage = z.infer<typeof QuestStageSchema>;
+
 export const QuestSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string(),
   status: QuestStatusSchema.default('active'),
+  
+  // Current active objectives
   objectives: z.array(ObjectiveSchema).default([]),
+  
+  // Multi-stage support
+  stages: z.record(z.string(), QuestStageSchema).optional(),
+  currentStageId: z.string().optional(),
+
   giverId: z.string().optional(), // NPC who gave the quest
   locationId: z.string().optional(), // Location where quest started
   rewards: z.object({

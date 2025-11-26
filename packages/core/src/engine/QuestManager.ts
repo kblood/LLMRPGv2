@@ -82,7 +82,36 @@ export class QuestManager {
   private static checkQuestCompletion(quest: Quest): void {
     const allComplete = quest.objectives.every(o => o.status === 'completed');
     if (allComplete && quest.status === 'active') {
+      // Check for next stage
+      if (quest.stages && quest.currentStageId) {
+        const currentStage = quest.stages[quest.currentStageId];
+        if (currentStage && currentStage.nextStageId) {
+          this.advanceStage(quest, currentStage.nextStageId);
+          return;
+        }
+      }
+      
+      // No next stage, complete the quest
       quest.status = 'completed';
+    }
+  }
+
+  /**
+   * Advance quest to the next stage
+   */
+  private static advanceStage(quest: Quest, nextStageId: string): void {
+    if (!quest.stages || !quest.stages[nextStageId]) {
+      console.warn(`Cannot advance quest ${quest.id} to missing stage ${nextStageId}`);
+      return;
+    }
+
+    const nextStage = quest.stages[nextStageId];
+    quest.currentStageId = nextStageId;
+    quest.objectives = nextStage.objectives.map(o => ({ ...o, status: 'active', currentCount: 0 }));
+    
+    // Optionally update quest description to match stage description
+    if (nextStage.description) {
+      quest.description = nextStage.description;
     }
   }
 
