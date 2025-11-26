@@ -1,0 +1,79 @@
+{
+  "theme": {
+    "name": "The Shattered Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim and haunting",
+    "keywords": [
+      "dark magic",
+      "ancient evil",
+      "ruined kingdoms",
+      "forgotten gods",
+      "grim struggle",
+      "haunted ruins",
+      "twisted landscapes"
+    ]
+  },
+  "locations": {
+    "loc-1764181750885": {
+      "id": "loc-1764181750885",
+      "name": "The Haunted Keep of Eldoria",
+      "description": "A crumbling keep once the seat of power for the fallen kingdom of Eldoria, now overgrown with twisted vegetation and haunted by the restless spirits of its former rulers. The once-great halls are in ruins, filled with ancient relics that radiate dark magic.",
+      "aspects": [
+        {
+          "id": "asp-vi3jpiglb",
+          "name": "Shadows of the Fallen",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-d8evv4nlg",
+          "name": "Echoes of Ancient Evil",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-xg3nj93en",
+          "name": "Ruins of Forgotten Glory",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-d4ef3vjxz",
+          "name": "The Whispering Well",
+          "description": "A pond in the keep's courtyard that emits an eerie, low hum. Whispers can be heard if one listens closely.",
+          "interactable": true
+        },
+        {
+          "id": "feat-kvbrgpxm1",
+          "name": "The Crumbling Library",
+          "description": "Books and scrolls scattered throughout the library are covered in cryptic symbols and warn of a great evil awakening.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "Start",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764181754097",
+    "name": "Whispers from the Ashes",
+    "description": "As you approach the crumbling walls of the Haunted Keep of Eldoria, the air grows thick with sorrow and decay. The once-majestic structure now lies in ruin, its towers twisted by time and shadow. The echoes of a thousand restless spirits seem to call out from within, their voices growing louder as you near the entrance. In one of the halls, an ancient relic pulses with dark energy, drawing the attention of those who dare to venture into this forsaken place.",
+    "locationId": "loc-1764181750885",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

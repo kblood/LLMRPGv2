@@ -28,6 +28,23 @@ export const QuestStageSchema = z.object({
 
 export type QuestStage = z.infer<typeof QuestStageSchema>;
 
+// Knowledge prerequisites for quest discovery
+export const QuestPrerequisitesSchema = z.object({
+  // Required knowledge IDs by category
+  locations: z.array(z.string()).optional(),
+  npcs: z.array(z.string()).optional(),
+  quests: z.array(z.string()).optional(), // Other quests that must be completed
+  factions: z.array(z.string()).optional(),
+  secrets: z.array(z.string()).optional(),
+  items: z.array(z.string()).optional(),
+  topics: z.array(z.string()).optional(),
+  
+  // Minimum faction reputation requirements
+  factionReputation: z.record(z.string(), z.number()).optional(), // factionId -> minRep
+}).optional();
+
+export type QuestPrerequisites = z.infer<typeof QuestPrerequisitesSchema>;
+
 export const QuestSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -49,6 +66,9 @@ export const QuestSchema = z.object({
     reputation: z.record(z.string(), z.number()).optional(), // Faction -> amount
   }).optional(),
   isHidden: z.boolean().default(false), // For secret quests/tracking
+  
+  // Prerequisites for quest discovery/availability
+  prerequisites: QuestPrerequisitesSchema,
 });
 
 export type Quest = z.infer<typeof QuestSchema>;

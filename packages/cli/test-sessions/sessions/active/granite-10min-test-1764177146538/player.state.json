@@ -1,0 +1,172 @@
+{
+  "id": "player-1764177157868",
+  "type": "player",
+  "name": "Lysandra Shadowmend",
+  "appearance": "Lysandra is an elderly woman with long, tangled silver hair that falls in soft waves past her shoulders. Her eyes are a piercing deep blue, always seeming to peer into the soul of those she meets. She dresses in tattered robes of black and white, adorned with arcane symbols, and wears heavy boots for long journeys over rough terrain.",
+  "aspects": [
+    {
+      "id": "asp-s78s9e3hr",
+      "name": "Wandering Scholar-Mage",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-sciv24j0k",
+      "name": "Lost Knowledge Seeker",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-8oretigwm",
+      "name": "Arcane Savant",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-regkkv96j",
+      "name": "Haunted Past",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-isawv7xyc",
+      "name": "Forsaken by the Order",
+      "kind": "character",
+      "isTemporary": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "Meditation",
+      "rank": 4
+    },
+    {
+      "name": "Reading/Lecturing",
+      "rank": 3
+    },
+    {
+      "name": "Spellcraft",
+      "rank": 3
+    },
+    {
+      "name": "Influence",
+      "rank": 2
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Mental Fortitude",
+      "description": "Lysandra can withstand intense magical pressure and resist the compulsion of powerful enchantments.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Eloquent Defense",
+      "description": "Her ability to communicate persuasively allows her to disarm opponents or gain allies in tense situations.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Arcane Insight",
+      "description": "She possesses a deep understanding of the underlying principles behind magic, allowing her to decipher ancient texts and devise innovative spells.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Introspective",
+      "Patient",
+      "Wary"
+    ],
+    "values": [
+      "Truth",
+      "Wisdom",
+      "Respect for All Life"
+    ],
+    "quirks": [
+      "Collects ancient scrolls and artifacts",
+      "Speaks in long, philosophical monologues",
+      "Finds solace in nature"
+    ],
+    "fears": [
+      "Being hunted by the Order of Arcane Light",
+      "Discovering a truth too terrible to bear"
+    ],
+    "desires": [
+      "Uncover the secrets of the lost magics",
+      "Atone for her past transgressions"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into an esteemed family of scholars and mages in the crumbling ruins of Eldoria, Lysandra's early life was steeped in learning and discipline.",
+    "formativeEvent": "During a forbidden ritual gone awry, Lysandra unleashed a power so great that it shattered her connection to the Order of Arcane Light, leading to her exile from both society and magic.",
+    "secret": "She carries an ancient tome bound with human flesh, said to contain the lost knowledge of the first mages, which she seeks to decipher at all costs.",
+    "summary": "Driven by a relentless thirst for forbidden wisdom, Lysandra has become a solitary wanderer, her only companions being the whispers of forgotten spells and the guidance of ancient spirits."
+  },
+  "voice": {
+    "speechPattern": "Deliberate and philosophical",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "The path of knowledge is fraught with peril",
+      "One must tread lightly upon the winds of magic"
+    ],
+    "quirks": "Lysandra often speaks in incomplete sentences, preferring to let her words hang in the air like a lingering mist."
+  },
+  "knowledge": {
+    "locations": {
+      "loc-1764177150470": {
+        "locationId": "loc-1764177150470",
+        "name": "The Shattered Realms",
+        "known": true,
+        "confidence": "high",
+        "visited": false,
+        "knownSince": 4,
+        "details": "A grim and eerie tavern nestled in the ruins of an ancient kingdom. Overgrown with shadowed realms and haunted by dark sorcery, it serves as a gathering place for those who seek to unravel the mysteries of forgotten kingdoms and heed a grim prophecy.",
+        "lastUpdated": 4
+      }
+    },
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764177150470",
+  "isAlive": true,
+  "createdAt": "2025-11-26T17:12:37.868Z",
+  "updatedAt": "2025-11-26T17:12:37.869Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

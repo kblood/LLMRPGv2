@@ -5,10 +5,85 @@ import {
   Objective, 
   ObjectiveSchema,
   QuestStatus,
-  ObjectiveStatus
+  ObjectiveStatus,
+  KnowledgeProfile
 } from '@llmrpg/protocol';
 
+export interface QuestPrerequisiteContext {
+  knowledge: KnowledgeProfile;
+  completedQuestIds: string[];
+  factionReputations?: Record<string, number>; // factionId -> reputation
+}
+
 export class QuestManager {
+
+  /**
+   * Check if a player meets the prerequisites for a quest
+   */
+  static checkPrerequisites(
+    quest: Quest, 
+    context: QuestPrerequisiteContext
+  ): { met: boolean; missing: string[] } {
+    const missing: string[] = [];
+    const prereqs = quest.prerequisites;
+    
+    if (!prereqs) {
+      return { met: true, missing: [] };
+    }
+
+    // Check knowledge categories
+    const knowledgeCategories: (keyof KnowledgeProfile)[] = [
+      'locations', 'npcs', 'quests', 'factions', 'secrets', 'items', 'topics'
+    ];
+
+    for (const category of knowledgeCategories) {
+      const required = (prereqs as Record<string, string[] | undefined>)[category];
+      if (required && required.length > 0) {
+        const known = context.knowledge[category] || {};
+        for (const id of required) {
+          if (!known[id]) {
+            missing.push(`${category}: ${id}`);
+          }
+        }
+      }
+    }
+
+    // Check completed quest prerequisites (uses 'quests' from prereqs if it exists)
+    const requiredQuests = (prereqs as Record<string, string[] | undefined>).quests;
+    if (requiredQuests && requiredQuests.length > 0) {
+      for (const questId of requiredQuests) {
+        if (!context.completedQuestIds.includes(questId)) {
+          missing.push(`quest: ${questId}`);
+        }
+      }
+    }
+
+    // Check faction reputation requirements
+    if (prereqs.factionReputation && context.factionReputations) {
+      for (const [factionId, minRepValue] of Object.entries(prereqs.factionReputation)) {
+        const minRep = minRepValue as number;
+        const currentRep = context.factionReputations[factionId] || 0;
+        if (currentRep < minRep) {
+          missing.push(`faction reputation: ${factionId} (need ${minRep}, have ${currentRep})`);
+        }
+      }
+    }
+
+    return { met: missing.length === 0, missing };
+  }
+
+  /**
+   * Get all available quests (those that meet prerequisites) from a pool
+   */
+  static getAvailableQuests(
+    questPool: Quest[],
+    context: QuestPrerequisiteContext
+  ): Quest[] {
+    return questPool.filter(quest => {
+      const { met } = this.checkPrerequisites(quest, context);
+      return met;
+    });
+  }
 
   /**
    * Add a new quest to the world state

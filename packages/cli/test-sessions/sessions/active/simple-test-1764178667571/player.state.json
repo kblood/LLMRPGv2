@@ -1,0 +1,156 @@
+{
+  "id": "player-1764178678105",
+  "type": "player",
+  "name": "Lysandra Shadowcloak",
+  "appearance": "Lysandra is a tall, slender woman with long, raven-black hair that falls in intricate patterns over her shoulders. She wears dark robes adorned with arcane symbols and carries an obsidian staff with a crystal orb at the tip.",
+  "aspects": [
+    {
+      "id": "asp-yv1jpkzr1",
+      "name": "The Wandering Mage",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-ot5ljk1je",
+      "name": "Forsaken by the Arcane Order",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-i9w1etaji",
+      "name": "Haunted by Past Sorceries",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-wdesol0a5",
+      "name": "Seeking Redemption",
+      "kind": "character",
+      "isTemporary": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Empathy",
+      "rank": 3
+    },
+    {
+      "name": "Stealth",
+      "rank": 2
+    },
+    {
+      "name": "Persuasion",
+      "rank": 1
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Arcane Reflexes",
+      "description": "You can dodge or parry attacks with a rolled dice, reducing damage taken.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Shadowy Presence",
+      "description": "Your presence strikes fear into enemies, granting advantage on intimidation rolls.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Spellweave Mastery",
+      "description": "You can use your Arcana skill to enhance or modify spells from other skills.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Intellectual",
+      "Mysterious",
+      "Independent"
+    ],
+    "values": [
+      "Justice",
+      "Knowledge",
+      "Compassion"
+    ],
+    "quirks": [
+      "Constantly muttering incantations under her breath",
+      "Collects ancient tomes and artifacts"
+    ],
+    "fears": [
+      "Being hunted by those seeking power for evil purposes",
+      "Straying further from the light of magic"
+    ],
+    "desires": [
+      "Understanding the true nature of magic",
+      "Helping those oppressed by dark forces"
+    ]
+  },
+  "backstory": {
+    "origin": "Lysandra was born into a prestigious lineage of mages, known for their mastery over the arcane arts.",
+    "formativeEvent": "After a failed ritual left her marked as an outcast and nearly cost her life, she fled to roam the Shattered Realms in search of redemption and knowledge beyond her order's teachings.",
+    "secret": "She carries a relic from her past - a shard of an ancient spell that holds untold power but also whispers warnings of its dark consequences.",
+    "summary": "Once a revered mage, Lysandra now wanders the land, using her skills to aid those in need and uncover the truth behind the corruption that tainted her people."
+  },
+  "voice": {
+    "speechPattern": "Precise yet lyrical",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "In the name of the Old Ones",
+      "The weave has been broken"
+    ],
+    "quirks": [
+      "Speaks in a measured cadence, punctuating her words with mystical syllables"
+    ]
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764178669765",
+  "isAlive": true,
+  "createdAt": "2025-11-26T17:37:58.106Z",
+  "updatedAt": "2025-11-26T17:37:58.106Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

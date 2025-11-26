@@ -1,0 +1,103 @@
+{
+  "theme": {
+    "name": "The Shadowlands",
+    "genre": "Dark Fantasy",
+    "tone": "Grim and haunting",
+    "keywords": [
+      "Mystical darkness",
+      "Supernatural horror",
+      "Fallen kingdoms",
+      "Arcane sorcery",
+      "Eldritch horrors"
+    ]
+  },
+  "locations": {
+    "loc-1764180521729": {
+      "id": "loc-1764180521729",
+      "name": "The Shadowlands",
+      "description": "A once-thriving city now shrouded in perpetual twilight and the weight of forgotten horrors. The streets are lined with crumbling stone buildings, their windows dark and lifeless, while the air is thick with an unnatural chill that seems to emanate from the very ground beneath your feet.",
+      "aspects": [
+        {
+          "id": "asp-84li1er8t",
+          "name": "The Veil Thinned",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-gcl579buo",
+          "name": "Echoes of the Old Gods",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-teqlb6rju",
+          "name": "Whispers in the Wind",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-p33736q4l",
+          "name": "The Cursed Well",
+          "description": "An ancient well that is said to draw power from the souls of those who dare to drink. The water has a strange luminescence, glowing with an otherworldly light.",
+          "interactable": true
+        },
+        {
+          "id": "feat-6cef4ck0u",
+          "name": "The Gloomwatch Keep",
+          "description": "A fortified citadel that once served as the stronghold for a fallen dynasty, now home to a band of shadowy figures who keep watch over the city's secrets and those deemed unfit for life in the Light.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "NaN",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-1234567890",
+      "title": "Unraveling the Shadows of My Past",
+      "description": "Lysandra must delve into the ancient ruins and hidden secrets of The Shadowlands to uncover the truth about her lineage and the dark entity that haunts her. She will need to gather clues, decipher runes, and confront the remnants of a forgotten evil.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Explore the Cursed Well and retrieve an ancient artifact that may hold answers.",
+          "type": "custom",
+          "requiredCount": 1
+        },
+        {
+          "id": "obj-2",
+          "description": "Study the Runes inscribed on The Gloomwatch Keep's walls to uncover hidden knowledge.",
+          "type": "custom",
+          "requiredCount": 1
+        },
+        {
+          "id": "obj-3",
+          "description": "Speak with a shadowy figure in the keep and learn more about the entity that haunts Lysandra.",
+          "type": "interaction",
+          "requiredCount": 1
+        }
+      ]
+    }
+  ],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764180526702",
+    "name": "Whispers from the Abyss",
+    "description": "In the heart of The Shadowlands, where the twilight never ends and shadows dance with the remnants of forgotten horrors, you find yourself standing before an ancient stone archway. Its surface is etched with runes that pulse faintly in the dim light, casting eerie reflections across the cracked pavement below. A thick fog has settled over the city, muffling the distant cries of creatures that should not be here, and a chill wind stirs through the crumbling buildings, carrying whispers of ancient secrets long buried beneath the ruins.\n\nThe once-bustling market square is now empty, save for scattered debris and forgotten stalls. A lone figure huddles by the edge of the archway, their back turned to you, clutching an ornate dagger that glows with a soft blue light. The figure's eyes are closed, as if lost in a deep reverie or perhaps a nightmare.\n\nAs you approach, you notice footprints leading away from the archway into the depths of the city, but they end abruptly before reaching any known passage or path. The air seems to hum with an unseen energy, and you can feel the weight of power emanating from the dagger in your possession.",
+    "locationId": "loc-1764180521729",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

@@ -2,9 +2,9 @@
 
 **Last Updated:** November 26, 2025
 
-## 📍 Current Phase: Phase 7 - Refinement & Polish (In Progress)
+## 📍 Current Phase: Phase 9 - Integration & System Interoperability (Completed)
 
-We are refining the system, improving prompts, and adding robustness.
+We have integrated all systems, added comprehensive testing, and ensured system interoperability.
 
 ## ✅ Recent Accomplishments
 
@@ -93,14 +93,45 @@ We are refining the system, improving prompts, and adding robustness.
 - **System Event Type**: Added 'system' event type to support non-Fate mechanical events (inventory checks, status checks, trade, craft).
 - **Location Feature Types**: Extended `LocationSchema` features to include `type` field for 'generic', 'shop', 'crafting_station', 'container', and 'exit'.
 
+### 9. Integration & System Interoperability (Phase 9)
+- **Comprehensive Integration Test**: Created `tests/integration.test.ts` that exercises all major systems in a cohesive gameplay scenario: World Generation, Character Creation, Combat, Social Conflict, Knowledge System, Quest System, Economy, Factions, and Save/Load.
+- **Faction-Based Shop Prices**: Enhanced `EconomyManager` with `calculateFactionPriceModifier()` to adjust shop prices based on faction reputation. Allies get discounts (0.7x), hostile factions pay premium (1.5x). Updated `buyFromShop()` and `sellToShop()` to accept optional faction reputation parameter.
+- **Quest Prerequisites System**: Added `QuestPrerequisitesSchema` to the Quest schema supporting knowledge requirements (locations, npcs, quests, factions, secrets, items, topics) and faction reputation thresholds. Implemented `QuestManager.checkPrerequisites()` and `QuestManager.getAvailableQuests()` to filter quests based on player knowledge and reputation.
+- **Enhanced GameLoop**: Upgraded `GameLoop` with mode-aware prompts (exploration, combat, dialogue, trade), context display, visual formatting with box-drawing characters, outcome indicators (✨ for success with style, ✓ for success, ⚖️ for tie, ✗ for failure), and save-on-exit confirmation.
+- **Testing**: All 36 tests passing across 6 packages. Economy tests now include 5 faction price modifier tests. Quest system tests include 3 prerequisite validation tests.
+
 ## 📋 Next Steps (Immediate)
 
-### Phase 9: Full Gameloop Implementation & Integration Testing
-1.  **Unified Game Loop**: Integrate all systems (Combat, Social, Knowledge, Quest, Economy, Crafting, Factions) into a cohesive `GameLoop`.
-2.  **End-to-End Integration Test**: Create a comprehensive test suite that runs through a full gameplay scenario utilizing all systems.
-3.  **System Interoperability**: Ensure systems interact correctly (e.g., Faction reputation affecting Shop prices, Knowledge unlocking Quests).
+### Phase 10: Replay System Completion
+The replay/debug system is partially implemented. Complete the following to make it fully functional:
 
-### Phase 10: Future Features & Expansions
+1. **Add `loadSnapshot()` to SessionLoader**
+   - Load snapshot JSON files from `sessions/{id}/snapshots/`
+   - Find nearest snapshot to a given turn for efficient replay
+
+2. **Add `loadInitialState()` method**
+   - Load or reconstruct the initial state at turn 0
+   - Required for `ReplayDebugger` to function
+
+3. **Create `SessionDataBuilder` helper**
+   - Build `SessionData` object from a session ID
+   - Combine metadata, turns, deltas, and initial state
+   - Make it easy to initialize `ReplayDebugger`
+
+4. **Complete event loading in replay**
+   - `TurnResult.events` currently always empty
+   - Load actual `GameEvent` objects for each turn
+
+5. **Add replay tests**
+   - Replace `packages/debug/tests/placeholder.test.ts`
+   - Test step forward/backward, breakpoints, watch paths
+   - Test state reconstruction accuracy
+
+6. **Add CLI replay command** (optional)
+   - `/replay <sessionId>` command in GameLoop
+   - Or standalone replay viewer tool
+
+### Phase 11: Future Features & Expansions
 1.  **Magic/Power System**: Implement specific mechanics for magic or special powers (Extras).
 2.  **Stealth & Infiltration**: Implement mechanics for stealth, detection, and infiltration missions.
 3.  **Fate Point Economy & Compels**: Implement the full Fate Point economy, including GM compels, self-compels, and refusals.
@@ -110,3 +141,46 @@ We are refining the system, improving prompts, and adding robustness.
 
 ## 🐛 Known Issues / Notes
 - None currently.
+
+## 📊 10-Minute Granite4:3b Comprehensive Test Results (November 26, 2025)
+
+### Test Configuration
+- **Model**: granite4:3b (local Ollama)
+- **Duration**: 10.13 minutes
+- **Actions Tested**: 40 total
+
+### Results
+| Metric | Value |
+|--------|-------|
+| Total Runtime | 10.13 minutes |
+| Total Actions | 40 |
+| Successful | 40 (100%) |
+| Failed | 0 |
+| Average Response Time | 14.24 seconds |
+
+### Systems Exercised
+- ✅ World Generation (The Shadowed Keep - Dark Fantasy)
+- ✅ Character Creation (Lysandra Veilwind - Lost Scholar-Mage)
+- ✅ Exploration (4 actions)
+- ✅ NPC Interaction (4 actions)
+- ✅ Quest Pursuit (4 actions)
+- ✅ Challenges (4 actions)
+- ✅ Combat (4 actions)
+- ✅ Economy Commands (/inventory, /status, shop search)
+- ✅ Save/Load (/save command)
+- ✅ Extended Play (8 actions)
+
+### Bug Fixed During Testing
+**Issue**: Aspect types displaying as "(undefined)" in `/status` output
+
+**Root Cause**: Character creation was mapping aspects with `kind` property instead of `type`, causing mismatch with status display code.
+
+**Fix Applied**: Updated `GameMaster.createCharacter()` to properly map aspect types (high_concept, trouble, background, relationship) from LLM output.
+
+**Verification**: Status now correctly displays:
+```
+**Aspects:**
+- The Shattered Realms Mage (high_concept)
+- Forsaken by Magic (trouble)
+- Master of Dark Arts (background)
+```

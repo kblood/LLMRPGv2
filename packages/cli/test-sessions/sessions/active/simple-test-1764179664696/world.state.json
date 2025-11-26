@@ -1,0 +1,77 @@
+{
+  "theme": {
+    "name": "The Shattered Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim and atmospheric",
+    "keywords": [
+      "Dark magic",
+      "Supernatural horror",
+      "Mysterious ancient ruins",
+      "Fallen kingdoms",
+      "Forbidden knowledge"
+    ]
+  },
+  "locations": {
+    "loc-1764179671187": {
+      "id": "loc-1764179671187",
+      "name": "The Ruins of Eldoria",
+      "description": "A crumbling stone citadel perched atop a jagged cliff edge, its towering walls now overgrown with twisted vines and ancient runes. The ruins are surrounded by a dense fog that rolls in from the sea at night, casting an eerie shadow over the landscape.",
+      "aspects": [
+        {
+          "id": "asp-qcc2r5wuw",
+          "name": "Whispers of Eldoria",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-8aykowgn6",
+          "name": "The Forbidden Tome",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-clqlm2vzv",
+          "name": "Shadows in the Ruins",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-n3e2mf7id",
+          "name": "A crumbling archway leading into the heart of the citadel",
+          "description": "The arch is adorned with intricate carvings that seem to shift and change when the wind blows, hinting at long-forgotten spells.",
+          "interactable": true
+        },
+        {
+          "id": "feat-60j4a04og",
+          "name": "An ancient well with water that glows faintly in the dark",
+          "description": "Legend says the water possesses strange powers, but its true nature remains a mystery. Some say it can reveal glimpses of future events if one dares to drink from it.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "Start",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764179673713",
+    "name": "Echoes from Eldoria",
+    "description": "As you stand atop the crumbling walls of the Ruins of Eldoria, the thick fog swirls around you, muffling any sounds that dare to break its veil. The ancient stones seem to whisper secrets of a forgotten age, their runes pulsating with an eerie, otherworldly energy. In the distance, a howl echoes through the night, sending shivers down your spine. The air is heavy with the scent of decay and magic gone awry.",
+    "locationId": "loc-1764179671187",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

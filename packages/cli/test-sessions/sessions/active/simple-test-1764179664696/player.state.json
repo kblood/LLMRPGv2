@@ -1,0 +1,160 @@
+{
+  "id": "player-1764179685871",
+  "type": "player",
+  "name": "Lysandra Frostbane",
+  "appearance": "A gaunt, hooded figure clad in tattered black robes adorned with frost runes. Her icy blue eyes seem to pierce through the very soul of those she encounters.",
+  "aspects": [
+    {
+      "id": "asp-xp8iaqan1",
+      "name": "The Wandering Mage",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-is73v8ki4",
+      "name": "Cold Hearted",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-owb7c1xt3",
+      "name": "Haunted by the Past",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-v7boz7qxc",
+      "name": "Master of Ice Magic",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-fwu2r42or",
+      "name": "Secret Keeper",
+      "kind": "character",
+      "isTemporary": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Influence",
+      "rank": 3
+    },
+    {
+      "name": "Stealth",
+      "rank": 2
+    },
+    {
+      "name": "Survival",
+      "rank": 1
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Bitter Frost",
+      "description": "Whenever you use Ice magic, your target suffers additional -1 stress and -2 consequence points.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Shadows of the Past",
+      "description": "You can always find a hiding spot or escape unnoticed in any location. Resolve this stunt at the start of the scene to get out of sticky situations.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Mysterious Patron",
+      "description": "Once per session, you can call upon a secret benefactor who provides you with supplies or information without revealing their identity.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Analytical",
+      "Reserved",
+      "Introspective"
+    ],
+    "values": [
+      "Truth and Justice",
+      "Preservation of Knowledge"
+    ],
+    "quirks": [
+      "Prefers to work alone at night",
+      "Collects ancient tomes"
+    ],
+    "fears": [
+      "Being betrayed by those closest to her",
+      "Losing the power she holds over ice and snow"
+    ],
+    "desires": [
+      "To uncover the truth behind her lineage",
+      "To protect the innocent from the corrupt forces of magic"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into a line of powerful mages, Lysandra's childhood was filled with whispers of dark secrets and forbidden knowledge.",
+    "formativeEvent": "After an encounter with a vengeful spirit that sought to possess her during one of her magical rituals, she vanished from her home village, never to return.",
+    "secret": "Lysandra carries within her the fragmented essence of a long-lost artifact known as the Heartstone, which grants immense power but comes at a terrible cost.",
+    "summary": "Haunted by her past and driven by an insatiable thirst for knowledge, Lysandra roams the Shattered Realms, seeking to unravel the mysteries surrounding her heritage and the corruption that threatens the very fabric of reality."
+  },
+  "voice": {
+    "speechPattern": "Precise and measured",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "In my experience",
+      "It is said...",
+      "I must advise..."
+    ],
+    "quirks": "Speaks in a detached, almost clinical manner; often uses formal language even when conversing with common folk."
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764179671187",
+  "isAlive": true,
+  "createdAt": "2025-11-26T17:54:45.872Z",
+  "updatedAt": "2025-11-26T17:54:45.874Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

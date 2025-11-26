@@ -140,4 +140,56 @@ describe('EconomyManager', () => {
     expect(shopItem).toBeDefined();
     expect(shopItem?.quantity).toBe(1);
   });
+
+  describe('Faction Price Modifiers', () => {
+    it('should calculate correct price modifier for hostile reputation', () => {
+      const modifier = economyManager.calculateFactionPriceModifier(-100);
+      expect(modifier).toBe(1.5);
+    });
+
+    it('should calculate correct price modifier for neutral reputation', () => {
+      const modifier = economyManager.calculateFactionPriceModifier(0);
+      expect(modifier).toBe(1.0);
+    });
+
+    it('should calculate correct price modifier for allied reputation', () => {
+      const modifier = economyManager.calculateFactionPriceModifier(100);
+      expect(modifier).toBe(0.7);
+    });
+
+    it('should apply faction modifier when buying from shop', () => {
+      // Reset character wealth
+      character.wealth = 200;
+      
+      // Hostile faction: price should be 1.5x (50 * 1.5 = 75)
+      const hostileTransaction = economyManager.buyFromShop(character, shop, 'item-1', 1, -100);
+      expect(hostileTransaction).not.toBeNull();
+      expect(hostileTransaction?.totalCost).toBe(75);
+      expect(character.wealth).toBe(125); // 200 - 75
+    });
+
+    it('should apply faction modifier when selling to shop', () => {
+      // Give character an item
+      const item: Item = {
+        id: 'item-faction-sell',
+        name: 'Faction Test Gem',
+        description: 'Test',
+        value: 100,
+        weight: 0.1,
+        tags: [],
+        quantity: 1,
+        rarity: 'rare',
+        type: 'misc'
+      };
+      character.inventory.push(item);
+      character.wealth = 0;
+
+      // Allied faction: sell price should be better (~65 instead of 50)
+      // Base: 100 * 0.5 = 50, with ally bonus: 50 * 1.3 = 65
+      const alliedTransaction = economyManager.sellToShop(character, shop, 'item-faction-sell', 1, 100);
+      expect(alliedTransaction).not.toBeNull();
+      expect(alliedTransaction?.totalCost).toBe(65);
+      expect(character.wealth).toBe(65);
+    });
+  });
 });

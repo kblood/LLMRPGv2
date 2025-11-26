@@ -1,0 +1,2 @@
+{"deltaId":"granite-10min-test-1764177818473-1-1","turnId":1,"sequence":1,"timestamp":1764177829811,"target":"world","operation":"set","path":["time","value"],"previousValue":"Start","newValue":"NaN","cause":"time_pass","eventId":"granite-10min-test-1764177818473-1-1"}
+{"deltaId":"granite-10min-test-1764177818473-2-1","turnId":2,"sequence":1,"timestamp":1764177835985,"target":"world","operation":"set","path":["time","value"],"previousValue":"NaN","newValue":"NaN","cause":"time_pass","eventId":"granite-10min-test-1764177818473-2-1"}

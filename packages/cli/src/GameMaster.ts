@@ -234,12 +234,24 @@ export class GameMaster {
         type: 'player',
         name: charData.name,
         appearance: charData.appearance,
-        aspects: charData.aspects.map((a: any) => ({
-            id: `asp-${Math.random().toString(36).substr(2, 9)}`,
-            name: a.name,
-            kind: a.type === 'highConcept' || a.type === 'trouble' ? 'character' : 'character',
-            isTemporary: false
-        })),
+        aspects: charData.aspects.map((a: any) => {
+            // Map the aspect type from LLM format to Fate Core format
+            let aspectType = 'background';
+            if (a.type === 'highConcept' || a.type === 'high_concept') {
+                aspectType = 'high_concept';
+            } else if (a.type === 'trouble') {
+                aspectType = 'trouble';
+            } else if (a.type === 'relationship') {
+                aspectType = 'relationship';
+            }
+            return {
+                id: `asp-${Math.random().toString(36).substr(2, 9)}`,
+                name: a.name,
+                type: aspectType,
+                freeInvokes: 0,
+                description: a.description || undefined
+            };
+        }),
         skills: charData.skills.map((s: any) => ({
             name: s.name,
             rank: s.level || s.rating || 0

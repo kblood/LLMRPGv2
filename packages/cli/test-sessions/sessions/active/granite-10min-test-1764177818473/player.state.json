@@ -1,0 +1,153 @@
+{
+  "id": "player-1764177828559",
+  "type": "player",
+  "name": "Lysander the Forsworn",
+  "appearance": "Roughly clad in tattered robes, with silver hair streaked gray by age and dust. A gnarled wooden staff rests against his shoulder.",
+  "aspects": [
+    {
+      "id": "asp-m68gosxnr",
+      "name": "Scholar-Mage",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-53hwg3noe",
+      "name": "Seeking Lost Knowledge",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-glf71462n",
+      "name": "Haunted by the Past",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-b1hlud6ur",
+      "name": "Wandering Wanderer",
+      "kind": "character",
+      "isTemporary": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Heritage Magic (Draconic)",
+      "rank": 3
+    },
+    {
+      "name": "Inscription",
+      "rank": 2
+    },
+    {
+      "name": "Persuasion",
+      "rank": 1
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Dragon Tongue",
+      "description": "You can speak the ancient language of your draconic heritage, allowing you to decode forgotten texts and locate hidden locations.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Knowledge is Power",
+      "description": "Whenever you convince someone using Persuasion, they must share something from their past—perhaps a fragment of knowledge or lore that could aid you in the future.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Arcane Agility",
+      "description": "You can use your Arcana skill to quickly memorize spells or scrolls while traveling, allowing you to cast them without needing materials.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Deeply curious",
+      "Somber and contemplative",
+      "Reserved with strangers"
+    ],
+    "values": [
+      "Truth above all else",
+      "Seeking wisdom over power"
+    ],
+    "quirks": [
+      "Finds solace in the company of ancient tomes",
+      "Struggles with modern conveniences"
+    ],
+    "fears": [
+      "Becoming a tyrant through knowledge",
+      "Losing the very connection that made them seek this path"
+    ],
+    "desires": [
+      "Unlocking the lost secrets of the ancients",
+      "Finding redemption for past transgressions"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into an esteemed scholarly lineage, Lysander was trained in both magic and philosophy. However, his pursuit of forbidden knowledge led to a tragic conflict that nearly destroyed everything he held dear.",
+    "formativeEvent": "A failed ritual during which the ethereal spirits interfered, scattering fragments of powerful ancient lore across distant lands. This event forced him into exile and left him forever haunted by what might have been.",
+    "secret": "He carries an incomplete tome—a key to unlocking a long-lost magical system that could change everything. Its final piece lies hidden in the ruins of his ancestral home, now lost to time.",
+    "summary": "Now wandering the land as a scholar-mage, Lysander travels from library to library, searching for fragments of knowledge while grappling with the weight of his past."
+  },
+  "voice": {
+    "speechPattern": "Measured and reflective",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "In the pursuit of truth...",
+      "The wisdom of ages whispers..."
+    ],
+    "quirks": "Prefers to speak in long, winding sentences that often leave listeners confused."
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764177820980",
+  "isAlive": true,
+  "createdAt": "2025-11-26T17:23:48.560Z",
+  "updatedAt": "2025-11-26T17:23:48.560Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

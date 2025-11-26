@@ -1,0 +1,103 @@
+{
+  "theme": {
+    "name": "The Shattered Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim and foreboding",
+    "keywords": [
+      "ancient magic",
+      "forgotten kingdoms",
+      "dark elves",
+      "drow sorcery",
+      "ruins of power",
+      "cursed artifacts",
+      "shadowy overtones"
+    ]
+  },
+  "locations": {
+    "loc-1764180850906": {
+      "id": "loc-1764180850906",
+      "name": "The Shadowed Keep",
+      "description": "A crumbling fortress once ruled by the dark elves of the Shattered Realms. Overgrown with twisted vines and haunted by the echoes of ancient sorcery, it stands as a testament to forgotten power.",
+      "aspects": [
+        {
+          "id": "asp-7hc5xxzvn",
+          "name": "Echoes of Forgotten Sorcery",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-b9btq7uer",
+          "name": "Ruins of Power",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-kuizgemty",
+          "name": "Curse of the Drow Legacy",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-76d7nlpy3",
+          "name": "The Well of Shadows",
+          "description": "A deep, dark well that pulses with an eerie light. Rumored to be a source of drow magic and power.",
+          "interactable": true
+        },
+        {
+          "id": "feat-alh701frj",
+          "name": "The Vault of Cursed Artifacts",
+          "description": "An ancient vault hidden within the fortress walls, containing relics tainted by dark elven sorcery.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "NaN",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-7x9m2p3q8",
+      "title": "Seeking the Well of Shadows",
+      "description": "The Shadowed Keep holds a deep, dark well that pulses with an eerie light. Legends whisper it is a source of ancient drow magic and power. Investigate its secrets to uncover what lies within.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Locate the Well of Shadows in The Shadowed Keep",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "failed"
+        },
+        {
+          "id": "obj-2",
+          "description": "Determine if the well holds any magical energy or artifacts",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        }
+      ]
+    }
+  ],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764180854747",
+    "name": "Whispers from the Well",
+    "description": "As you stand before the crumbling walls of the Shadowed Keep, your heart pounds with both fear and curiosity. The fortress is in ruins, its towers leaning like the bones of a dying civilization. Overgrown vines cling to ancient stones, and the air feels heavy with an unnatural chill.\n\nA faint glow emanates from one of the broken archways, drawing you closer. Inside, you find an old journal half-buried beneath piles of dust, its pages filled with cryptic notes about a dark ritual that once took place here—a ceremony meant to bind the realms together but instead tore them asunder.\n\nSuddenly, a chilling wind sweeps through the keep, and the shadows seem to move on their own. An eerie melody echoes from somewhere within the depths of the fortress, a haunting tune that fills you with both dread and an inexplicable yearning to uncover its source.",
+    "locationId": "loc-1764180850906",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

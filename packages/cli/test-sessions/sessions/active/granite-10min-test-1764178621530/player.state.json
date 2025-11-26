@@ -1,0 +1,172 @@
+{
+  "id": "player-1764178631768",
+  "type": "player",
+  "name": "Lysander the Reluctant",
+  "appearance": "Tall and gaunt, with long silver hair tied back in a braid. Wears tattered robes of deep blue, adorned with arcane symbols.",
+  "aspects": [
+    {
+      "id": "asp-xtmnr5sj7",
+      "name": "Wandering Scholar-Mage",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-35cwi8644",
+      "name": "Knowledge Hungry",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-gi2i30fyl",
+      "name": "Haunted by the Past",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-v6vxi6ecv",
+      "name": "Dabbler in Forbidden Arts",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-p6ckuwbjz",
+      "name": "Keeps Secrets to Himself",
+      "kind": "character",
+      "isTemporary": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Persuasion",
+      "rank": 3
+    },
+    {
+      "name": "Investigation",
+      "rank": 2
+    },
+    {
+      "name": "Stealth",
+      "rank": 1
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Arcane Insight",
+      "description": "You can sense magical energies even when they're hidden. Whenever you use Arcana to search for magic, you get a +2 bonus.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Charm the Unruly",
+      "description": "People are drawn to your charisma and wisdom. When persuading someone who is hostile or indifferent, add 3 dice instead of 1.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Silent Observer",
+      "description": "Your stealth skill allows you to move unseen in many situations. Add 2 dice when attempting Stealth rolls under cover of darkness or in places where your presence should be hidden.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Analytical",
+      "Meticulous",
+      "Reserved"
+    ],
+    "values": [
+      "Truth and Knowledge",
+      "Preservation of Innocence"
+    ],
+    "quirks": [
+      "Excessive skepticism",
+      "Nail-biting habit",
+      "Prefers to work alone"
+    ],
+    "fears": [
+      "Being consumed by forbidden knowledge",
+      "Public ridicule for his arcane pursuits"
+    ],
+    "desires": [
+      "To uncover the lost works of ancient mages",
+      "To be respected as a scholar rather than a practitioner"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into an esteemed but fractured mage family in the Shattered Realms, Lysander's childhood was marked by tragedy and loss.",
+    "formativeEvent": "The murder of his mentor during a forbidden ritual sparked his obsession with unearthing hidden knowledge and understanding the nature of magic.",
+    "secret": "Lysander carries an ancient tome that he believes contains secrets about the Shattering itself, but its true power remains elusive.",
+    "summary": "Haunted by the death of those close to him, Lysander wanders from place to place in search of fragments of lost knowledge, all while struggling with the moral implications of his discoveries."
+  },
+  "voice": {
+    "speechPattern": "Precise and formal, punctuated with academic terms.",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "Indeed",
+      "Perchance",
+      "It is conceivable that"
+    ],
+    "quirks": "Speaks in long, convoluted sentences; frequently uses filler words like 'so' or 'you know'."
+  },
+  "knowledge": {
+    "locations": {
+      "loc-1764178624440": {
+        "locationId": "loc-1764178624440",
+        "name": "The Shattered Realms",
+        "known": true,
+        "confidence": "high",
+        "visited": false,
+        "knownSince": 5,
+        "details": "A sprawling ruin of an ancient city on the outskirts of the forgotten kingdom of Eldoria, where dark magic and shadowy conspiracies thrive. The once-mighty citadel looms over the town, its walls cracked and overgrown with twisted vines. A dimly lit tavern sits in the heart of the ruins, filled with travelers from various realms seeking to uncover the secrets hidden within.",
+        "lastUpdated": 5
+      }
+    },
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764178624440",
+  "isAlive": true,
+  "createdAt": "2025-11-26T17:37:11.768Z",
+  "updatedAt": "2025-11-26T17:37:11.769Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

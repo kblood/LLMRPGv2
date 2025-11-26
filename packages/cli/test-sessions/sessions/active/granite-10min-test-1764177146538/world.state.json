@@ -1,0 +1,138 @@
+{
+  "theme": {
+    "name": "The Shattered Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim and eerie",
+    "keywords": [
+      "ancient magic",
+      "forgotten kingdoms",
+      "dark sorcery",
+      "shadowed realms",
+      "grim prophecy"
+    ]
+  },
+  "locations": {
+    "loc-1764177150470": {
+      "id": "loc-1764177150470",
+      "name": "The Shattered Realms",
+      "description": "A grim and eerie tavern nestled in the ruins of an ancient kingdom. Overgrown with shadowed realms and haunted by dark sorcery, it serves as a gathering place for those who seek to unravel the mysteries of forgotten kingdoms and heed a grim prophecy.",
+      "aspects": [
+        {
+          "id": "asp-hgk68oyfj",
+          "name": "Echoes of Ancient Sorcery",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-9x0jzsbhb",
+          "name": "Whispers of Doom",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-nwj3dkc4y",
+          "name": "Ruins of the Forgotten Kingdom",
+          "kind": "environment",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-be1tj5ous",
+          "name": "The Fading Map",
+          "description": "An ancient map etched into a stone wall, showing paths to shadowed realms and lost treasures. It is said that only those who can interpret its language will find true guidance.",
+          "interactable": true
+        },
+        {
+          "id": "feat-nl46g8n8x",
+          "name": "The Prophecy Pool",
+          "description": "A pool of dark water in the center of the tavern where patrons gather to peer into the depths, seeking visions of what lies ahead. Some claim to see glimpses of a grim future that must be altered.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "NaN",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-1234567890",
+      "title": "Seek the Fading Map",
+      "description": "The ancient map etched into a stone wall in The Shattered Realms tavern holds secrets to shadowed realms and lost treasures. Only those who can interpret its language will find true guidance.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Interpret the ancient map's symbols and decipher its hidden paths to shadowed realms.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "quest-1234567891",
+      "title": "Seek the Prophecy Pool's Secrets",
+      "description": "The pool of dark water in The Shattered Realms tavern holds visions of a grim future that must be altered. Seek to understand what these visions mean and how they can guide your path.",
+      "objectives": [
+        {
+          "id": "obj-2",
+          "description": "Peer into the depths of the Prophecy Pool and decipher the visions it shows, seeking guidance for your journey through shadowed realms.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "quest-1234567892",
+      "title": "Seek the Prophecy Pool's Secrets",
+      "description": "The pool of dark water in The Shattered Realms tavern holds visions of a grim future that must be altered. Seek to understand what these visions mean and how they can guide your path.",
+      "objectives": [
+        {
+          "id": "obj-2",
+          "description": "Peer into the depths of the Prophecy Pool and decipher the visions it shows, seeking guidance for your journey through shadowed realms.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "quest-1234567893",
+      "title": "Seek the Prophecy Pool's Secrets",
+      "description": "The pool of dark water in The Shattered Realms tavern holds visions of a grim future that must be altered. Seek to understand what these visions mean and how they can guide your path.",
+      "objectives": [
+        {
+          "id": "obj-2",
+          "description": "Peer into the depths of the Prophecy Pool and decipher the visions it shows, seeking guidance for your journey through shadowed realms.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        }
+      ]
+    }
+  ],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764177151858",
+    "name": "Whispers in the Ruins",
+    "description": "As you step into The Shattered Realms, the air is thick with the scent of decay and sorrow. The once-grand hall now lies in ruin, with crumbling stones and twisted metal scattered about. A single flickering candle casts eerie shadows on the walls, while a group of shadowy figures huddles around an old table, deep in conversation.",
+    "locationId": "loc-1764177150470",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

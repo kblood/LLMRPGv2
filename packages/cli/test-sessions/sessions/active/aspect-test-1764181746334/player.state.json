@@ -1,0 +1,162 @@
+{
+  "id": "player-1764181767856",
+  "type": "player",
+  "name": "Lorien Shadowhand",
+  "appearance": "Tall and gaunt, with long, tangled silver hair that seems to shimmer in the dim light of his traveling lantern. His eyes are a deep obsidian black, always seeming to gaze into another world.",
+  "aspects": [
+    {
+      "id": "asp-7iqfxqw1r",
+      "name": "The Shattered Realms Mage",
+      "type": "high_concept",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-t4l9n2qdc",
+      "name": "Forsaken by Magic",
+      "type": "trouble",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-moxxmamnq",
+      "name": "Master of Dark Arts",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-x9l3nbs0n",
+      "name": "Wayward Apprentice",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-622y98yu4",
+      "name": "Reluctant Hero",
+      "type": "background",
+      "freeInvokes": 0
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Brawling",
+      "rank": 3
+    },
+    {
+      "name": "Deception",
+      "rank": 2
+    },
+    {
+      "name": "Engineering",
+      "rank": 1
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Arcane Reflexes",
+      "description": "Whenever you use magic to throw a spell or object, you can move up to 10 meters in any direction while doing so. If your target is within range, deal additional damage.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Shadowy Disguise",
+      "description": "You are an expert at blending into the shadows. You have +2 to Deception when trying to hide or escape notice.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Puny Mage, Mighty Magic",
+      "description": "Your small stature hides your immense power. When using Arcana in combat, you may reroll a die of your choice once per session if you fail the roll.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Quiet",
+      "Observant",
+      "Introspective",
+      "Resilient"
+    ],
+    "values": [
+      "Truth above all else",
+      "The preservation of knowledge",
+      "Compassion for those who have suffered"
+    ],
+    "quirks": [
+      "Talks to himself in a low, gravelly voice",
+      "Collects ancient tomes and arcane artifacts",
+      "Finds comfort in the company of creatures that others fear"
+    ],
+    "fears": [
+      "Being discovered by the dark cult he secretly worships",
+      "Losing his memory or mind to magic gone awry"
+    ],
+    "desires": [
+      "To uncover the secrets of an ancient mage who vanished into legend",
+      "To find a way to restore balance to the world torn asunder by forbidden magic"
+    ]
+  },
+  "backstory": {
+    "origin": "Born in the ruins of an ancient city, Lorien grew up among the downtrodden and forgotten. His parents were both practitioners of dark arts, feared and reviled for their power.",
+    "formativeEvent": "At the age of ten, his parents vanished mysteriously after a ritual gone terribly wrong, leaving him to wander the shattered remains of his home in search of answers.",
+    "secret": "Lorien has secretly been honing his skills, believing that he may be able to wield magic himself if given the chance. He dreams of finding an old tome that will unlock his full potential and help restore balance to a world torn asunder by forbidden knowledge.",
+    "summary": "A wandering mage with a mysterious past and a thirst for power, Lorien seeks redemption through knowledge while navigating a world where even magic is a weapon."
+  },
+  "voice": {
+    "speechPattern": "Precise and measured, often speaking in long sentences that seem to build upon one another like the steps of an ancient ritual.",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "'The true power lies within the heart of the universe.'",
+      "'We must tread carefully, lest we disturb the balance of fate itself.'"
+    ],
+    "quirks": "A tendency to speak in riddles or cryptic metaphors, often leaving listeners unsure if he was being literal."
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764181750885",
+  "isAlive": true,
+  "createdAt": "2025-11-26T18:29:27.856Z",
+  "updatedAt": "2025-11-26T18:29:27.858Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

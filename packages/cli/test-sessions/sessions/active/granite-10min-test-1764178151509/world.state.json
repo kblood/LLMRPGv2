@@ -1,0 +1,99 @@
+{
+  "theme": {
+    "name": "The Shattered Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Gritty and Desolate",
+    "keywords": [
+      "ancient magic",
+      "forgotten kingdoms",
+      "dark forces",
+      "secrets of the past",
+      "fallen empires"
+    ]
+  },
+  "locations": {
+    "loc-1764178155188": {
+      "id": "loc-1764178155188",
+      "name": "The Shattered Sanctum",
+      "description": "A crumbling temple complex nestled in the heart of a desolate wasteland, overgrown with twisted vines and shadowy ruins. The air is thick with the scent of decay and ancient magic.",
+      "aspects": [
+        {
+          "id": "asp-eevuyv17n",
+          "name": "Whispers of Forgotten Magic",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-u69jj9jpd",
+          "name": "Ruins of a Fallen Empire",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-qz7dne4on",
+          "name": "Secrets of the Abyss",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-kngp4zv7i",
+          "name": "The Catacombs of Shadows",
+          "description": "A labyrinthine network of tunnels beneath the temple, filled with ancient traps and eerie sigils that pulse faintly in the darkness.",
+          "interactable": true
+        },
+        {
+          "id": "feat-dkb1fk6bf",
+          "name": "The Orb of Forgotten Power",
+          "description": "An ancient artifact resting atop a crumbling altar, rumored to hold immense power but protected by powerful wards.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "NaN",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-12345",
+      "title": "Seeking the Orb of Forgotten Power",
+      "description": "The ancient artifact known as the Orb of Forgotten Power lies hidden within The Shattered Sanctum. Legends say it holds the key to restoring balance in the shattered realms.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Navigate through the Catacombs of Shadows and uncover its secrets.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "failed"
+        },
+        {
+          "id": "obj-2",
+          "description": "Unlock the ancient wards surrounding the Orb on the altar.",
+          "type": "custom",
+          "requiredCount": 1
+        }
+      ]
+    }
+  ],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764178156544",
+    "name": "Echoes of Oblivion",
+    "description": "As you stand amidst the crumbling ruins of the Shattered Sanctum, the wind whispers through the twisted vines that have reclaimed this once-holy ground. The air is heavy with the stench of decay and ancient magic, a constant reminder of what was lost. Suddenly, a shard of obsidian falls from the sky, embedding itself into the earth near an overgrown altar. You hear faint cries for help echoing through the ruins as you approach the source of the disturbance.",
+    "locationId": "loc-1764178155188",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

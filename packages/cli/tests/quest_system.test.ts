@@ -198,3 +198,181 @@ describe('Quest System', () => {
     expect(updatedQuest.status).toBe("completed"); // Should auto-complete
   });
 });
+
+describe('Quest Prerequisites', () => {
+  it('should check knowledge prerequisites correctly', async () => {
+    const { QuestManager } = await import('@llmrpg/core');
+
+    // Quest with prerequisites
+    const quest = {
+      id: "quest-secret",
+      title: "The Hidden Temple",
+      description: "Find the ancient temple",
+      status: 'active' as const,
+      objectives: [],
+      isHidden: false,
+      prerequisites: {
+        locations: ["temple-ruins"],
+        npcs: ["old-sage"]
+      }
+    };
+
+    // Player without knowledge
+    const contextMissing = {
+      knowledge: {
+        locations: {},
+        npcs: {},
+        quests: {},
+        factions: {},
+        secrets: {},
+        items: {},
+        topics: {}
+      },
+      completedQuestIds: []
+    };
+
+    const resultMissing = QuestManager.checkPrerequisites(quest, contextMissing);
+    expect(resultMissing.met).toBe(false);
+    expect(resultMissing.missing.length).toBe(2);
+    expect(resultMissing.missing).toContain("locations: temple-ruins");
+    expect(resultMissing.missing).toContain("npcs: old-sage");
+
+    // Player with knowledge - using correct KnowledgeProfile structure
+    const contextComplete = {
+      knowledge: {
+        locations: { 
+          "temple-ruins": { 
+            locationId: "temple-ruins",
+            name: "Ancient Temple Ruins", 
+            known: true,
+            confidence: "high" as const,
+            visited: false,
+            knownSince: 5 
+          } 
+        },
+        npcs: { 
+          "old-sage": { 
+            npcId: "old-sage",
+            name: "Old Sage", 
+            known: true,
+            confidence: "medium" as const,
+            knownSince: 3 
+          } 
+        },
+        quests: {},
+        factions: {},
+        secrets: {},
+        items: {},
+        topics: {}
+      },
+      completedQuestIds: []
+    };
+
+    const resultComplete = QuestManager.checkPrerequisites(quest, contextComplete);
+    expect(resultComplete.met).toBe(true);
+    expect(resultComplete.missing.length).toBe(0);
+  });
+
+  it('should check faction reputation prerequisites', async () => {
+    const { QuestManager } = await import('@llmrpg/core');
+
+    const quest = {
+      id: "quest-guild",
+      title: "Guild Mission",
+      description: "A mission for trusted members",
+      status: 'active' as const,
+      objectives: [],
+      isHidden: false,
+      prerequisites: {
+        factionReputation: { "shadow-guild": 20 }
+      }
+    };
+
+    // Player with insufficient reputation
+    const contextLowRep = {
+      knowledge: { locations: {}, npcs: {}, quests: {}, factions: {}, secrets: {}, items: {}, topics: {} },
+      completedQuestIds: [],
+      factionReputations: { "shadow-guild": 10 }
+    };
+
+    const resultLowRep = QuestManager.checkPrerequisites(quest, contextLowRep);
+    expect(resultLowRep.met).toBe(false);
+    expect(resultLowRep.missing).toContain("faction reputation: shadow-guild (need 20, have 10)");
+
+    // Player with sufficient reputation
+    const contextHighRep = {
+      knowledge: { locations: {}, npcs: {}, quests: {}, factions: {}, secrets: {}, items: {}, topics: {} },
+      completedQuestIds: [],
+      factionReputations: { "shadow-guild": 50 }
+    };
+
+    const resultHighRep = QuestManager.checkPrerequisites(quest, contextHighRep);
+    expect(resultHighRep.met).toBe(true);
+  });
+
+  it('should filter available quests based on prerequisites', async () => {
+    const { QuestManager } = await import('@llmrpg/core');
+
+    const quests = [
+      {
+        id: "quest-1",
+        title: "Easy Quest",
+        description: "No prerequisites",
+        status: 'active' as const,
+        objectives: [],
+        isHidden: false
+        // No prerequisites
+      },
+      {
+        id: "quest-2",
+        title: "Medium Quest",
+        description: "Requires location knowledge",
+        status: 'active' as const,
+        objectives: [],
+        isHidden: false,
+        prerequisites: {
+          locations: ["known-location"]
+        }
+      },
+      {
+        id: "quest-3",
+        title: "Hard Quest",
+        description: "Requires unknown location",
+        status: 'active' as const,
+        objectives: [],
+        isHidden: false,
+        prerequisites: {
+          locations: ["unknown-location"]
+        }
+      }
+    ];
+
+    const context = {
+      knowledge: {
+        locations: { 
+          "known-location": { 
+            locationId: "known-location",
+            name: "Known Place", 
+            known: true,
+            confidence: "high" as const,
+            visited: true,
+            knownSince: 1 
+          } 
+        },
+        npcs: {},
+        quests: {},
+        factions: {},
+        secrets: {},
+        items: {},
+        topics: {}
+      },
+      completedQuestIds: []
+    };
+
+    const available = QuestManager.getAvailableQuests(quests, context);
+    expect(available.length).toBe(2);
+    expect(available.map(q => q.id)).toContain("quest-1");
+    expect(available.map(q => q.id)).toContain("quest-2");
+    expect(available.map(q => q.id)).not.toContain("quest-3");
+  });
+});

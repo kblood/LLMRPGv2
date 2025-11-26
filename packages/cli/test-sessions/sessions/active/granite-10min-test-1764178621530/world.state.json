@@ -1,0 +1,101 @@
+{
+  "theme": {
+    "name": "The Shattered Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Gritty",
+    "keywords": [
+      "ancient magic",
+      "forgotten kingdoms",
+      "dark fantasy",
+      "mythic ruins",
+      "shadowy conspiracies"
+    ]
+  },
+  "locations": {
+    "loc-1764178624440": {
+      "id": "loc-1764178624440",
+      "name": "The Shattered Realms",
+      "description": "A sprawling ruin of an ancient city on the outskirts of the forgotten kingdom of Eldoria, where dark magic and shadowy conspiracies thrive. The once-mighty citadel looms over the town, its walls cracked and overgrown with twisted vines. A dimly lit tavern sits in the heart of the ruins, filled with travelers from various realms seeking to uncover the secrets hidden within.",
+      "aspects": [
+        {
+          "id": "asp-8m4e0umch",
+          "name": "Echoes of Ancient Magic",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-uqjfhlg4i",
+          "name": "Whispers of a Dark Conspiracy",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-5w3hsf1vq",
+          "name": "Ruins of Eldoria's Lost Kingdom",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-kgeybdarp",
+          "name": "The Tavern - The Shattered Hearth",
+          "description": "A dimly lit tavern where patrons from various realms gather to drink, share stories, and plot their next moves. It is rumored that the barkeep has knowledge of ancient spells and artifacts.",
+          "interactable": true
+        },
+        {
+          "id": "feat-xqr9wwk5w",
+          "name": "The Citadel's Ruins",
+          "description": "Overgrown with vines and haunted by dark spirits, these ruins contain remnants of Eldoria's past glory. Adventurers may find clues to the kingdom's fall or hidden treasures within.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "NaN",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-1234567890",
+      "title": "The Lost Tome of Eldoria",
+      "description": "Deep within the ruins of Eldoria's lost kingdom, a tome containing forbidden knowledge has been uncovered. Lysander must decipher its secrets to prevent it from falling into the wrong hands.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Locate and examine the ancient tome hidden within the Citadel's ruins.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        },
+        {
+          "id": "obj-2",
+          "description": "Decipher the cryptic text of the lost tome to uncover its forbidden knowledge.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        }
+      ]
+    }
+  ],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764178625844",
+    "name": "Whispers from the Shattered Citadel",
+    "description": "As you step into the heart of the ruined city, the air feels heavy with the weight of forgotten magic and ancient secrets. The tavern's dim light flickers over tables cluttered with dusty tomes and weathered artifacts. A group of cloaked figures huddles in a corner, their whispers barely audible but unmistakably urgent. You overhear fragments of conversation about an artifact hidden deep within the citadel, one that is said to hold immense power capable of reshaping reality itself.",
+    "locationId": "loc-1764178624440",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "id": "player-1764178162109",
+  "type": "player",
+  "name": "Lysandra Veilshadow",
+  "appearance": "Tall and slender with an air of perpetual weariness. Her long, silver hair is often pulled back into a loose braid adorned with small crystals. She wears layered robes in muted earth tones, embroidered with arcane sigils that seem to shimmer when she moves.",
+  "aspects": [
+    {
+      "id": "asp-8jdh243iz",
+      "name": "The Scholar-Mage",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-j3duqodmm",
+      "name": "Forsaken Arcanist",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-3i22l89ip",
+      "name": "Seeker of the Shattered Realms",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-pcqzfbx3h",
+      "name": "Haunted by Past Wonders",
+      "kind": "character",
+      "isTemporary": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "Mageship",
+      "rank": 4
+    },
+    {
+      "name": "Research",
+      "rank": 3
+    },
+    {
+      "name": "Investigation",
+      "rank": 2
+    },
+    {
+      "name": "Persuasion",
+      "rank": 1
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Arcane Recall",
+      "description": "+4 Mageship: When studying a spell or ancient tomes, Lysandra can recall the incantation with perfect accuracy.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Shattered Lore",
+      "description": "+3 Research: She has an uncanny ability to piece together fragmented knowledge from scattered ruins and libraries.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Insightful Inquiry",
+      "description": "+2 Investigation: Lysandra can ask the right questions, uncovering hidden truths or clues that others overlook.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Intellectual",
+      "Curious",
+      "Quiet",
+      "Observant"
+    ],
+    "values": [
+      "Seeking Truth",
+      "Preserving Knowledge"
+    ],
+    "quirks": [
+      "Collects ancient texts and artifacts",
+      "Prefers solitude to social gatherings"
+    ],
+    "fears": [
+      "Repeating the mistakes of the past"
+    ],
+    "desires": [
+      "Unravel the mysteries of the Shattered Realms"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into a lineage of powerful mages who were exiled from their order after a devastating ritual gone wrong, Lysandra grew up in the ruins of forgotten citadels.",
+    "formativeEvent": "The death of her mentor during a failed attempt to restore an ancient elemental spell left her both devastated and determined to honor his memory by seeking out lost knowledge.",
+    "secret": "She carries a small fragment of crystal, rumored to be from the ritual that went wrong, which she believes holds secrets yet undiscovered.",
+    "summary": "Now wandering through the desolate lands, Lysandra seeks fragments of ancient texts and relics that might hold the key to restoring balance in the Shattered Realms."
+  },
+  "voice": {
+    "speechPattern": "Precise and measured",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "It is said...",
+      "Perchance...",
+      "In light of these observations..."
+    ],
+    "quirks": "Often pauses to intone a word in an ancient language, as if seeking the right phrase."
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764178155188",
+  "isAlive": true,
+  "createdAt": "2025-11-26T17:29:22.109Z",
+  "updatedAt": "2025-11-26T17:29:22.110Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

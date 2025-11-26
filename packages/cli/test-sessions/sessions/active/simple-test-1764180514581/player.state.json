@@ -1,0 +1,168 @@
+{
+  "id": "player-1764180538997",
+  "type": "player",
+  "name": "Lysandra Shadowcloak",
+  "appearance": "A tall, slender woman with long, raven-black hair and piercing icy blue eyes. She wears a dark cloak adorned with intricate silver runes that seem to shift and glow when she casts spells.",
+  "aspects": [
+    {
+      "id": "asp-xupgb0k63",
+      "name": "Master of the Shadows",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-mn06m3sk3",
+      "name": "Secret Keeper",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-skcbh7zop",
+      "name": "Haunted by Past",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-dvx55lkr2",
+      "name": "Reclusive Magus",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-my0e7mtn3",
+      "name": "Runic Expert",
+      "kind": "character",
+      "isTemporary": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana +4",
+      "rank": 0
+    },
+    {
+      "name": "Investigation +3",
+      "rank": 0
+    },
+    {
+      "name": "Lore (Runes) +3",
+      "rank": 0
+    },
+    {
+      "name": "Persuasion +2",
+      "rank": 0
+    },
+    {
+      "name": "Science (Magical) +1",
+      "rank": 0
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Rune Blast",
+      "description": "You can focus your arcane energy into a single rune, causing it to crack and explode with devastating force. Inflicts additional damage equal to 3d6.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Shadow Step",
+      "description": "When you move silently through shadows, you gain +2 to Dodge rolls as you become one with the darkness.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Runic Recall",
+      "description": "You can recall ancient runes from your memory and inscribe them on a surface within 5 feet. This allows you to cast a powerful spell without any material components.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Introspective",
+      "Reserved",
+      "Curious"
+    ],
+    "values": [
+      "Truth",
+      "Protection of the innocent",
+      "Honoring ancient secrets"
+    ],
+    "quirks": [
+      "Speaks in riddles",
+      "Avoids direct eye contact",
+      "Collects antique spellbooks"
+    ],
+    "fears": [
+      "Being betrayed by those he trusts",
+      "Losing control of his magic",
+      "The return of a dark entity from his past"
+    ],
+    "desires": [
+      "Uncovering the truth behind his lineage",
+      "Protecting the innocent from malevolent forces",
+      "Mastering every aspect of his magical heritage"
+    ]
+  },
+  "backstory": {
+    "origin": "Lysandra was born into an ancient line of mages, her parents whispering tales of a powerful being that must be sealed away. Raised in secrecy, she discovered her affinity for magic at a young age.",
+    "formativeEvent": "One fateful night, the seal protecting their hidden enclave cracked open, unleashing a horde of malevolent spirits and exposing Lysandra to the wider world.",
+    "secret": "She is the last surviving descendant of an ancient lineage of mages who can wield powerful dark magic. The secrets she holds are guarded by her inimitable set of runes and an unforgiving code of silence.",
+    "summary": "Now a wandering mage, Lysandra seeks to unravel the mysteries of her past while navigating a world where shadows conceal far more than they reveal."
+  },
+  "voice": {
+    "speechPattern": "Lays out information in carefully constructed sentences, often using paradoxes or metaphors that require careful consideration.",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "In the shadow of destiny",
+      "The veil between worlds",
+      "A whisper in the abyss"
+    ],
+    "quirks": "Speaks in a soft, melodic voice but can become more forceful when discussing her craft or the dangers facing her world."
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764180521729",
+  "isAlive": true,
+  "createdAt": "2025-11-26T18:08:58.997Z",
+  "updatedAt": "2025-11-26T18:08:58.998Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

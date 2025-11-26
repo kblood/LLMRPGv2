@@ -1,0 +1,77 @@
+{
+  "theme": {
+    "name": "The Shattered Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim and foreboding",
+    "keywords": [
+      "mystical corruption",
+      "ancient evils",
+      "dark magic",
+      "fallen kingdoms",
+      "nightmarish landscapes"
+    ]
+  },
+  "locations": {
+    "loc-1764178669765": {
+      "id": "loc-1764178669765",
+      "name": "The Shattered Keep",
+      "description": "A crumbling fortress perched atop the ruins of an ancient citadel, surrounded by twisted forests and eerie lake reflections. The air is thick with the stench of decay and whispers of forgotten lore.",
+      "aspects": [
+        {
+          "id": "asp-ojbsq17dy",
+          "name": "Ruins of Dominion",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-tlgpxnf63",
+          "name": "Mystical Corruption",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-g4ejejy0l",
+          "name": "Whispers of the Abyss",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-muptzoxti",
+          "name": "Ancient Runestone",
+          "description": "An obsidian stone etched with symbols that pulse faintly in the gloom, drawing adventurers who dare to meddle.",
+          "interactable": true
+        },
+        {
+          "id": "feat-p0chc788o",
+          "name": "Echoing Caverns",
+          "description": "Deep underground tunnels filled with echoing chants and ancient machinery, hinting at a forgotten civilization.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "Start",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764178671736",
+    "name": "Echoes of Ruin",
+    "description": "The Shattered Keep, once a bastion of hope against the encroaching darkness, now stands in ruins. Its walls are riddled with gaping holes and crumbling towers, as if time itself has been trying to reclaim it. The surrounding forests twist and contort into unnatural shapes, their gnarled branches reaching out like skeletal fingers. The lake at the base reflects the sky but hides a darker reality beneath its surface. A chilling wind whispers secrets of forgotten lore, carrying with it an eerie resonance that seems to emanate from the very heart of the keep.",
+    "locationId": "loc-1764178669765",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

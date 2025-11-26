@@ -1,0 +1,158 @@
+{
+  "id": "player-1764180864412",
+  "type": "player",
+  "name": "Lysandra Veilwind",
+  "appearance": "Tall and slender, with long silver hair tied back in a practical braid. She wears dark robes adorned with arcane sigils that seem to glow faintly when she casts spells.",
+  "aspects": [
+    {
+      "id": "asp-knlmbpq95",
+      "name": "Lost Scholar-Mage",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-uf262yisc",
+      "name": "Wandering Fate",
+      "kind": "character",
+      "isTemporary": false
+    },
+    {
+      "id": "asp-8g34duwfs",
+      "name": "Shadows in the Tome",
+      "kind": "character",
+      "isTemporary": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcane Lore",
+      "rank": 4
+    },
+    {
+      "name": "Spellcraft",
+      "rank": 3
+    },
+    {
+      "name": "Deciphering",
+      "rank": 2
+    },
+    {
+      "name": "Streetwise",
+      "rank": 1
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Arcane Reflexes",
+      "description": "You can cast a spell before the target even knows what's happening.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Mnemonic Recall",
+      "description": "When rolling for Spellcraft, you can reroll once if you've memorized the ritual steps at least once before.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Shadowy Connections",
+      "description": "You have an uncanny ability to find hidden information or contacts related to your lost knowledge pursuits.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Deeply curious",
+      "Analytical thinker",
+      "Somber outlook"
+    ],
+    "values": [
+      "Seeking truth above all else",
+      "Respecting ancient wisdom"
+    ],
+    "quirks": [
+      "Prefers silence over conversation",
+      "Constantly rummaging through dusty tomes"
+    ],
+    "fears": [
+      "Becoming forgotten by the world",
+      "Unraveling one's mind in pursuit of knowledge"
+    ],
+    "desires": [
+      "Unlocking the secrets of long-lost civilizations",
+      "Sharing her discoveries with those who will understand"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into an esteemed lineage of scholars and mages, Lysandra was raised among ancient texts and forbidden magic.",
+    "formativeEvent": "She uncovered a cryptic tome that revealed the location of a lost city filled with arcane secrets. Determined to learn its mysteries, she embarked on a journey across the Shattered Realms.",
+    "secret": "Hidden within her robes is an amulet said to channel ancient power, guiding her path.",
+    "summary": "Haunted by the knowledge she seeks and the dangers of her own magic, Lysandra wanders the world in search of answers."
+  },
+  "voice": {
+    "speechPattern": "Precise and measured",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "It is said that...",
+      "As per my studies..."
+    ],
+    "quirks": "Often trails off mid-sentence, lost in thought"
+  },
+  "knowledge": {
+    "locations": {
+      "loc-1764180850906": {
+        "locationId": "loc-1764180850906",
+        "name": "The Shadowed Keep",
+        "known": true,
+        "confidence": "high",
+        "visited": false,
+        "knownSince": 1,
+        "details": "A crumbling fortress once ruled by the dark elves of the Shattered Realms. Overgrown with twisted vines and haunted by the echoes of ancient sorcery, it stands as a testament to forgotten power.",
+        "lastUpdated": 37
+      }
+    },
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764180850906",
+  "isAlive": true,
+  "createdAt": "2025-11-26T18:14:24.412Z",
+  "updatedAt": "2025-11-26T18:14:24.413Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

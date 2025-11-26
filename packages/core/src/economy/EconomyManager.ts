@@ -7,7 +7,40 @@ import {
 } from '@llmrpg/protocol';
 import { v4 as uuidv4 } from 'uuid';
 
+export interface FactionPriceModifier {
+  factionReputation: number; // -100 to +100
+}
+
 export class EconomyManager {
+  
+  /**
+   * Calculate price modifier based on faction reputation
+   * Reputation ranges from -100 (hostile) to +100 (ally)
+   * Price modifier: -100 = 1.5x, 0 = 1.0x, +100 = 0.7x
+   */
+  calculateFactionPriceModifier(factionReputation: number): number {
+    let modifier: number;
+    if (factionReputation < 0) {
+      // From 1.0 at 0 to 1.5 at -100
+      modifier = 1.0 - (factionReputation / 200);
+    } else {
+      // From 1.0 at 0 to 0.7 at 100
+      modifier = 1.0 - (factionReputation * 0.003);
+    }
+    return Math.max(0.7, Math.min(1.5, modifier));
+  }
+
+  /**
+   * Calculate final price with optional faction modifier
+   */
+  calculatePrice(baseValue: number, shopMarkup: number, factionReputation?: number): number {
+    let price = Math.ceil(baseValue * shopMarkup);
+    if (factionReputation !== undefined) {
+      const modifier = this.calculateFactionPriceModifier(factionReputation);
+      price = Math.ceil(price * modifier);
+    }
+    return price;
+  }
   
   /**
    * Add wealth to a character
@@ -74,13 +107,24 @@ export class EconomyManager {
 
   /**
    * Execute a purchase transaction from a shop
+   * @param buyer The character buying the item
+   * @param shop The shop to buy from
+   * @param itemId The item ID to purchase
+   * @param quantity Number of items to buy (default: 1)
+   * @param factionReputation Optional faction reputation for price modification (-100 to +100)
    */
-  buyFromShop(buyer: BaseCharacter, shop: Shop, itemId: string, quantity: number = 1): Transaction | null {
+  buyFromShop(
+    buyer: BaseCharacter, 
+    shop: Shop, 
+    itemId: string, 
+    quantity: number = 1,
+    factionReputation?: number
+  ): Transaction | null {
     const shopItem = shop.inventory.find(i => i.id === itemId);
     if (!shopItem) return null;
     if (shopItem.quantity < quantity) return null;
 
-    const unitPrice = Math.ceil(shopItem.value * shop.markup);
+    const unitPrice = this.calculatePrice(shopItem.value, shop.markup, factionReputation);
     const totalCost = unitPrice * quantity;
 
     if (buyer.wealth < totalCost) return null;
@@ -121,15 +165,35 @@ export class EconomyManager {
 
   /**
    * Sell an item to a shop
+   * @param seller The character selling the item
+   * @param shop The shop to sell to
+   * @param itemId The item ID to sell
+   * @param quantity Number of items to sell (default: 1)
+   * @param factionReputation Optional faction reputation for price modification (-100 to +100)
+   *        Note: For selling, better reputation means HIGHER sell price (inverted from buying)
    */
-  sellToShop(seller: BaseCharacter, shop: Shop, itemId: string, quantity: number = 1): Transaction | null {
+  sellToShop(
+    seller: BaseCharacter, 
+    shop: Shop, 
+    itemId: string, 
+    quantity: number = 1,
+    factionReputation?: number
+  ): Transaction | null {
     const itemIndex = seller.inventory.findIndex(i => i.id === itemId);
     if (itemIndex === -1) return null;
     
     const item = seller.inventory[itemIndex];
     if (item.quantity < quantity) return null;
 
-    const unitPrice = Math.floor(item.value * shop.markdown);
+    // Calculate sell price with faction modifier (inverted for selling - better rep = better price)
+    let unitPrice = Math.floor(item.value * shop.markdown);
+    if (factionReputation !== undefined) {
+      // Invert the modifier: allies get better sell prices
+      const buyModifier = this.calculateFactionPriceModifier(factionReputation);
+      // Inverse: if buy modifier is 0.7 (ally), sell modifier is ~1.3
+      const sellModifier = 2.0 - buyModifier;
+      unitPrice = Math.floor(unitPrice * sellModifier);
+    }
     const totalValue = unitPrice * quantity;
 
     // Execute transaction

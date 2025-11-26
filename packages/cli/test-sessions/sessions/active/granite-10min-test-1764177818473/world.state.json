@@ -1,0 +1,77 @@
+{
+  "theme": {
+    "name": "Shadows of the Fallen Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim",
+    "keywords": [
+      "ancient magic",
+      "forgotten kingdoms",
+      "dark enchantments",
+      "tyrannical rulers",
+      "ethereal ruins"
+    ]
+  },
+  "locations": {
+    "loc-1764177820980": {
+      "id": "loc-1764177820980",
+      "name": "The Obsidian Crossroads",
+      "description": "A desolate intersection in the heart of what was once the great kingdom of Eldoria, now fallen and forgotten. The area is surrounded by crumbling ruins and dark, twisted trees that seem to whisper secrets of a long-lost age.",
+      "aspects": [
+        {
+          "id": "asp-9g3ri7d2r",
+          "name": "Shadows Over Eldoria",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-9pj04rtt1",
+          "name": "Echoes of Ancient Magic",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-kuxjkm7uj",
+          "name": "Rumors of the Dark Enchantment",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-bxb7n2uuv",
+          "name": "The Ruined Throne Hall",
+          "description": "A once-great hall now overrun by vines and shadowy figures. At its center lies a pool of dark water, said to hold the power to summon forgotten horrors.",
+          "interactable": true
+        },
+        {
+          "id": "feat-nj0arzajg",
+          "name": "The Whispering Trees",
+          "description": "Ancient trees with gnarled branches that seem to whisper ancient tales when the wind blows. Nearby, there's an old tree stump where some say spirits dwell.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "NaN",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764177822632",
+    "name": "Shadows of the Fallen Realms",
+    "description": "At the heart of what was once Eldoria, now a barren wasteland marked by crumbling ruins and twisted trees that seem to whisper ancient secrets, stands the desolate intersection known as the Obsidian Crossroads. The air is thick with an eerie silence save for the distant echo of wind through broken branches. Here, where four roads diverge into oblivion, you find yourself standing at the center of this forgotten land. Suddenly, a shadowy figure emerges from the mist, cloaked and hooded, pausing before your group. The stranger speaks in hushed tones, 'You seek power that lies buried beneath these ruins? You wish to uncover Eldoria's secrets?'",
+    "locationId": "loc-1764177820980",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}
