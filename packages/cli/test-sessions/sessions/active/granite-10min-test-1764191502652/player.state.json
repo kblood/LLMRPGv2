@@ -1,0 +1,180 @@
+{
+  "id": "player-1764191515556",
+  "type": "player",
+  "name": "Eldrin Thorne",
+  "appearance": "Tall and gaunt, with sunken eyes and long silver hair that seems perpetually unkempt. He wears a tattered leather cloak adorned with ancient sigils.",
+  "aspects": [
+    {
+      "id": "asp-jt47httom",
+      "name": "Lost Scholar-Mage",
+      "type": "high_concept",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-xb92ve4u9",
+      "name": "Cursed Knowledge",
+      "type": "trouble",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-aehxuicos",
+      "name": "Haunted Past",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-m8u71zaaw",
+      "name": "Doomed Prophecy",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-ttiwszrn1",
+      "name": "Heretical Taint",
+      "type": "trouble",
+      "freeInvokes": 0
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Investigation",
+      "rank": 3
+    },
+    {
+      "name": "Persuasion",
+      "rank": 2
+    },
+    {
+      "name": "Stealth",
+      "rank": 2
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Arcane Insight",
+      "description": "Whenever Eldrin uses Arcana to uncover hidden knowledge, he can roll +4.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Shifty Eyes",
+      "description": "If Eldrin attempts to avoid detection while moving through ruins or ancient libraries, he can roll +3.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Prophecy's Whisper",
+      "description": "Eldrin knows a secret language of prophecies that allows him to predict the outcome of his actions when using Arcana in graveyards or under a blood moon.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Analytical",
+      "Obsessive",
+      "Inquisitive"
+    ],
+    "values": [
+      "Seeking Truth",
+      "Preserving Knowledge"
+    ],
+    "quirks": [
+      "Constantly checking mirrors for reflections of other selves",
+      "Fondness for ancient tomes"
+    ],
+    "fears": [
+      "Revelation of his true heritage",
+      "Loss of control over his magic"
+    ],
+    "desires": [
+      "Uncovering the lost knowledge of an ancient civilization",
+      "Finding a way to undo the curse that binds him"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into a lineage of powerful scholars and mages, Eldrin grew up in a secluded tower where forbidden texts were kept safe from prying eyes.",
+    "formativeEvent": "During his teenage years, Eldrin accidentally unlocked an ancient ritual that summoned vengeful spirits. The experience left him with fragmented memories and the constant fear that he would be consumed by the very knowledge he sought.",
+    "secret": "Eldrin carries a small, cracked amulet passed down from generations of scholars in his family. It is said to contain a fragment of an ancient spirit bound within its core.",
+    "summary": "Haunted by the past and driven by a relentless thirst for knowledge, Eldrin wanders the Forgotten Realms, searching for hidden libraries and lost texts that might reveal how to free himself from the curse he unknowingly unleashed."
+  },
+  "voice": {
+    "speechPattern": "Precise yet melancholic",
+    "vocabulary": "archaic",
+    "phrases": [
+      "'Tis said...",
+      "By the grace of...",
+      "As I recall..."
+    ],
+    "quirks": [
+      "Prefers to speak in riddles",
+      "Often repeats phrases from ancient texts"
+    ]
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {
+      "item-tome-of-shadows": {
+        "itemId": "item-tome-of-shadows",
+        "name": "The Tome of Shadows",
+        "known": true,
+        "confidence": "high",
+        "knownSince": 18,
+        "details": "Eldrin discovered an ancient tome bound in shadowy leather within the hidden chamber at the Blackspire Ruins. The text speaks of forbidden knowledge and dark rituals that could either free him from his curse or seal it forever.",
+        "lastUpdated": 29
+      }
+    },
+    "topics": {
+      "topic-magic_curse": {
+        "name": "Cursed Knowledge",
+        "details": "Eldrin gained insight into the nature of his curse and how it might be linked to the knowledge he seeks, deepening his understanding of the dark magic that binds him.",
+        "known": true,
+        "confidence": "high"
+      }
+    }
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764191507652",
+  "isAlive": true,
+  "createdAt": "2025-11-26T21:11:55.556Z",
+  "updatedAt": "2025-11-26T21:11:55.557Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "id": "player-1764195356723",
+  "type": "player",
+  "name": "Eldrin Thorne",
+  "appearance": "Eldrin is a gaunt, pale man with sunken eyes and wild, dark hair that seems to defy gravity. He wears tattered robes adorned with arcane symbols and carries an ancient tome bound in cracked leather.",
+  "aspects": [
+    {
+      "id": "asp-euh47gzqz",
+      "name": "Master of the Arcane",
+      "type": "high_concept",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-uw9mszxfm",
+      "name": "The Fallen Scholar",
+      "type": "trouble",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-dbadknym9",
+      "name": "Haunted by Past Terrors",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-sosibgmd1",
+      "name": "Mysterious Patron",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-ofjhhzntn",
+      "name": "Reluctant Relic Hunter",
+      "type": "background",
+      "freeInvokes": 0
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Diplomacy",
+      "rank": 3
+    },
+    {
+      "name": "Investigation",
+      "rank": 3
+    },
+    {
+      "name": "Stealth",
+      "rank": 2
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Arcane Reflexes",
+      "description": "You can react to threats before they even register in your mind, giving you a +1 bonus to Perception rolls when avoiding danger.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Linguistic Scholar",
+      "description": "Your mastery of ancient languages allows you to decipher long-lost scripts and comprehend cryptic inscriptions, granting you an automatic success on any Lore roll related to forgotten knowledge.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Shadowy Connections",
+      "description": "You have a knack for discovering hidden connections between seemingly unrelated pieces of information or individuals. Whenever you successfully use two different skills in the same session, you gain +1 Fate Point.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Introspective",
+      "Analytical",
+      "Reserved"
+    ],
+    "values": [
+      "Seeking Truth",
+      "Preserving Knowledge"
+    ],
+    "quirks": [
+      "Constantly checking for traps",
+      "Awkward in social situations",
+      "Laughs nervously when discussing dangerous topics"
+    ],
+    "fears": [
+      "Being forgotten by the world of magic",
+      "Discovering something too terrible to handle",
+      "Running out of resources"
+    ],
+    "desires": [
+      "Unraveling the mysteries of the past",
+      "Rewriting the annals of forbidden lore",
+      "Finding redemption for his own misdeeds"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into a lineage of powerful mages, Eldrin's talent was evident from an early age. However, a dark ritual gone wrong left him scarred both physically and spiritually.",
+    "formativeEvent": "While searching for a lost grimoire in the ruins of an ancient temple, Eldrin uncovered a malevolent entity that consumed his sanity, leaving him with fragmented memories and a thirst for forbidden knowledge.",
+    "secret": "Eldrin harbors a hidden archive filled with stolen scrolls and relics from forgotten realms, a desperate attempt to piece together the fragments of his past and reclaim what was lost.",
+    "summary": "Haunted by the horrors he has encountered, Eldrin embarks on a perilous journey across the fallen realm, piecing together the scattered fragments of ancient lore while battling the shadows that threaten to consume him."
+  },
+  "voice": {
+    "speechPattern": "Reflective and measured",
+    "vocabulary": "archaic",
+    "phrases": [
+      "Verily, it is said...",
+      "As the ancients penned...",
+      "In the shadowy recesses of forgotten lore..."
+    ],
+    "quirks": "Speaks in a cryptic manner, often referencing obscure historical events or mythical creatures."
+  },
+  "knowledge": {
+    "locations": {
+      "loc-1764195347414": {
+        "locationId": "loc-1764195347414",
+        "name": "The Cursed Keep of Eldoria",
+        "known": true,
+        "confidence": "high",
+        "visited": false,
+        "knownSince": 1,
+        "details": "Eldrin discovered the Ruined Library within the keep, a crumbling repository filled with ancient tomes that contain dark necromancy secrets. Some volumes are bound in bones of long-dead scholars, hinting at forbidden knowledge and the lingering influence of the fallen kingdom.",
+        "lastUpdated": 2
+      }
+    },
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764195347414",
+  "isAlive": true,
+  "createdAt": "2025-11-26T22:15:56.723Z",
+  "updatedAt": "2025-11-26T22:15:56.724Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

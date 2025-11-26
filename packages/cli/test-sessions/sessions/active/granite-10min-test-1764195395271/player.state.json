@@ -1,0 +1,160 @@
+{
+  "id": "player-1764195405270",
+  "type": "player",
+  "name": "Eldrin Thorne",
+  "appearance": "Eldrin is an elderly mage with long, unkempt gray hair and piercing blue eyes. He wears tattered robes adorned with arcane symbols, a leather satchel slung across his back, and carries a weathered staff inscribed with runic markings.",
+  "aspects": [
+    {
+      "id": "asp-nvaljbffh",
+      "name": "Wandering Scholar-Mage",
+      "type": "high_concept",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-ad91lmijg",
+      "name": "Hidden Knowledge",
+      "type": "trouble",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-7lof0dl2x",
+      "name": "Misguided Studies",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-f6gjsht1x",
+      "name": "Haunted Past",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-hsmy2czi0",
+      "name": "Seeking Redemption",
+      "type": "background",
+      "freeInvokes": 0
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Logic",
+      "rank": 3
+    },
+    {
+      "name": "Influence",
+      "rank": 3
+    },
+    {
+      "name": "Dodge",
+      "rank": 2
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Arcane Insight",
+      "description": "You can sense when someone is attempting to conceal knowledge or manipulate others.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Mystic Recall",
+      "description": "If you have studied a particular subject, you can retrieve lost information from your mind's archive.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Elemental Willpower",
+      "description": "You can use magic to bolster your defenses or resist hostile magic.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Intellectual",
+      "Reserved",
+      "Observant"
+    ],
+    "values": [
+      "Truth and Knowledge",
+      "Compassion for the Lost"
+    ],
+    "quirks": [
+      "Talks to himself",
+      "Collects ancient scrolls",
+      "Keeps a running tally of all books he's read"
+    ],
+    "fears": [
+      "Being hunted by dark cultists",
+      "Discovering something too terrible to bear"
+    ],
+    "desires": [
+      "Uncover the secrets of an ancient civilization",
+      "Atone for past mistakes"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into a noble family, Eldrin's life took a dark turn after his parents' mysterious disappearance during a forbidden ritual.",
+    "formativeEvent": "Haunted by visions and cryptic symbols left behind by his vanished family, Eldrin dedicated himself to studying the arcane arts in secret.",
+    "secret": "Eldrin carries an ancient amulet passed down from his lineage, believed to be connected to the very power that led to his parents' fate.",
+    "summary": "A once-privileged scholar now travels the forgotten realms, piecing together fragments of lost knowledge and battling those who would use dark magic for their own gain."
+  },
+  "voice": {
+    "speechPattern": "Mumbles in a low, gravelly voice; often pauses to contemplate each word.",
+    "vocabulary": "archaic",
+    "phrases": [
+      "'Tis said that the ancients knew more than we do...",
+      "'Twould be folly to cast such power without understanding."
+    ],
+    "quirks": "Uses arcane terms when speaking, occasionally forgetting common words."
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764195397753",
+  "isAlive": true,
+  "createdAt": "2025-11-26T22:16:45.270Z",
+  "updatedAt": "2025-11-26T22:16:45.270Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

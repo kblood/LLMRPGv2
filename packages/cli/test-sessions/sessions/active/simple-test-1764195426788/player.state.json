@@ -1,0 +1,162 @@
+{
+  "id": "player-1764195438636",
+  "type": "player",
+  "name": "Lysandra Moonshadow",
+  "appearance": "With long, raven-black hair that seems to shimmer with an ethereal light, and piercing icy blue eyes that seem to see right through the soul. She wears a dark, flowing robe adorned with arcane symbols, and carries a staff covered in silver runes.",
+  "aspects": [
+    {
+      "id": "asp-7g3ixu4f2",
+      "name": "The Shadowed Mage",
+      "type": "high_concept",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-0eucsxajd",
+      "name": "Haunted Past",
+      "type": "trouble",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-8lixuo2l5",
+      "name": "Mysterious Patron",
+      "type": "background",
+      "freeInvokes": 0
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Dodge",
+      "rank": 3
+    },
+    {
+      "name": "Empathy",
+      "rank": 2
+    },
+    {
+      "name": "Persuasion",
+      "rank": 1
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Arcane Reflexes",
+      "description": "When dodging or evading danger, Lysandra can use her staff to deflect magical attacks or create barriers.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Mystic Insight",
+      "description": "Lysandra has an uncanny ability to sense when someone is lying and can often predict the intentions of others. She rolls a d10 at the GM's discretion.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Shadowy Connections",
+      "description": "Lysandra has contacts in many shadowy places, from secret covens to hidden dungeons. Her patron will always show up when she needs help or resources most.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Introspective",
+      "Mysterious",
+      "Analytical"
+    ],
+    "values": [
+      "Truth",
+      "Justice",
+      "Wisdom"
+    ],
+    "quirks": [
+      "Says less than necessary",
+      "Collects ancient tomes"
+    ],
+    "fears": [
+      "Being betrayed by those she trusts",
+      "Revelation of her true identity"
+    ],
+    "desires": [
+      "To unravel the secrets of magic and its power",
+      "To protect the innocent from dark forces"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into a lineage of powerful mages, Lysandra was raised with arcane knowledge and forbidden rituals.",
+    "formativeEvent": "At the age of seven, her family was brutally murdered by unknown assailants. The event left her traumatized and seeking answers in the shadows.",
+    "secret": "Lysandra carries within her a stolen relic from her family's past - an ancient amulet said to hold immense power over darkness.",
+    "summary": "Now a wandering mage, she searches for clues about her heritage while evading those who wish to exploit her magical abilities."
+  },
+  "voice": {
+    "speechPattern": "Precise and measured",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "In the shadow of destiny",
+      "The veil between worlds"
+    ],
+    "quirks": [
+      "Speaks in a low, hushed tone",
+      "Uses archaic phrases"
+    ]
+  },
+  "knowledge": {
+    "locations": {
+      "loc-1764195429228": {
+        "locationId": "loc-1764195429228",
+        "name": "The Obsidian Crossroads",
+        "known": true,
+        "confidence": "high",
+        "visited": false,
+        "knownSince": 11,
+        "details": "Lysandra gained a deeper understanding of the area's significance as a nexus of dark magic and shadowy cult activity. She recognized that this location is known to her mysterious patron, who often appears when she needs help or resources.",
+        "lastUpdated": 11
+      }
+    },
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {}
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764195429228",
+  "isAlive": true,
+  "createdAt": "2025-11-26T22:17:18.636Z",
+  "updatedAt": "2025-11-26T22:17:18.637Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

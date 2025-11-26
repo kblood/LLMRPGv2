@@ -1,0 +1,120 @@
+{
+  "theme": {
+    "name": "Shadows of the Forgotten Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim, haunting",
+    "keywords": [
+      "ancient magic",
+      "forgotten kingdoms",
+      "dark rituals",
+      "haunting spirits",
+      "shadowy alliances"
+    ]
+  },
+  "locations": {
+    "loc-1764191507652": {
+      "id": "loc-1764191507652",
+      "name": "The Blackspire Ruins",
+      "description": "A crumbling series of ancient stone towers and platforms perched atop the edge of a treacherous cliff, overlooking the dark waters below. The ruins are overgrown with twisted vines and shadowy mist, and occasional echoes of distant cries can be heard.",
+      "aspects": [
+        {
+          "id": "asp-0faggcxol",
+          "name": "Echoes of the Past",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-nlzlxmb97",
+          "name": "Forbidden Knowledge",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-58dmnr2ma",
+          "name": "Haunting Spirits",
+          "kind": "environment",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-3ddvqz4ib",
+          "name": "The Shadow Altar",
+          "description": "An ancient stone altar covered in dark runes, where rituals are believed to be performed by long-forgotten cults.",
+          "interactable": true
+        },
+        {
+          "id": "feat-2umnuh60f",
+          "name": "Glimmering Pool of Secrets",
+          "description": "A shallow pool with a peculiar luminescence, said to hold the answers to the tower's mysterious past.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "NaN",
+    "period": "Day 1"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-7x9r2t4q8",
+      "title": "Seeking the Lost Tome of Shadows",
+      "description": "Deep within the ancient ruins, Eldrin discovers a hidden chamber containing an ancient tome bound in shadowy leather. The text speaks of forbidden knowledge and dark rituals that could either free him from his curse or seal it forever.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Locate the entrance to the hidden chamber within the Blackspire Ruins.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "failed"
+        },
+        {
+          "id": "obj-2",
+          "description": "Retrieve the ancient tome from the chamber and decipher its secrets.",
+          "type": "custom",
+          "requiredCount": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-id-quest-7x9r2t4q8-new",
+      "title": "Deciphering the Tome of Shadows",
+      "description": "Eldrin delves into the ancient tome, seeking to understand its secrets and unlock the knowledge that could free him from his curse.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Carefully study the text in the hidden chamber of the Blackspire Ruins.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": 0,
+          "status": "failed"
+        },
+        {
+          "id": "obj-2",
+          "description": "Attempt to decipher a passage that reveals how to either free or seal the curse.",
+          "type": "custom",
+          "requiredCount": 1
+        }
+      ]
+    }
+  ],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764191509241",
+    "name": "Whispers from the Abyss",
+    "description": "As you stand on the edge of the Blackspire Ruins, overlooking the churning waters below, a chilling wind carries whispers that seem to emanate directly from the heart of the ancient towers. The air is thick with an eerie mist, and shadows dance across the crumbling stone walls. Suddenly, one of the towers lets out a low groan, as if something within is stirring or trying to escape. You hear distant cries echoing through the ruins—muffled voices that sound like pleas for help, but they fade away just as quickly as they began.",
+    "locationId": "loc-1764191507652",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

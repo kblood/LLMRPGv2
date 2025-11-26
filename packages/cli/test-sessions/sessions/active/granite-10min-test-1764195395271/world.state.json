@@ -1,0 +1,77 @@
+{
+  "theme": {
+    "name": "Shadows of the Forgotten Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim and atmospheric",
+    "keywords": [
+      "ancient magic",
+      "dark fantasy",
+      "forgotten kingdoms",
+      "nightmare landscapes",
+      "dread enchantments"
+    ]
+  },
+  "locations": {
+    "loc-1764195397753": {
+      "id": "loc-1764195397753",
+      "name": "The Cursed Crossroads",
+      "description": "A desolate intersection of three ancient roads in the heart of the Forgotten Realms, shrouded in an eerie mist and haunted by the remnants of long-lost civilizations. The area is marked by crumbling stone archways, twisted trees with malevolent faces carved into their bark, and a perpetual sense of dread that seems to emanate from the very air.",
+      "aspects": [
+        {
+          "id": "asp-rhoe4e327",
+          "name": "Echoes of Ancient Magic",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-aviz4hwoj",
+          "name": "Whispers in the Mist",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-fvzl39u0g",
+          "name": "Shadows Beware",
+          "kind": "environment",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-61bjvrh74",
+          "name": "The Whispering Archway",
+          "description": "An ancient stone archway that seems to hum with dark energy. Those who pass through it often find themselves changed, either gaining a new fear or a strange ability.",
+          "interactable": true
+        },
+        {
+          "id": "feat-x2u20k71y",
+          "name": "The Cursed Orchard",
+          "description": "A grove of trees twisted into grotesque shapes, bearing fruit that tastes of despair and promises the wielder dark powers when consumed.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "2",
+    "period": "Day 1, morning"
+  },
+  "plotThreads": [],
+  "quests": [],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764195399203",
+    "name": "Shadows of the Forgotten Realms",
+    "description": "As you stand at the Cursed Crossroads, an ancient intersection where three forgotten roads converge, an eerie mist swirls around your feet. The air is thick with the scent of decay and the whispers of long-buried secrets. Crumbling stone archways loom overhead, their edges worn smooth by time and the elements. Twisted trees, their bark etched with malevolent faces, seem to watch you with unblinking eyes. Suddenly, a faint glow emanates from one of the arches, drawing your attention towards an ancient portal that pulses with dark energy.",
+    "locationId": "loc-1764195397753",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

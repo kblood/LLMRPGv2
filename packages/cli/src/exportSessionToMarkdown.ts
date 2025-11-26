@@ -221,7 +221,13 @@ async function generateMarkdown(
         lines.push(`- **Trouble**: ${state.player.trouble}`);
       }
       if (state.player.aspects?.length) {
-        lines.push(`- **Aspects**: ${state.player.aspects.join(', ')}`);
+        // BUG-006 Fix: Format aspect objects properly
+        const aspectStrings = state.player.aspects.map((a: any) => {
+          if (typeof a === 'string') return a;
+          if (a.name) return `${a.name} (${a.type || 'aspect'})`;
+          return JSON.stringify(a);
+        });
+        lines.push(`- **Aspects**: ${aspectStrings.join(', ')}`);
       }
       lines.push('');
     }

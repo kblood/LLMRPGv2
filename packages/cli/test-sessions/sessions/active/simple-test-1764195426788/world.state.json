@@ -1,0 +1,227 @@
+{
+  "theme": {
+    "name": "The Shadowed Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim and unsettling",
+    "keywords": [
+      "dark magic",
+      "dystopian society",
+      "shadowy cults",
+      "foul creatures",
+      "twisted landscapes"
+    ]
+  },
+  "locations": {
+    "loc-1764195429228": {
+      "id": "loc-1764195429228",
+      "name": "The Obsidian Crossroads",
+      "description": "A desolate intersection in the heart of the Shadowed Realms, where three main roads converge. The area is shrouded in an eerie mist that never lifts, and the air feels heavy with the weight of dark magic and shadowy secrets.",
+      "aspects": [
+        {
+          "id": "asp-6yk78k4vl",
+          "name": "The Veil Unbroken",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-90m15z7fe",
+          "name": "Whispers from the Abyss",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-1rksty3e7",
+          "name": "Cult of the Dark Serpent",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-t3rfn8i2i",
+          "name": "The Shadowed Inn",
+          "description": "A grim tavern that serves as a hub for travelers and locals alike. Its patrons are often drawn to dark tales and forbidden knowledge, making it the perfect place to gather information about the cult's activities.",
+          "interactable": true
+        },
+        {
+          "id": "feat-qsfp1h9nw",
+          "name": "The Cursed Market Square",
+          "description": "A bustling marketplace where the exchange of goods is fraught with danger. Many stalls sell cursed artifacts, which can be both useful and deadly if not handled carefully.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "16",
+    "period": "Day 1, morning"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-1234567890",
+      "title": "Unravel the Secrets of the Obsidian Crossroads",
+      "description": "Investigate the dark mysteries surrounding The Obsidian Crossroads, where shadows whisper secrets and ancient rituals are performed. Discover what lies beneath the veil that shrouds this place.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Find a hidden passage leading to an underground chamber.",
+          "type": "custom",
+          "requiredCount": 1
+        },
+        {
+          "id": "obj-2",
+          "description": "Identify the source of the eerie whispers that echo through the crossroads.",
+          "type": "custom",
+          "requiredCount": 1
+        }
+      ]
+    }
+  ],
+  "factions": {
+    "7340e6d3-4cf4-4b73-bf12-ef1928249a24": {
+      "id": "7340e6d3-4cf4-4b73-bf12-ef1928249a24",
+      "name": "The Cult of the Abyss",
+      "description": "A secretive, shadowy organization that worships a primordial evil entity. They seek to summon its power through dark rituals and sacrifices.",
+      "aspects": [
+        {
+          "id": "a0e95bcb-289f-4ad0-ae87-06091a480d69",
+          "name": "Inexorable Will",
+          "type": "situational",
+          "freeInvokes": 0
+        },
+        {
+          "id": "079cd611-34ed-4f9b-a863-77bf379734da",
+          "name": "Sacrificial Mysteries",
+          "type": "situational",
+          "freeInvokes": 0
+        },
+        {
+          "id": "ca78dfa9-66a7-4d70-9f2a-612ebd7751a9",
+          "name": "Unbreakable Oaths",
+          "type": "situational",
+          "freeInvokes": 0
+        }
+      ],
+      "goals": [
+        "Summon the Abyss",
+        "Control Shadow Magic"
+      ],
+      "members": [],
+      "relationships": {},
+      "territory": [],
+      "resources": [
+        {
+          "type": "Ritual Sites",
+          "level": 5
+        },
+        {
+          "type": "Secret Knowledge",
+          "level": 4
+        }
+      ],
+      "isHidden": true
+    },
+    "4c8478e8-177c-4255-85e8-359493b3d54c": {
+      "id": "4c8478e8-177c-4255-85e8-359493b3d54c",
+      "name": "The Dystopian Vanguard",
+      "description": "A ruthless, authoritarian faction that seeks to impose a new world order on the fragmented lands. They are led by charismatic leaders who promise stability.",
+      "aspects": [
+        {
+          "id": "67b1c9d2-7d8d-4005-8910-484e66139ec0",
+          "name": "Iron Discipline",
+          "type": "situational",
+          "freeInvokes": 0
+        },
+        {
+          "id": "a9834ba2-c204-4900-b4b0-063327e9f458",
+          "name": "Terrifying Reach",
+          "type": "situational",
+          "freeInvokes": 0
+        },
+        {
+          "id": "1cceeb45-169a-4beb-b61b-8120c146936f",
+          "name": "Immovable Resolve",
+          "type": "situational",
+          "freeInvokes": 0
+        }
+      ],
+      "goals": [
+        "Establish Ominous Order",
+        "Eliminate Resistance"
+      ],
+      "members": [],
+      "relationships": {},
+      "territory": [],
+      "resources": [
+        {
+          "type": "Military Strength",
+          "level": 5
+        },
+        {
+          "type": "Influence in Government",
+          "level": 3
+        }
+      ],
+      "isHidden": false
+    },
+    "abf26c19-f0f4-4246-bf75-3619138d5c8c": {
+      "id": "abf26c19-f0f4-4246-bf75-3619138d5c8c",
+      "name": "The Shadowy Guardians",
+      "description": "A band of rebels who protect the vulnerable from the encroaching darkness. They are skilled mercenaries and scavengers, trained to fight both man and beast.",
+      "aspects": [
+        {
+          "id": "c1d12ea6-875e-4b3f-ab3b-2adc12c2be2b",
+          "name": "Indomitable Spirit",
+          "type": "situational",
+          "freeInvokes": 0
+        },
+        {
+          "id": "a3454cf1-0548-4a6e-a87e-e9b7d7fa10cd",
+          "name": "Wily Tactics",
+          "type": "situational",
+          "freeInvokes": 0
+        },
+        {
+          "id": "3b0adc9f-e10d-4b27-aa30-c44048a4b3dd",
+          "name": "Resolute Allies",
+          "type": "situational",
+          "freeInvokes": 0
+        }
+      ],
+      "goals": [
+        "Defend the Innocent",
+        "Expose the Cult"
+      ],
+      "members": [],
+      "relationships": {},
+      "territory": [],
+      "resources": [
+        {
+          "type": "Skilled Fighters",
+          "level": 4
+        },
+        {
+          "type": "Scavenged Arms",
+          "level": 3
+        }
+      ],
+      "isHidden": false
+    }
+  },
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764195430561",
+    "name": "Whispers at the Crossroads",
+    "description": "At the heart of the Shadowed Realms, where three main roads converge, the Obsidian Crossroads stands shrouded in an eternal mist. The air is thick with the scent of ancient magic and whispers of long-forgotten secrets. As you stand at this desolate intersection, a sudden chill runs down your spine as if unseen eyes are watching you from every direction.",
+    "locationId": "loc-1764195429228",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

@@ -170,8 +170,8 @@ export class GameMaster {
     this.worldManager.state.theme = theme;
     this.worldManager.setLocation(startingLocation);
     
-    // Set initial time
-    this.worldManager.setTime("Start", "Day 1");
+    // Set initial time (numeric string for proper increment)
+    this.worldManager.setTime("0", "Day 1, morning");
 
     // Generate Scenario
     console.log("Generating starting scenario...");
@@ -368,10 +368,11 @@ export class GameMaster {
   }
 
   private findNPCByName(name: string): CharacterDefinition | undefined {
-    // First check active NPCs in the current location
+    // BUG-004/005 Fix: Only return NPCs that are present at the current location
+    // This prevents "ghost NPC" interactions with non-existent characters
     if (this.currentScene) {
         const location = this.worldManager.getLocation(this.currentScene.locationId);
-        if (location && location.presentNPCs) {
+        if (location && location.presentNPCs && location.presentNPCs.length > 0) {
             for (const npcId of location.presentNPCs) {
                 const npc = this.npcs[npcId];
                 if (npc && npc.name.toLowerCase().includes(name.toLowerCase())) {
@@ -380,8 +381,9 @@ export class GameMaster {
             }
         }
     }
-    // Then check all known NPCs
-    return Object.values(this.npcs).find(npc => npc.name.toLowerCase().includes(name.toLowerCase()));
+    // Do NOT fall back to all known NPCs - if no one is present, return undefined
+    // This forces the narrative to acknowledge the absence of NPCs
+    return undefined;
   }
 
   async processPlayerAction(playerAction: string) {
@@ -492,8 +494,9 @@ export class GameMaster {
     // 7. Collect Deltas & Apply Consequences
     // Always record time passing
     const oldTime = this.worldManager.state.time.value;
-    // Simplified time increment
-    this.worldManager.state.time.value = (parseInt(oldTime) + 1).toString();
+    // Safely parse time value, defaulting to 0 if not a number
+    const timeValue = parseInt(oldTime);
+    this.worldManager.state.time.value = (isNaN(timeValue) ? 1 : timeValue + 1).toString();
     
     this.deltaCollector.collect({
         target: 'world',
@@ -530,7 +533,13 @@ export class GameMaster {
     }, resolution.outcome);
 
     if (questUpdate) {
-        this.applyQuestUpdate(questUpdate, turn);
+        // BUG-002 Fix: Only allow new quests on success; failures can still update/fail existing quests
+        const isSuccess = resolution.outcome === 'success' || resolution.outcome === 'success_with_style';
+        const isNewQuest = questUpdate.type === 'new';
+        
+        if (!isNewQuest || isSuccess) {
+            this.applyQuestUpdate(questUpdate, turn);
+        }
     }
 
     // Check for World Updates
@@ -1092,6 +1101,13 @@ export class GameMaster {
     const worldState = this.worldManager.state;
 
     if (update.type === 'new' && update.quest) {
+      // BUG-003 Fix: Check if quest with same ID already exists to prevent duplicates
+      const existingQuest = worldState.quests?.find((q: any) => q.id === update.quest.id);
+      if (existingQuest) {
+        // Quest already exists, skip adding duplicate
+        return;
+      }
+      
       QuestManager.addQuest(worldState, update.quest);
       this.turnManager.addEvent('quest_update', 'new_quest', {
         description: `New Quest: ${update.quest.title}`,

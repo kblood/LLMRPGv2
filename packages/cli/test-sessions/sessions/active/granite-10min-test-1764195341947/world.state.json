@@ -1,0 +1,106 @@
+{
+  "theme": {
+    "name": "Shadows of the Fallen Realm",
+    "genre": "Dark Fantasy",
+    "tone": "Gritty",
+    "keywords": [
+      "ancient magic",
+      "forgotten kingdoms",
+      "dark necromancy",
+      "haunted ruins",
+      "fallen empires"
+    ]
+  },
+  "locations": {
+    "loc-1764195347414": {
+      "id": "loc-1764195347414",
+      "name": "The Cursed Keep of Eldoria",
+      "description": "An ancient fortress perched atop a jagged cliff overlooking the desolate plains. Once the seat of power for the fallen kingdom of Eldoria, it now stands in ruins, its walls adorned with eerie runes and overgrown with thorny brambles.",
+      "aspects": [
+        {
+          "id": "asp-i4k4q2ngu",
+          "name": "Whispers of Vengeance",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-hkkuwlvn1",
+          "name": "Echoes of the Fallen",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-o1v9j67y1",
+          "name": "Forbidden Knowledge",
+          "kind": "situation",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-pxpdb5kqi",
+          "name": "The Ruined Library",
+          "description": "A crumbling library filled with ancient tomes, some of which contain dark necromancy secrets. Rumors say that a few volumes are bound in the bones of long-dead scholars.",
+          "interactable": true
+        },
+        {
+          "id": "feat-fji3qmiwv",
+          "name": "The Cursed Well",
+          "description": "An eerie well located at the edge of the keep, said to be blessed by an ancient deity but cursed with nightmares and visions of past atrocities committed under Eldoria's rule.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "2",
+    "period": "Day 1, morning"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-7x9r2t4q8",
+      "title": "The Lost Tome of Eldoria",
+      "description": "Deep within the ruins of the Cursed Keep, you discover a hidden chamber containing ancient tomes that may hold the key to restoring balance in the fallen realm. Retrieve these forbidden texts and decipher their secrets.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Locate the hidden chamber within the keep.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        },
+        {
+          "id": "obj-2",
+          "description": "Retrieve at least three ancient tomes from the chamber.",
+          "type": "custom",
+          "requiredCount": 3
+        },
+        {
+          "id": "obj-3",
+          "description": "Decipher one of the tomes using your Arcana skill.",
+          "type": "skill",
+          "requiredCount": 1,
+          "skillId": "arcana"
+        }
+      ]
+    }
+  ],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764195349885",
+    "name": "Shadows of the Fallen Realm",
+    "description": "As you approach The Cursed Keep of Eldoria, the air grows heavy with an unnatural chill. The once-mighty fortress now lies in ruins, its ancient stones etched with cryptic runes that seem to writhe and twist like living things. Overgrown vines and twisted branches cling to the crumbling walls, obscuring any secrets they may hold. You can feel the weight of Eldoria's dark legacy pressing down upon you, a reminder of the tyranny that once ruled this land.\n\nThe plains below are barren and lifeless, save for the occasional skeletal remains of creatures that roamed the land in happier times. The wind carries with it an eerie whispering sound, as if the spirits of the dead themselves are calling out from within the keep's depths. As you peer closer at the crumbling entrance, you notice a single bloodstained dagger embedded in the stone steps leading up to the fortress. The blade is covered in rust and ancient runes that seem to pulse with an otherworldly energy.\n\nYou sense that something dark and sinister lurks within these ruined walls, waiting for the right moment to strike. Rumors abound of shadowy cults worshipping forbidden powers, or perhaps the remnants of Eldoria's fallen royalty themselves seeking vengeance on those who wronged them in life.",
+    "locationId": "loc-1764195347414",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

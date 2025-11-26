@@ -92,6 +92,13 @@ We have integrated all systems, added comprehensive testing, and ensured system 
 - **Intent Classification**: Implemented `classifyIntent` in `DecisionEngine` to route player actions to appropriate handlers (Fate actions, Trade, Craft, Inventory, Status).
 - **System Event Type**: Added 'system' event type to support non-Fate mechanical events (inventory checks, status checks, trade, craft).
 - **Location Feature Types**: Extended `LocationSchema` features to include `type` field for 'generic', 'shop', 'crafting_station', 'container', and 'exit'.
+- **Session Export to Markdown**: Implemented `exportSessionToMarkdown.ts` in `packages/cli/src`. Interactive CLI tool to export session history to Markdown files. Features:
+  - Browse all available sessions (regular and test sessions)
+  - View session info (player, date, turn count)
+  - Export session metadata, world state, player character, and full turn history
+  - Optional inclusion of state changes (deltas) with collapsible `<details>` sections
+  - Direct command-line export: `npx tsx src/exportSessionToMarkdown.ts <sessionId>`
+  - Exports saved to `packages/cli/exports/`
 
 ### 9. Integration & System Interoperability (Phase 9)
 - **Comprehensive Integration Test**: Created `tests/integration.test.ts` that exercises all major systems in a cohesive gameplay scenario: World Generation, Character Creation, Combat, Social Conflict, Knowledge System, Quest System, Economy, Factions, and Save/Load.
@@ -140,7 +147,70 @@ The replay/debug system is partially implemented. Complete the following to make
 6.  **Teamwork Mechanics**: Implement mechanics for characters helping each other (stacking advantages).
 
 ## 🐛 Known Issues / Notes
-- None currently.
+
+### Critical Bugs (Identified November 26, 2025 - 10-Minute Test Analysis)
+
+#### BUG-001: Time Value Becomes NaN ⏰ ✅ FIXED
+- **Location**: `packages/cli/src/GameMaster.ts` line 174, 496
+- **Cause**: `parseInt("Start")` returns `NaN` when initial time is set to `"Start"`
+- **Fix Applied**:
+  - Changed initial time from `"Start"` to `"0"` (line 174)
+  - Added safe parsing with `isNaN()` fallback (line 496)
+
+#### BUG-002: Quests Created on Action Failure 📜 ✅ FIXED
+- **Location**: `packages/cli/src/GameMaster.ts:~530`
+- **Cause**: `determineQuestUpdate()` called regardless of action outcome
+- **Fix Applied**: Added guard to only allow `type: 'new'` quests on success; failures can still update/fail existing quests
+
+#### BUG-003: Duplicate Quest Appending 📋 ✅ FIXED
+- **Location**: `packages/cli/src/GameMaster.ts:applyQuestUpdate()` (~line 1095)
+- **Cause**: No deduplication check before appending quests
+- **Fix Applied**: Added check for existing quest ID before adding new quests
+
+#### BUG-004: Social Actions Without NPCs 👤 ✅ FIXED
+- **Location**: `packages/cli/src/GameMaster.ts:findNPCByName()`
+- **Cause**: `findNPCByName()` fell back to all known NPCs instead of only present NPCs
+- **Fix Applied**: `findNPCByName()` now only returns NPCs that are in `presentNPCs` at current location
+
+#### BUG-005: Combat Without Valid Targets ⚔️ ✅ MITIGATED
+- **Location**: `packages/cli/src/GameMaster.ts` + `CombatManager.ts`
+- **Cause**: Attack actions processed without validating enemy presence
+- **Mitigation**: The `findNPCByName()` fix also helps here - no target found means no NPC combat actions. Full combat validation is a larger feature enhancement.
+- **Status**: Partially fixed (NPC validation improved); full combat target validation deferred
+
+#### BUG-006: Aspect Serialization in Export 🏷️ ✅ FIXED
+- **Location**: `packages/cli/src/exportSessionToMarkdown.ts:~215`
+- **Cause**: Aspect objects stringified as `[object Object]` instead of formatted
+- **Fix Applied**: Added proper aspect formatting with `typeof` check and `.name` extraction
+
+### New Bugs Discovered (November 26, 2025 - Session Export Analysis)
+
+#### BUG-007: Action Misclassification 🎯 ✅ FIXED
+- **Location**: `packages/cli/src/systems/DecisionEngine.ts:classifyAction()`
+- **Cause**: LLM sometimes classifies non-combat actions (e.g., "Walk forward") as `attack`
+- **Fix Applied**:
+  1. Enhanced prompt with explicit rules: movement/exploration are NEVER attacks
+  2. Added scene context (present NPCs, hostile NPCs) to prompt
+  3. Added post-classification validation that overrides `attack` to `overcome` when:
+     - Input uses movement/exploration verbs AND doesn't mention a present NPC
+     - No combat words present AND no hostile targets AND no NPC mentioned
+  4. Attack now requires explicit naming of a present target
+
+#### BUG-008: Attack Without Target Generates Damage Event ⚔️
+- **Location**: `packages/cli/src/GameMaster.ts:applyActionConsequences()`
+- **Cause**: When `attack` action has no valid target, system still creates "Dealt X shifts of damage (Placeholder for target application)" event
+- **Impact**: Confusing mechanical events that don't make narrative sense
+- **Status**: 📝 DOCUMENTED - Should skip damage event when no target exists
+
+#### BUG-009: Narration Not Persisted to Turn Data 📝
+- **Location**: `packages/core/src/types/turn.ts` + `packages/cli/src/GameMaster.ts:finalizeTurn()`
+- **Cause**: `Turn` interface lacks `narration` field; narrative is generated but not saved
+- **Impact**: Exported sessions lose story context; only mechanical events preserved
+- **Recommended Fix**: 
+  1. Add `narration?: string` to `Turn` interface in `packages/core/src/types/turn.ts`
+  2. Update `finalizeTurn()` to set `turn.narration = narration` before saving
+  3. Update `exportSessionToMarkdown.ts` to display narration per turn
+- **Status**: 📝 DOCUMENTED - High priority for session replay quality
 
 ## 📊 10-Minute Granite4:3b Comprehensive Test Results (November 26, 2025)
 

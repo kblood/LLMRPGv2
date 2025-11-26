@@ -194,15 +194,38 @@ Examples:
   }
 
   async classifyAction(playerInput: string, context: DecisionContext): Promise<string> {
+    // Extract present NPCs from world state for combat context
+    const presentNPCs = context.worldState?.currentLocation?.presentNPCs || [];
+    const hostileNPCs = presentNPCs.filter((npc: any) => 
+      npc.disposition === 'hostile' || npc.hostile === true
+    );
+    const hasHostileTargets = hostileNPCs.length > 0;
+    const npcNames = presentNPCs.map((npc: any) => npc.name || npc).join(', ');
+
     const systemPrompt = this.contextBuilder.buildSystemPrompt(
       "Game Master",
       `You are the Game Master. Classify the player's intended action into one of the four Fate Core actions.
 
 ACTIONS:
-1. Overcome: Get past an obstacle, solve a problem, or achieve a goal.
-2. Create Advantage: Create a new aspect, discover an existing one, or take advantage of one.
-3. Attack: Harm another character or object.
-4. Defend: Prevent an attack or an advantage from being created.
+1. Overcome: Get past an obstacle, solve a problem, move somewhere, explore, or achieve a non-combat goal.
+   Examples: walking, running, climbing, jumping, opening doors, navigating, searching, examining, picking locks
+2. Create Advantage: Create a new aspect, discover information, assess a situation, or set up for future actions.
+   Examples: looking around, noticing details, preparing, finding weaknesses, creating distractions
+3. Attack: ONLY use when explicitly trying to harm a specific, named target that is PRESENT in the scene.
+   Examples: "punch the guard", "shoot the bandit", "stab Marcus" (requires a valid target!)
+4. Defend: Prevent an attack or an advantage from being created against you.
+   Examples: blocking, dodging, parrying, resisting influence
+
+CRITICAL RULES FOR ATTACK:
+- Attack requires an EXPLICIT TARGET that the player names or clearly indicates
+- Attack requires the target to be PRESENT at the current location
+- Movement actions (walk, run, go, move, travel, head, proceed) are NEVER attacks - they are Overcome
+- Exploration actions (look, search, examine, investigate) are NEVER attacks - they are Overcome or Create Advantage
+- If no valid target is named, it is NOT an attack
+
+CURRENT SCENE CONTEXT:
+${npcNames ? `NPCs present: ${npcNames}` : 'No NPCs present at current location'}
+${hasHostileTargets ? `Hostile NPCs: ${hostileNPCs.map((n: any) => n.name || n).join(', ')}` : 'No hostile NPCs present'}
 
 OUTPUT FORMAT:
 Return ONLY the action name in lowercase: "overcome", "create_advantage", "attack", or "defend".`
@@ -213,7 +236,7 @@ Return ONLY the action name in lowercase: "overcome", "create_advantage", "attac
       characterDefinition: context.player,
       worldState: context.worldState ? JSON.stringify(context.worldState, null, 2) : undefined,
       history: context.history,
-      immediateContext: `Player Input: "${playerInput}"\n\nClassify this action.`
+      immediateContext: `Player Input: "${playerInput}"\n\nClassify this action based on the rules above.`
     });
 
     try {
@@ -223,19 +246,58 @@ Return ONLY the action name in lowercase: "overcome", "create_advantage", "attac
         temperature: 0.1
       });
 
-      const action = response.content.trim().toLowerCase();
+      let action = response.content.trim().toLowerCase();
       const validActions = ["overcome", "create_advantage", "attack", "defend"];
       
-      if (validActions.includes(action)) {
-        return action;
+      // Normalize response
+      if (!validActions.includes(action)) {
+        // Fallback logic if LLM returns something else
+        if (action.includes("attack") || action.includes("fight") || action.includes("hit")) action = "attack";
+        else if (action.includes("defend") || action.includes("block") || action.includes("dodge")) action = "defend";
+        else if (action.includes("create") || action.includes("advantage") || action.includes("assess") || action.includes("notice")) action = "create_advantage";
+        else action = "overcome";
       }
       
-      // Fallback logic if LLM returns something else
-      if (action.includes("attack") || action.includes("fight") || action.includes("hit")) return "attack";
-      if (action.includes("defend") || action.includes("block") || action.includes("dodge")) return "defend";
-      if (action.includes("create") || action.includes("advantage") || action.includes("assess") || action.includes("notice")) return "create_advantage";
+      // POST-CLASSIFICATION VALIDATION: Prevent attack misclassification
+      if (action === "attack") {
+        const inputLower = playerInput.toLowerCase();
+        
+        // Check for movement/exploration verbs that should NEVER be attacks
+        const nonCombatVerbs = [
+          'walk', 'run', 'go', 'move', 'travel', 'head', 'proceed', 'continue',
+          'look', 'search', 'examine', 'investigate', 'explore', 'check',
+          'enter', 'exit', 'leave', 'approach', 'return', 'climb', 'descend',
+          'open', 'close', 'push', 'pull', 'turn', 'use'
+        ];
+        
+        const hasNonCombatVerb = nonCombatVerbs.some(verb => 
+          inputLower.startsWith(verb) || 
+          inputLower.includes(` ${verb} `) ||
+          inputLower.includes(` ${verb}`)
+        );
+        
+        // Check if any present NPC is mentioned in the input
+        const mentionsPresenceNPC = presentNPCs.some((npc: any) => {
+          const npcName = (npc.name || npc || '').toLowerCase();
+          return npcName && inputLower.includes(npcName.toLowerCase());
+        });
+        
+        // Check for combat-indicating words
+        const combatWords = ['attack', 'fight', 'hit', 'strike', 'punch', 'kick', 'stab', 'slash', 'shoot', 'kill', 'hurt', 'harm', 'damage'];
+        const hasCombatWord = combatWords.some(word => inputLower.includes(word));
+        
+        // Override attack classification if:
+        // 1. Uses movement/exploration verbs AND doesn't mention an NPC
+        // 2. No combat words present AND no hostile targets AND no NPC mentioned
+        if (hasNonCombatVerb && !mentionsPresenceNPC && !hasCombatWord) {
+          action = "overcome";
+        } else if (!hasCombatWord && !hasHostileTargets && !mentionsPresenceNPC) {
+          // No combat words, no hostile targets, no NPC mentioned - probably not an attack
+          action = "overcome";
+        }
+      }
       
-      return "overcome";
+      return action;
     } catch (error) {
       console.error("Action classification failed:", error);
       return "overcome";
