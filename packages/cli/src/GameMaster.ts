@@ -456,7 +456,8 @@ export class GameMaster {
             type: compelData.type,
             description: compelData.description,
             status: 'offered',
-            turnId: 'pending'
+            turnId: 'pending',
+            source: 'gm'
         };
     }
     
@@ -613,9 +614,102 @@ export class GameMaster {
         return this.processSelfCompel(playerAction, turn);
     } else if (intent === 'declaration' && this.player) {
         return this.processDeclaration(playerAction, turn);
+    } else if ((intent as string) === 'teamwork' && this.player) {
+        return this.processTeamwork(playerAction, turn);
     }
 
     return this.processFateAction(playerAction, turn, playerReasoning, skipCompelCheck);
+  }
+
+  private async processTeamwork(playerAction: string, turn: Turn) {
+    if (!this.player) throw new Error("No player");
+
+    // 1. Parse Teamwork Details
+    const presentNPCs = this.currentScene ? 
+        (this.worldManager.getLocation(this.currentScene.locationId)?.presentNPCs || [])
+        .map(id => this.npcs[id])
+        .filter(n => n !== undefined) as CharacterDefinition[] 
+        : [];
+
+    const teamworkData = await this.decisionEngine.parseTeamwork(playerAction, presentNPCs);
+    
+    if (!teamworkData) {
+        const narration = "The GM is unsure who you are trying to help. Please be more specific.";
+        this.turnManager.addEvent('system', 'teamwork_failed', { description: narration });
+        return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    const targetNPC = presentNPCs.find(n => n.name.toLowerCase().includes(teamworkData.targetName.toLowerCase()));
+    if (!targetNPC) {
+        const narration = `You try to help ${teamworkData.targetName}, but they are not here.`;
+        this.turnManager.addEvent('system', 'teamwork_failed', { description: narration });
+        return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // 2. Select Skill for Player (How are they helping?)
+    const skillSelection = await this.decisionEngine.selectSkill({
+        action: { type: 'teamwork', description: teamworkData.description },
+        player: this.getCharacterDefinition(),
+        worldState: this.worldManager.state,
+        history: this.history
+    });
+
+    // 3. Roll vs Difficulty 2 (Standard Help)
+    const difficulty = 2;
+    const roll = this.fateDice.roll();
+    const resolution = ActionResolver.resolve(roll, skillSelection.rating, difficulty);
+
+    this.turnManager.addEvent('skill_check', 'teamwork', {
+        description: `Player helped ${targetNPC.name} using ${skillSelection.name}. Outcome: ${resolution.outcome}`,
+        roll,
+        difficulty,
+        shifts: resolution.shifts
+    });
+
+    let narration = "";
+    let result = resolution.outcome;
+
+    if (resolution.outcome === 'success' || resolution.outcome === 'success_with_style') {
+        // Success: Create a situational aspect on the NPC with free invokes
+        const bonus = resolution.outcome === 'success_with_style' ? 2 : 1; // Free invokes
+        
+        const aspectName = `Assisted by ${this.player.name}`;
+        const newAspect: any = {
+            id: uuidv4(),
+            name: aspectName,
+            type: 'situational',
+            freeInvokes: bonus,
+            description: `The player is helping ${targetNPC.name}: ${teamworkData.description}`
+        };
+
+        if (this.currentScene) {
+            const location = this.worldManager.getLocation(this.currentScene.locationId);
+            if (location) {
+                location.aspects.push(newAspect);
+                
+                this.turnManager.addEvent('state_change', 'teamwork_bonus', {
+                    description: `Created advantage for ${targetNPC.name}: ${aspectName} (${bonus} free invokes)`,
+                    metadata: { aspect: newAspect, target: targetNPC.name }
+                });
+                
+                this.deltaCollector.collect({
+                    target: 'world',
+                    operation: 'append',
+                    path: ['locations', location.id, 'aspects'],
+                    newValue: newAspect,
+                    previousValue: null,
+                    cause: 'teamwork',
+                    eventId: turn.events[turn.events.length - 1].eventId
+                });
+                
+                narration = `You successfully help ${targetNPC.name}! You create the advantage '${aspectName}' with ${bonus} free invokes.`;
+            }
+        }
+    } else {
+        narration = `You try to help ${targetNPC.name}, but you get in the way or fail to make a difference.`;
+    }
+
+    return this.finalizeTurn(turn, narration, result);
   }
 
   private async processConcession(turn: Turn) {
@@ -713,25 +807,25 @@ export class GameMaster {
     }
 
     // 3. Spend Fate Point
-    this.spendFatePoints(1, `Story Declaration: ${declarationData.fact}`);
+    this.spendFatePoints(1, `Story Declaration: ${declarationData}`);
 
     // 4. Apply Declaration (Add Aspect or Modify World)
     // For simplicity, we'll add a situational aspect to the scene or location
     if (this.currentScene) {
         const location = this.worldManager.getLocation(this.currentScene.locationId);
         if (location) {
-            const newAspect = {
+            const newAspect: any = {
                 id: uuidv4(),
-                name: declarationData.aspectName || declarationData.fact, // Use provided name or the fact itself
+                name: declarationData, // Use provided name or the fact itself
                 type: 'situational',
                 freeInvokes: 0, // Declarations don't give free invokes usually, just establish truth
-                description: `Declared by player: ${declarationData.fact}`
+                description: `Declared by player: ${declarationData}`
             };
             
             location.aspects.push(newAspect);
             
             this.turnManager.addEvent('state_change', 'declaration', {
-                description: `Player declared: ${declarationData.fact}`,
+                description: `Player declared: ${declarationData}`,
                 metadata: { aspect: newAspect }
             });
             
@@ -747,7 +841,7 @@ export class GameMaster {
         }
     }
 
-    const narration = `You spend a Fate Point to declare a detail about the world. ${declarationData.fact}`;
+    const narration = `You spend a Fate Point to declare a detail about the world. ${declarationData}`;
     return this.finalizeTurn(turn, narration, "success");
   }
 
@@ -938,7 +1032,7 @@ export class GameMaster {
         roll,
         difficulty: opposition,
         shifts: resolution.shifts,
-        invokes: invokeObjects
+        metadata: { invokes: invokeObjects }
     });
 
     // 9. Collect Deltas & Apply Consequences
@@ -1056,7 +1150,7 @@ export class GameMaster {
             shifts: resolution.shifts,
             outcome: resolution.outcome,
             targetName: targetNPC?.name,
-            invokes: invokeObjects
+            // invokes: invokeObjects // Removed as it's not in the interface yet
         }
     });
 
@@ -1156,7 +1250,7 @@ export class GameMaster {
     const validation = AdvancementManager.validateAdvancement(this.player, advancementData);
     if (!validation.valid) {
         const narration = `You cannot perform this advancement: ${validation.reason}`;
-        this.turnManager.addEvent('system', 'advancement_failed', { description: narration, reason: validation.reason });
+        this.turnManager.addEvent('system', 'advancement_failed', { description: narration, metadata: { reason: validation.reason } });
         return this.finalizeTurn(turn, narration, "failure");
     }
 
@@ -1252,6 +1346,7 @@ export class GameMaster {
               break;
           case 'buy_stunt':
               const newStunt = {
+                  id: uuidv4(),
                   name: action.details.newStuntName,
                   description: action.details.newStuntDescription || "No description",
                   cost: 1,

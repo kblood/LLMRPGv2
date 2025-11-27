@@ -79,7 +79,7 @@ Return ONLY the exact name of the skill.`
     }
   }
 
-  async classifyIntent(playerInput: string): Promise<'fate_action' | 'trade' | 'craft' | 'inventory' | 'status' | 'self_compel' | 'concede' | 'declaration'> {
+  async classifyIntent(playerInput: string): Promise<'fate_action' | 'trade' | 'craft' | 'inventory' | 'status' | 'self_compel' | 'concede' | 'declaration' | 'advance'> {
     const systemPrompt = this.contextBuilder.buildSystemPrompt(
       "Game Master",
       `You are the Game Master. Classify the player's intent into one of the following categories:
@@ -92,10 +92,12 @@ CATEGORIES:
 5. Self Compel: The player explicitly proposes a complication for themselves based on one of their aspects to gain a Fate Point.
 6. Concede: Giving up in a conflict to avoid being taken out.
 7. Declaration: Spending a Fate Point to declare a story detail without rolling. (e.g., "I spend a FP to declare there's a ladder", "I declare I know this guy", "Spending a fate point to say...").
-8. Fate Action: Any other gameplay action (fighting, talking, exploring, moving, using skills).
+8. Advance: Spending a milestone to improve the character (e.g., "I want to spend my minor milestone", "Swap my skills", "Buy a new stunt").
+9. Teamwork: Helping another character (NPC) with their action. (e.g., "I help Lysandra", "I assist the guard", "Combine efforts with Marcus").
+10. Fate Action: Any other gameplay action (fighting, talking, exploring, moving, using skills).
 
 OUTPUT FORMAT:
-Return ONLY the category key: "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", or "fate_action".`
+Return ONLY the category key: "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork", or "fate_action".`
     );
 
     const prompt = this.contextBuilder.assemblePrompt({
@@ -111,13 +113,111 @@ Return ONLY the category key: "trade", "craft", "inventory", "status", "self_com
       });
 
       const intent = response.content.trim().toLowerCase();
-      if (["trade", "craft", "inventory", "status", "self_compel", "concede", "declaration"].includes(intent)) {
+      if (["trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork"].includes(intent)) {
         return intent as any;
       }
       return "fate_action";
     } catch (error) {
       console.error("Intent classification failed:", error);
       return "fate_action";
+    }
+  }
+
+  async parseTeamwork(playerInput: string, presentNPCs: CharacterDefinition[]): Promise<{ targetName: string; description: string } | null> {
+    const npcNames = presentNPCs.map(n => n.name).join(', ');
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Parse the player's teamwork/assistance proposal.
+
+PRESENT NPCS:
+${npcNames}
+
+INSTRUCTIONS:
+- Identify who the player is trying to help.
+- Identify how they are helping.
+
+OUTPUT FORMAT:
+Return a JSON object:
+{
+  "targetName": "Name of the NPC being helped",
+  "description": "How the player is helping"
+}
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Player Input: "${playerInput}"\n\nParse teamwork.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1,
+        jsonMode: true
+      });
+
+      return JSON.parse(response.content);
+    } catch (error) {
+      console.error("Teamwork parsing failed:", error);
+      return null;
+    }
+  }
+
+  async parseAdvancement(playerInput: string): Promise<any> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Parse the player's advancement request.
+
+ADVANCEMENT TYPES:
+- swap_skills: Swap the ratings of two skills. (Minor)
+- rename_aspect: Rename an aspect. (Minor)
+- change_stunt: Exchange one stunt for another. (Minor)
+- buy_stunt: Buy a new stunt (costs 1 refresh). (Minor)
+- increase_skill: Increase a skill rating by one. (Significant)
+- buy_skill: Buy a new skill at Average (+1). (Significant)
+- rename_consequence: Rename a recovering consequence. (Significant)
+- increase_refresh: Gain +1 Refresh. (Major)
+- rename_high_concept: Rename High Concept aspect. (Major)
+- recover_consequence: Clear a consequence (if time passed). (Significant/Major)
+
+OUTPUT FORMAT:
+Return a JSON object matching this structure:
+{
+  "type": "advancement_type",
+  "milestoneRequired": "minor" | "significant" | "major",
+  "details": {
+    "skillName": "string (optional)",
+    "targetSkillName": "string (optional)",
+    "aspectName": "string (optional)",
+    "newAspectName": "string (optional)",
+    "stuntName": "string (optional)",
+    "newStuntName": "string (optional)",
+    "newStuntDescription": "string (optional)",
+    "consequenceName": "string (optional)"
+  }
+}
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Player Input: "${playerInput}"\n\nParse advancement.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1,
+        jsonMode: true
+      });
+
+      return JSON.parse(response.content);
+    } catch (error) {
+      console.error("Advancement parsing failed:", error);
+      return null;
     }
   }
 
@@ -158,7 +258,7 @@ Return ONLY the declared fact as a short sentence or phrase.`
       `You are the Game Master. Parse the player's self-compel proposal.
 
 PLAYER ASPECTS:
-${player.aspects.map(a => `- ${a.name}`).join('\n')}
+${player.aspects.map(a => `- ${a}`).join('\n')}
 
 INSTRUCTIONS:
 - Identify which aspect the player is trying to compel.
@@ -668,7 +768,7 @@ FATE CORE COMPEL RULES:
   2. Event Compel: The aspect causes an external complication (e.g., "Because you have 'Enemies in High Places', the guard recognizes you.").
 
 PLAYER ASPECTS:
-${context.player?.aspects.map(a => `- ${a.name} (${a.type}): ${a.description || ''}`).join('\n')}
+${context.player?.aspects.map(a => `- ${a}`).join('\n')}
 
 INSTRUCTIONS:
 - Only generate a compel if it makes narrative sense and adds drama.

@@ -4,6 +4,7 @@ export * from './utils/Random';
 export * from './fate/FateDice';
 export * from './fate/ActionResolver';
 export * from './fate/TheLadder';
+export * from './fate/AdvancementManager';
 
 export * from './types/events';
 export * from './types/turn';

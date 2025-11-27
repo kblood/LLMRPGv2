@@ -2,9 +2,9 @@
 
 **Last Updated:** November 27, 2025
 
-## 📍 Current Phase: Phase 12 - Character Advancement
+## 📍 Current Phase: Phase 13 - Teamwork & Social Mechanics
 
-We have successfully implemented all planned features for Phase 11 (Advanced Fate Mechanics & Compels). The system now supports a robust Fate Point economy, including self-compels, boosts, concessions, session refresh, and story declarations.
+We have successfully implemented the Teamwork mechanics (Phase 13). The system now supports the "Help" action, allowing characters to assist each other by creating advantages with free invokes.
 
 ## ✅ Recent Accomplishments
 
@@ -133,18 +133,34 @@ We have successfully implemented all planned features for Phase 11 (Advanced Fat
    - Updated `GameMaster` to handle `declaration` intent, spend FP, and create situational aspects.
    - Verified with `declaration.test.ts`.
 
+### 12. Character Advancement (Phase 12) ✅ COMPLETED
+1. **Milestone System**: Implemented Minor, Significant, and Major milestones.
+   - Defined `MilestoneType` and `Advancement` schemas in `@llmrpg/protocol`.
+   - Implemented `checkMilestones` in `GameMaster` to award milestones based on session events (quest completion, boss defeat).
+   - Verified with `advancement_system.test.ts`.
+2. **Skill Advancement**: Implemented skill increases.
+   - Updated `DecisionEngine` to classify `advance` intent.
+   - Implemented `processAdvancement` in `GameMaster` to handle skill upgrades.
+   - Added validation rules (skill column limits).
+3. **Aspect Refresh**: Implemented aspect changes.
+   - Allowed players to rename aspects at appropriate milestones.
+4. **Stunt Acquisition**: Implemented stunt learning.
+   - Allowed players to add new stunts (costing refresh).
+
+### 13. Teamwork & Social Mechanics (Phase 13) ✅ COMPLETED
+1. **Teamwork Actions**: Implemented "Help" mechanic.
+   - Updated `DecisionEngine` to classify `teamwork` intent.
+   - Implemented `processTeamwork` in `GameMaster` to handle assistance rolls (Fair +2 difficulty).
+   - Success creates a situational aspect ("Assisted by [Player]") with free invokes on the target.
+   - Verified with `teamwork.test.ts`.
+
 ## 📋 Next Steps (Immediate)
 
-### Phase 12: Character Advancement
-1. **Milestone System**: Implement Minor, Significant, and Major milestones for character growth.
-2. **Skill Advancement**: Allow players to increase skill ratings through milestone rewards.
-3. **Aspect Refresh**: Enable players to change aspects at major milestones.
-4. **Stunt Acquisition**: Allow players to learn new stunts through gameplay.
+### Phase 14: Group Conflicts & Social Dynamics
+1. **Group Conflicts**: Extend social/combat systems to handle multiple participants.
+2. **Relationship Dynamics**: Deepen NPC relationship tracking and social consequences.
 
-### Phase 13: Teamwork & Social Mechanics
-1. **Teamwork Actions**: Implement mechanics for characters helping each other (stacking advantages).
-2. **Group Conflicts**: Extend social/combat systems to handle multiple participants.
-3. **Relationship Dynamics**: Deepen NPC relationship tracking and social consequences.
+## 🐛 Known Issues / Notes
 
 ## 🐛 Known Issues / Notes
 

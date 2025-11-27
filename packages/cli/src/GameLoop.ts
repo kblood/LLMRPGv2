@@ -61,7 +61,7 @@ export class GameLoop {
         break;
       }
 
-      let result = await this.gameMaster.processPlayerAction(action);
+      let result: any = await this.gameMaster.processPlayerAction(action);
       this.printResult(result);
 
       // Handle Compel Offer
