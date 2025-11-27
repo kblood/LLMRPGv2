@@ -1,6 +1,6 @@
 # Project Status
 
-**Last Updated:** November 26, 2025
+**Last Updated:** November 27, 2025
 
 ## 📍 Current Phase: Phase 9 - Integration & System Interoperability (Completed)
 
@@ -99,13 +99,27 @@ We have integrated all systems, added comprehensive testing, and ensured system 
   - Optional inclusion of state changes (deltas) with collapsible `<details>` sections
   - Direct command-line export: `npx tsx src/exportSessionToMarkdown.ts <sessionId>`
   - Exports saved to `packages/cli/exports/`
+  - **Bug Fixed**: Resolved duplicate turns issue - each turn now appears once with both GM narration and AI player reasoning included.
 
 ### 9. Integration & System Interoperability (Phase 9)
 - **Comprehensive Integration Test**: Created `tests/integration.test.ts` that exercises all major systems in a cohesive gameplay scenario: World Generation, Character Creation, Combat, Social Conflict, Knowledge System, Quest System, Economy, Factions, and Save/Load.
 - **Faction-Based Shop Prices**: Enhanced `EconomyManager` with `calculateFactionPriceModifier()` to adjust shop prices based on faction reputation. Allies get discounts (0.7x), hostile factions pay premium (1.5x). Updated `buyFromShop()` and `sellToShop()` to accept optional faction reputation parameter.
 - **Quest Prerequisites System**: Added `QuestPrerequisitesSchema` to the Quest schema supporting knowledge requirements (locations, npcs, quests, factions, secrets, items, topics) and faction reputation thresholds. Implemented `QuestManager.checkPrerequisites()` and `QuestManager.getAvailableQuests()` to filter quests based on player knowledge and reputation.
 - **Enhanced GameLoop**: Upgraded `GameLoop` with mode-aware prompts (exploration, combat, dialogue, trade), context display, visual formatting with box-drawing characters, outcome indicators (✨ for success with style, ✓ for success, ⚖️ for tie, ✗ for failure), and save-on-exit confirmation.
+- **AI Player with Reasoning**: Implemented `AIPlayer` system in `packages/cli/src/systems/AIPlayer.ts` that:
+  - Generates player actions based on character personality, goals, and situation
+  - Provides transparent reasoning explaining WHY each action was chosen
+  - Includes strategy and expected outcome fields
+  - Supports dialogue responses and event reactions
+- **Enhanced GM Narration**: Updated `NarrativeEngine` with `narrateActionResolution()` method that:
+  - Receives full action resolution context (skill, roll, shifts, outcome)
+  - Generates immersive second-person narration
+  - Matches narrative drama to mechanical outcome
+  - Includes player reasoning in narration context when available
+- **GameMaster AI Player Support**: Added `processAIPlayerAction()` and `getAIPlayerContext()` methods to facilitate AI-controlled gameplay
+- **Demo Test**: Created `tests/ai_player_demo.ts` demonstrating full AI player + GM narration flow
 - **Testing**: All 36 tests passing across 6 packages. Economy tests now include 5 faction price modifier tests. Quest system tests include 3 prerequisite validation tests.
+- **Export Functionality Bug Fix**: Fixed duplicate turns issue in session export to markdown. Each turn now appears once with both GM narration and AI player reasoning included. Modified `GameMaster.ts` to pass `playerReasoning` through the action processing chain and include it in the single turn save operation.
 
 ## 📋 Next Steps (Immediate)
 

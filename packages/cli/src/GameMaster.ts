@@ -386,7 +386,7 @@ export class GameMaster {
     return undefined;
   }
 
-  async processPlayerAction(playerAction: string) {
+  async processPlayerAction(playerAction: string, playerReasoning?: string) {
     // Check for Meta Commands
     if (playerAction.startsWith('/')) {
         return this.handleMetaCommand(playerAction);
@@ -423,10 +423,10 @@ export class GameMaster {
         return this.processStatusTurn(turn);
     }
 
-    return this.processFateAction(playerAction, turn);
+    return this.processFateAction(playerAction, turn, playerReasoning);
   }
 
-  private async processFateAction(playerAction: string, turn: Turn) {
+  private async processFateAction(playerAction: string, turn: Turn, playerReasoning?: string) {
     // 2. Determine Fate Action
     const characterDefinition = this.getCharacterDefinition();
     const worldState = this.worldManager.state;
@@ -589,18 +589,85 @@ export class GameMaster {
         }
     }
 
-    // 8. Narrate
-    const narration = await this.narrativeEngine.narrate({
+    // 8. Narrate - Use enhanced action resolution narration
+    const narration = await this.narrativeEngine.narrateActionResolution({
         events: turn.events,
         player: characterDefinition,
         worldState,
-        history: this.history
+        history: this.history,
+        actionResolution: {
+            playerAction,
+            playerReasoning: playerReasoning, // Use the passed reasoning
+            fateAction,
+            skill: skillSelection.name,
+            skillRating: skillSelection.rating,
+            difficulty: opposition,
+            roll: roll.total,
+            shifts: resolution.shifts,
+            outcome: resolution.outcome,
+            targetName: targetNPC?.name
+        }
     });
 
-    return this.finalizeTurn(turn, narration, resolution.outcome);
+    return this.finalizeTurn(turn, narration, resolution.outcome, playerReasoning);
   }
 
-  private async finalizeTurn(turn: Turn, narration: string, result: string) {
+  /**
+   * Process an action from an AI-controlled player, including their reasoning
+   * @param action The action text
+   * @param reasoning The AI player's reasoning for the action
+   * @returns Turn result with narration
+   */
+  async processAIPlayerAction(action: string, reasoning?: string): Promise<any> {
+    // Pass reasoning directly to processPlayerAction
+    return await this.processPlayerAction(action, reasoning);
+  }
+
+  /**
+   * Get context for AI player decision making
+   */
+  getAIPlayerContext() {
+    return {
+        player: this.getCharacterDefinition(),
+        worldState: this.worldManager.state,
+        history: this.history,
+        currentScene: this.currentScene,
+        objectives: this.getActiveQuestObjectives()
+    };
+  }
+
+  /**
+   * Get active quest objectives for AI player context
+   */
+  private getActiveQuestObjectives(): string[] {
+    const objectives: string[] = [];
+    const quests = this.worldManager.state.quests || [];
+    
+    for (const quest of quests) {
+        if (quest.status === 'active') {
+            objectives.push(`${quest.title}: ${quest.description}`);
+            if (quest.objectives) {
+                for (const obj of quest.objectives) {
+                    if (obj.status !== 'completed') {
+                        objectives.push(`  - ${obj.description}`);
+                    }
+                }
+            }
+        }
+    }
+    
+    return objectives;
+  }
+
+  private async finalizeTurn(turn: Turn, narration: string, result: string, playerReasoning?: string) {
+    // Store narration in the turn
+    turn.narration = narration;
+    
+    // Store player reasoning if provided
+    if (playerReasoning) {
+      (turn as any).playerReasoning = playerReasoning;
+    }
+    
     // Update history
     this.history.push(turn);
     if (this.history.length > 10) {
