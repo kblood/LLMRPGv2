@@ -1,5 +1,5 @@
 import { TurnManager, FateDice, ActionResolver, CharacterDefinition } from '@llmrpg/core';
-import { ConflictState, SceneState, PlayerCharacter } from '@llmrpg/protocol';
+import { ConflictState, SceneState, PlayerCharacter, Faction } from '@llmrpg/protocol';
 import { DecisionEngine } from './DecisionEngine';
 import { NarrativeEngine } from './NarrativeEngine';
 
@@ -19,7 +19,8 @@ export class CombatManager {
     type: 'physical' | 'mental' | 'social',
     opponents: CharacterDefinition[],
     player: PlayerCharacter,
-    allies: CharacterDefinition[] = []
+    allies: CharacterDefinition[] = [],
+    factions?: Faction[]
   ): Promise<ConflictState> {
     const conflictId = `conflict-${Date.now()}`;
     
@@ -48,11 +49,14 @@ export class CombatManager {
         ...opponents.map(o => o.id)
     ];
 
+    // 3. For social conflicts, add relationship-based aspects
+    const socialAspects = type === 'social' ? this.generateSocialAspects(player, opponents, factions) : [];
+
     const conflict: ConflictState = {
       id: conflictId,
       type,
       name: `${type} Conflict`,
-      aspects: [], // Scene aspects apply, plus any new ones
+      aspects: [...scene.aspects, ...socialAspects], // Scene aspects apply, plus any new ones
       participants,
       turnOrder,
       currentTurnIndex: 0,
@@ -178,5 +182,40 @@ export class CombatManager {
 
     targetZone.characterIds.push(characterId);
     return { success: true, message: `Moved to ${targetZone.name}.` };
+  }
+
+  /**
+   * Generates social aspects based on relationships and faction reputation.
+   */
+  private generateSocialAspects(player: PlayerCharacter, opponents: CharacterDefinition[], factions?: Faction[]): string[] {
+    const aspects: string[] = [];
+
+    for (const opponent of opponents) {
+      // Check relationship
+      const relationship = player.relationships.find(r => r.targetId === opponent.id);
+      if (relationship) {
+        if (relationship.trust >= 2) aspects.push(`${opponent.name} Trusts You`);
+        else if (relationship.trust <= -2) aspects.push(`${opponent.name} Distrusts You`);
+
+        if (relationship.affection >= 2) aspects.push(`${opponent.name} Likes You`);
+        else if (relationship.affection <= -2) aspects.push(`${opponent.name} Dislikes You`);
+
+        if (relationship.respect >= 2) aspects.push(`${opponent.name} Respects You`);
+        else if (relationship.respect <= -2) aspects.push(`${opponent.name} Disrespects You`);
+      }
+
+      // Check faction reputation
+      if (factions) {
+        for (const faction of factions) {
+          if (opponent.affiliations?.some(a => a.factionId === faction.id)) {
+            const rep = faction.relationships[player.id] || 0;
+            if (rep >= 50) aspects.push(`Allied with ${faction.name}`);
+            else if (rep <= -50) aspects.push(`Hostile to ${faction.name}`);
+          }
+        }
+      }
+    }
+
+    return aspects;
   }
 }

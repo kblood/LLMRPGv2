@@ -1731,7 +1731,8 @@ export class GameMaster {
       'physical',
       opponents,
       this.player,
-      allies
+      allies,
+      this.worldManager.state.factions
     );
     
     console.log(`Combat started! ID: ${conflict.id}`);
@@ -1754,7 +1755,8 @@ export class GameMaster {
       'social',
       opponents,
       this.player,
-      allies
+      allies,
+      this.worldManager.state.factions
     );
     
     console.log(`Social Conflict started! ID: ${conflict.id}`);
@@ -2066,10 +2068,11 @@ export class GameMaster {
             if (!this.player) return { turn: null, narration: "No character found.", result: "error" };
             const aspects = this.player.aspects.map(a => `- ${a.name} (${a.type})`).join('\n');
             const skills = this.player.skills.map(s => `- ${s.name}: +${s.rank}`).join('\n');
+            const relationships = this.player.relationships.map(r => `- ${r.targetName}: ${r.type} (T:${r.trust}, A:${r.affection}, R:${r.respect}, I:${r.influence})`).join('\n');
             const fp = this.player.fatePoints.current;
             return {
                 turn: null,
-                narration: `**${this.player.name}**\n\n**Fate Points:** ${fp}\n\n**Aspects:**\n${aspects}\n\n**Skills:**\n${skills}`,
+                narration: `**${this.player.name}**\n\n**Fate Points:** ${fp}\n\n**Aspects:**\n${aspects}\n\n**Skills:**\n${skills}\n\n**Relationships:**\n${relationships}`,
                 result: "meta_command_success"
             };
 
@@ -2083,5 +2086,44 @@ export class GameMaster {
         default:
             return { turn: null, narration: `Unknown command: ${cmd}`, result: "error" };
     }
+  }
+
+  /**
+   * Updates a relationship between characters and collects delta.
+   */
+  private updateRelationship(targetId: string, changes: Partial<{ trust: number; affection: number; respect: number; influence: number; type: string }>, event: string, turn: Turn) {
+    if (!this.player) return;
+
+    const relationship = this.player.relationships.find(r => r.targetId === targetId);
+    if (!relationship) return;
+
+    const previousValue = { ...relationship };
+
+    // Apply changes
+    if (changes.trust !== undefined) relationship.trust = Math.max(-3, Math.min(3, relationship.trust + changes.trust));
+    if (changes.affection !== undefined) relationship.affection = Math.max(-3, Math.min(3, relationship.affection + changes.affection));
+    if (changes.respect !== undefined) relationship.respect = Math.max(-3, Math.min(3, relationship.respect + changes.respect));
+    if (changes.influence !== undefined) relationship.influence = Math.max(0, Math.min(5, relationship.influence + changes.influence));
+    if (changes.type) relationship.type = changes.type as any;
+
+    // Add to history
+    relationship.history.push({
+      turn: turn.turnId as number,
+      event,
+      impact: (changes.trust || 0) + (changes.affection || 0) + (changes.respect || 0)
+    });
+
+    relationship.lastInteractionTurn = turn.turnId as number;
+
+    // Collect delta
+    this.deltaCollector.collect({
+      target: 'player',
+      operation: 'set',
+      path: ['relationships', this.player.relationships.indexOf(relationship)],
+      previousValue,
+      newValue: relationship,
+      cause: 'relationship_update',
+      eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
+    });
   }
 }

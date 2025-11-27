@@ -162,11 +162,29 @@ We have successfully implemented Group Conflicts (Phase 14). The system now supp
    - Fixed bug in `GameMaster.ts` where combat ended prematurely due to passing empty opponent list to `checkResolution`.
    - Verified with `group_conflict.test.ts`.
 
+### 15. Relationship Dynamics (Phase 15) ✅ COMPLETED
+1. **Deepened Relationship Tracking**: Enhanced `RelationshipSchema` in `@llmrpg/protocol` with additional dimensions.
+   - Added `affection` (-3 to +3): Emotional bond level.
+   - Added `respect` (-3 to +3): Admiration/contempt level.
+   - Added `influence` (0-5): How much sway the character has over the other.
+   - Changed `history` from string to array of events with turn, description, and impact.
+   - Updated `DialogueSystem` to consider all relationship dimensions in NPC responses.
+2. **Social Conflict Enhancements**: Integrated reputation effects into social conflicts.
+   - Modified `CombatManager.startConflict()` to generate relationship and faction-based situational aspects for social conflicts.
+   - Added `generateSocialAspects()` method that creates aspects like "Trusted Ally" or "Hostile to Faction" based on relationships and faction reputation.
+   - Updated `/status` command to display detailed relationship metrics (T: trust, A: affection, R: respect, I: influence).
+   - Added `updateRelationship()` method in `GameMaster` for tracking relationship changes with delta collection.
+   - Verified social aspects are applied correctly in conflict initialization.
+
 ## 📋 Next Steps (Immediate)
 
-### Phase 15: Relationship Dynamics
-1. **Relationship Tracking**: Deepen NPC relationship tracking and social consequences.
-2. **Social Conflict**: Enhance social conflict mechanics with reputation effects.
+### Phase 15: Relationship Dynamics ✅ COMPLETED
+1. **Relationship Tracking**: Deepened NPC relationship tracking with trust, affection, respect, influence, and history.
+2. **Social Conflict**: Enhanced social conflict mechanics with reputation effects via situational aspects.
+
+## 📋 Next Steps (Immediate)
+
+### Phase 16: Advanced AI and World Simulation
 
 ## 🐛 Known Issues / Notes
 

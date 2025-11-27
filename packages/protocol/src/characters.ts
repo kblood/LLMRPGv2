@@ -78,7 +78,14 @@ export const RelationshipSchema = z.object({
     'rival', 'enemy', 'family', 'romantic', 'mentor', 'student',
   ]),
   trust: z.number().int().min(-3).max(3), // -3 = complete distrust, +3 = absolute trust
-  history: z.string().optional(), // Brief relationship history
+  affection: z.number().int().min(-3).max(3).default(0), // -3 = hatred, +3 = deep love
+  respect: z.number().int().min(-3).max(3).default(0), // -3 = contempt, +3 = admiration
+  influence: z.number().int().min(0).max(5).default(0), // How much sway this character has over the other
+  history: z.array(z.object({
+    turn: z.number().int(),
+    event: z.string(), // Brief description of what happened
+    impact: z.number().int().min(-2).max(2), // How it affected the relationship
+  })).default([]),
   lastInteractionTurn: z.number().int().optional(),
 });
 
