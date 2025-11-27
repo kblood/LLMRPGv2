@@ -1820,6 +1820,9 @@ export class GameMaster {
         history: this.history
     });
 
+    // Assign narration to turn
+    turn.narration = narration;
+
     // Save Player Turn
     await this.sessionWriter.writeTurn(this.sessionId, turn);
     this.history.push(turn);
@@ -1865,6 +1868,9 @@ export class GameMaster {
                 worldState,
                 history: this.history
             });
+            
+            // Assign narration to NPC turn
+            npcTurn.narration = npcNarration;
             
             narration += `\n\n${npcNarration}`;
             

@@ -218,15 +218,14 @@ We have successfully implemented the Teamwork mechanics (Phase 13). The system n
 - **Impact**: Confusing mechanical events that don't make narrative sense
 - **Status**: 📝 DOCUMENTED - Should skip damage event when no target exists
 
-#### BUG-009: Narration Not Persisted to Turn Data 📝
+#### BUG-009: Narration Not Persisted to Turn Data 📝 ✅ FIXED
 - **Location**: `packages/core/src/types/turn.ts` + `packages/cli/src/GameMaster.ts:finalizeTurn()`
-- **Cause**: `Turn` interface lacks `narration` field; narrative is generated but not saved
-- **Impact**: Exported sessions lose story context; only mechanical events preserved
-- **Recommended Fix**: 
-  1. Add `narration?: string` to `Turn` interface in `packages/core/src/types/turn.ts`
-  2. Update `finalizeTurn()` to set `turn.narration = narration` before saving
-  3. Update `exportSessionToMarkdown.ts` to display narration per turn
-- **Status**: 📝 DOCUMENTED - High priority for session replay quality
+- **Cause**: `Turn` interface lacked `narration` field; narrative was generated but not saved
+- **Fix Applied**: 
+  1. Added `narration?: string` to `Turn` interface in `packages/core/src/types/turn.ts`
+  2. Updated `finalizeTurn()` to set `turn.narration = narration` before saving
+  3. Updated `processCombatTurn()` to set `turn.narration` before saving combat turns
+  4. Updated `exportSessionToMarkdown.ts` to display narration per turn
 
 ## 📊 10-Minute Granite4:3b Comprehensive Test Results (November 26, 2025)
 
