@@ -417,4 +417,104 @@ JSON object with fields:
       return null;
     }
   }
+
+  async generateWorldEvents(theme: WorldState['theme'], location: Location): Promise<any[]> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "World Builder",
+      `You are an expert World Builder for a Fate Core RPG. Generate 2-3 world events that can occur during gameplay.
+
+THEME CONTEXT:
+Name: ${theme.name}
+Genre: ${theme.genre}
+Tone: ${theme.tone}
+Keywords: ${theme.keywords.join(", ")}
+
+LOCATION CONTEXT:
+Name: ${location.name}
+Description: ${location.description}
+
+GUIDELINES:
+- Events should be triggered by time, conditions, or randomly.
+- Effects should modify the world state (add aspects, change locations, affect factions).
+- Events should feel organic to the setting and enhance the narrative.
+
+OUTPUT FORMAT:
+JSON array of objects with fields:
+- name: string
+- description: string
+- trigger: { type: "time" | "condition" | "random", turn?: number, condition?: string, chance?: number }
+- effects: Array of objects:
+  - type: "aspect_add" | "location_change" | "faction_change"
+  - target: string (ID or name)
+  - data: object (effect-specific data)`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Generate world events for this setting.\nReturn JSON array.`
+    });
+
+    const response = await this.llm.generate({
+      systemPrompt: prompt.system,
+      userPrompt: prompt.user,
+      temperature: 0.8,
+      jsonMode: true
+    });
+
+    try {
+      const data = JSON.parse(response.content);
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error("Failed to parse generated world events:", e);
+      return [];
+    }
+  }
+
+  async generateFactions(theme: WorldState['theme']): Promise<any[]> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "World Builder",
+      `You are an expert World Builder for a Fate Core RPG. Generate 2-3 factions that exist in this world.
+
+THEME CONTEXT:
+Name: ${theme.name}
+Genre: ${theme.genre}
+Tone: ${theme.tone}
+Keywords: ${theme.keywords.join(", ")}
+
+GUIDELINES:
+- Factions should be cohesive with the world theme.
+- Each faction should have goals, resources, and aspects.
+- Include both antagonistic and potentially allied factions.
+- Factions should have relationships with each other.
+
+OUTPUT FORMAT:
+JSON array of objects with fields:
+- name: string
+- description: string
+- aspects: string[] (2-3 aspect names)
+- goals: string[] (2-3 goals)
+- resources: string[] (2-3 resources)
+- isHidden: boolean (true if secret faction)`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Generate factions for this setting.\nReturn JSON array.`
+    });
+
+    const response = await this.llm.generate({
+      systemPrompt: prompt.system,
+      userPrompt: prompt.user,
+      temperature: 0.8,
+      jsonMode: true
+    });
+
+    try {
+      const data = JSON.parse(response.content);
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error("Failed to parse generated factions:", e);
+      return [];
+    }
+  }
 }

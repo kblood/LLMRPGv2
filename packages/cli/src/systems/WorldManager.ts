@@ -24,6 +24,7 @@ export class WorldManager {
       plotThreads: [],
       quests: [],
       factions: {},
+      events: [],
       establishedFacts: {}
     };
   }

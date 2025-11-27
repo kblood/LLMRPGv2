@@ -10,29 +10,31 @@
     ]
   },
   "locations": {
-    "loc-1764182236349": {
-      "id": "loc-1764182236349",
+    "loc-1764278926221": {
+      "id": "loc-1764278926221",
       "name": "Mock Location",
       "description": "A mock location description.",
       "aspects": [
         {
-          "id": "asp-n8p201jrn",
+          "id": "asp-5h59lqjst",
           "name": "Mock Aspect 1",
           "kind": "situation",
           "isTemporary": false
         },
         {
-          "id": "asp-zwq2qc2g7",
+          "id": "asp-aaj2f0mc6",
           "name": "Mock Aspect 2",
           "kind": "environment",
           "isTemporary": false
         }
       ],
       "connections": [],
-      "presentNPCs": [],
+      "presentNPCs": [
+        "fb5ff564-0b06-4560-b0f7-54125730c38a"
+      ],
       "features": [
         {
-          "id": "feat-hhcbyhc02",
+          "id": "feat-au003nd8l",
           "name": "Mock Feature 1",
           "description": "A mock feature.",
           "interactable": true
@@ -44,33 +46,34 @@
   },
   "aspects": [],
   "time": {
-    "value": "NaN",
-    "period": "Day 1"
+    "value": "1",
+    "period": "Day 1, morning"
   },
   "plotThreads": [],
   "quests": [],
   "factions": {
-    "4476a6c2-f403-4fa5-a390-2e41dc1146a9": {
-      "id": "4476a6c2-f403-4fa5-a390-2e41dc1146a9",
+    "e903ef89-681c-4d86-9639-46a38a1b0cf9": {
+      "id": "e903ef89-681c-4d86-9639-46a38a1b0cf9",
       "name": "The Syndicate",
       "description": "Criminal organization",
       "aspects": [],
       "goals": [],
       "members": [],
       "relationships": {
-        "player-1764182236372": -50
+        "player-1764278926232": -50
       },
       "territory": [],
       "resources": [],
       "isHidden": false
     }
   },
+  "events": [],
   "establishedFacts": {},
   "currentScene": {
-    "id": "scene-1764182236351",
+    "id": "scene-1764278926222",
     "name": "Mock Scenario",
     "description": "A mock scenario description.",
-    "locationId": "loc-1764182236349",
+    "locationId": "loc-1764278926221",
     "aspects": [],
     "startTurn": 1,
     "type": "exploration"

@@ -43,6 +43,11 @@ describe('World Persistence System', () => {
     mockLLM.setNextResponse(JSON.stringify({ name: "Dungeon", genre: "Fantasy", tone: "Dark", keywords: [] })); 
     mockLLM.setNextResponse(JSON.stringify({ id: "loc-1", name: "Room", description: "A dark room", aspects: [], connections: [], presentNPCs: [], features: [], discovered: true, tier: "locale" }));
     mockLLM.setNextResponse(JSON.stringify({ description: "Start", hook: "Hook", title: "Escape" }));
+    // World Events
+    mockLLM.setNextResponse(JSON.stringify([]));
+    // Factions
+    mockLLM.setNextResponse(JSON.stringify([]));
+    // Character
     mockLLM.setNextResponse(JSON.stringify({ 
         name: "Hero", 
         highConcept: "Hero", 
@@ -62,28 +67,34 @@ describe('World Persistence System', () => {
 
     // --- Player Action: "I smash the table" ---
     
-    // 0. Classify Intent (NEW)
+    // 0. Classify Intent
     mockLLM.setNextResponse("fate_action");
     
-    // 1. Identify Target
+    // 1. Check Compels
     mockLLM.setNextResponse("null");
     
-    // 2. Classify Action
+    // 2. Identify Target
+    mockLLM.setNextResponse("null");
+    
+    // 3. Classify Action
     mockLLM.setNextResponse("overcome");
     
-    // 3. Select Skill
+    // 4. Select Skill
     mockLLM.setNextResponse("Physique");
     
-    // 4. Set Opposition
+    // 5. Set Opposition
     mockLLM.setNextResponse("2");
     
-    // 5. Knowledge Gain
+    // 6. Generate Boost Name (success with style)
+    mockLLM.setNextResponse("Raw Power");
+    
+    // 7. Knowledge Gain
     mockLLM.setNextResponse("null");
     
-    // 6. Quest Update
+    // 8. Quest Update
     mockLLM.setNextResponse("null");
 
-    // 7. World Updates (NEW)
+    // 9. World Updates
     mockLLM.setNextResponse(JSON.stringify([
         { 
             type: "add_aspect", 
@@ -92,7 +103,7 @@ describe('World Persistence System', () => {
         }
     ]));
 
-    // 8. Narrate
+    // 10. Narrate
     mockLLM.setNextResponse("You smash the table into splinters.");
 
     const result = await gameMaster.processPlayerAction("I smash the table");
@@ -110,13 +121,19 @@ describe('World Persistence System', () => {
         expect(brokenTableAspect).toBeDefined();
         expect(brokenTableAspect?.type).toBe("situational");
 
-        // Check Events
+        // Check Events - find the add_aspect event specifically
         const turn = result.turn;
         expect(turn).not.toBeNull();
         if (!turn) return;
-        const changeEvent = turn.events.find(e => e.type === 'state_change');
-        expect(changeEvent).toBeDefined();
-        expect(changeEvent?.description).toContain("Broken Table");
+        
+        // There may be multiple state_change events (boost + world update)
+        // Find the one that contains "Broken Table"
+        const aspectEvent = turn.events.find(e => 
+            e.type === 'state_change' && 
+            e.description?.includes("Broken Table")
+        );
+        expect(aspectEvent).toBeDefined();
+        expect(aspectEvent?.description).toContain("Broken Table");
     }
   });
 });

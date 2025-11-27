@@ -103,11 +103,8 @@ describe('Story Declaration System', () => {
   it('should process a valid declaration', async () => {
     // Mock DecisionEngine methods
     (gm as any).decisionEngine.classifyIntent = vi.fn().mockResolvedValue('declaration');
-    (gm as any).decisionEngine.parseDeclaration = vi.fn().mockResolvedValue({
-        fact: "There is a hidden lever behind the bookshelf",
-        aspectName: "Hidden Lever",
-        confidence: 0.9
-    });
+    // parseDeclaration returns a string, not an object
+    (gm as any).decisionEngine.parseDeclaration = vi.fn().mockResolvedValue("Hidden Lever");
 
     const result = await gm.processPlayerAction("I spend a fate point to declare there is a hidden lever behind the bookshelf.");
 

@@ -16,6 +16,11 @@ describe('Reputation Effects', () => {
     sessionWriter = new SessionWriter(adapter);
     gameMaster = new GameMaster('test-session', mockAdapter, sessionWriter);
     
+    // Mock FateDice to ensure success
+    (gameMaster as any).fateDice = {
+        roll: () => ({ total: 4, faces: [1, 1, 1, 1] })
+    };
+    
     // Initialize world
     await gameMaster.initializeWorld("Cyberpunk City");
     await gameMaster.createCharacter("Street Samurai");
@@ -51,22 +56,34 @@ describe('Reputation Effects', () => {
       }]
     };
 
+    // Add NPC to current scene location
+    const currentScene = (gameMaster as any).currentScene;
+    if (currentScene) {
+      const location = (gameMaster as any).worldManager.getLocation(currentScene.locationId);
+      if (location) {
+        location.presentNPCs = [npcId];
+      }
+    }
+
     // 3. Set Hostile Reputation
     const player = (gameMaster as any).player;
     factionManager.updateReputation(faction.id, player.id, -50); // Hostile
 
     // 4. Mock Responses
-    // Identify Target
-    // Classify Intent (NEW)
+    // Classify Intent
     mockAdapter.setNextResponse("fate_action");
+    // Check Compels
+    mockAdapter.setNextResponse("null");
     // Identify Target
     mockAdapter.setNextResponse("Thug");
     // Classify Action
-    mockAdapter.setNextResponse("overcome"); // Social action -> overcome
+    mockAdapter.setNextResponse("overcome");
     // Select Skill
     mockAdapter.setNextResponse("Rapport");
     // Set Opposition (Difficulty) - Set low to ensure success
     mockAdapter.setNextResponse("-4");
+    // Generate Boost Name (success with style generates a boost)
+    mockAdapter.setNextResponse("Intimidating Presence");
     // Knowledge Gain
     mockAdapter.setNextResponse("null");
     // Quest Update

@@ -10,7 +10,15 @@ export class WorldEventsManager {
   processEvents(worldState: WorldState, currentTurn: number): WorldEvent[] {
     const triggeredEvents: WorldEvent[] = [];
 
-    for (const event of (worldState as any).events) {
+    // Ensure events array exists and is iterable
+    const events = (worldState as any).events;
+    if (!events || !Array.isArray(events)) {
+      return triggeredEvents;
+    }
+
+    for (const event of events) {
+      // Skip invalid events or events without proper trigger
+      if (!event || !event.trigger || !event.trigger.type) continue;
       if (!event.active || event.triggered) continue;
 
       let shouldTrigger = false;

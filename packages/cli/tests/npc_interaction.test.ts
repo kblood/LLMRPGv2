@@ -46,7 +46,11 @@ describe('NPC Interaction System', () => {
     mockLLM.setNextResponse(JSON.stringify({ id: "loc-1", name: "Tavern", description: "A cozy tavern", aspects: [], connections: [], presentNPCs: [], features: [], discovered: true, tier: "locale" }));
     // 3. Scenario
     mockLLM.setNextResponse(JSON.stringify({ description: "Start", hook: "Hook", title: "Tavern Talk" }));
-    // 4. Character Creation
+    // 4. World Events
+    mockLLM.setNextResponse(JSON.stringify([]));
+    // 5. Factions
+    mockLLM.setNextResponse(JSON.stringify([]));
+    // 6. Character Creation
     mockLLM.setNextResponse(JSON.stringify({ 
         name: "Bard", 
         highConcept: "Bard", 
@@ -96,35 +100,41 @@ describe('NPC Interaction System', () => {
 
     // --- Player Action: "I ask the Innkeeper for rumors" ---
     
-    // 0. Classify Intent (DecisionEngine) - NEW
+    // 0. Classify Intent (DecisionEngine)
     mockLLM.setNextResponse("fate_action");
     
-    // 1. Identify Target (DecisionEngine)
-    mockLLM.setNextResponse("Innkeeper");
-    
-    // 2. Classify Action (DecisionEngine)
-    mockLLM.setNextResponse("create_advantage"); // Asking for info is often Create Advantage or Overcome
-    
-    // 3. Select Skill (DecisionEngine)
-    mockLLM.setNextResponse("Rapport");
-    
-    // 4. Set Opposition (DecisionEngine)
-    mockLLM.setNextResponse("2");
-    
-    // 5. Knowledge Gain (DecisionEngine) - since roll is success
-    mockLLM.setNextResponse("null"); // No specific knowledge item for this test
-    
-    // 6. Quest Update (DecisionEngine)
+    // 1. Check Compels (DecisionEngine.generateCompel) - expects JSON
     mockLLM.setNextResponse("null");
     
-    // 7. World Updates (DecisionEngine) - NEW
+    // 2. Identify Target (DecisionEngine)
+    mockLLM.setNextResponse("Innkeeper");
+    
+    // 3. Classify Action (DecisionEngine)
+    mockLLM.setNextResponse("create_advantage");
+    
+    // 4. Select Skill (DecisionEngine)
+    mockLLM.setNextResponse("Rapport");
+    
+    // 5. Set Opposition (DecisionEngine)
+    mockLLM.setNextResponse("2");
+    
+    // 6. Generate Boost Name (success with style generates a boost)
+    mockLLM.setNextResponse("Good Rapport");
+    
+    // 7. Knowledge Gain (DecisionEngine) - since roll is success
+    mockLLM.setNextResponse("null");
+    
+    // 8. Quest Update (DecisionEngine)
+    mockLLM.setNextResponse("null");
+    
+    // 9. World Updates (DecisionEngine)
     mockLLM.setNextResponse("[]");
 
-    // 8. Generate Dialogue (DialogueSystem)
+    // 10. Generate Dialogue (DialogueSystem)
     const expectedDialogue = "Welcome traveler! The roads are dangerous lately.";
     mockLLM.setNextResponse(expectedDialogue);
 
-    // 9. Narrate (NarrativeEngine)
+    // 11. Narrate (NarrativeEngine)
     mockLLM.setNextResponse("The Innkeeper smiles warmly and shares some news.");
 
     const result = await gameMaster.processPlayerAction("I ask the Innkeeper for rumors");

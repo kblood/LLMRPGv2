@@ -61,11 +61,17 @@ describe('Knowledge System', () => {
         title: "The Job", 
         description: "Steal the data", 
         hook: "You need money" 
-    })); 
+    }));
+
+    // 4. World Events
+    mockLLM.setNextResponse(JSON.stringify([]));
+
+    // 5. Factions
+    mockLLM.setNextResponse(JSON.stringify([]));
 
     await gameMaster.initializeWorld("Cyberpunk");
 
-    // 4. Character Generation
+    // 6. Character Generation
     mockLLM.setNextResponse(JSON.stringify({ 
         name: "Jack", 
         appearance: "Rough", 
@@ -80,17 +86,21 @@ describe('Knowledge System', () => {
     await gameMaster.createCharacter("Hacker");
 
     // Action: Investigate
-    // 0. Classify Intent (NEW)
+    // 0. Classify Intent
     mockLLM.setNextResponse("fate_action");
-    // 1. Identify Target
+    // 1. Check Compels
     mockLLM.setNextResponse("null");
-    // 2. Classify Action
+    // 2. Identify Target
+    mockLLM.setNextResponse("null");
+    // 3. Classify Action
     mockLLM.setNextResponse("overcome");
-    // 3. Select Skill
+    // 4. Select Skill
     mockLLM.setNextResponse("Investigate");
-    // 4. Set Opposition
+    // 5. Set Opposition
     mockLLM.setNextResponse("2"); // Fair difficulty
-    // 5. Knowledge Gain Check
+    // 6. Generate Boost Name (success with style)
+    mockLLM.setNextResponse("Keen Observer");
+    // 7. Knowledge Gain Check
     mockLLM.setNextResponse(JSON.stringify({
         category: "locations",
         id: "loc-secret-lab",
@@ -101,11 +111,11 @@ describe('Knowledge System', () => {
             confidence: "high"
         }
     }));
-    // 6. Quest Update
+    // 8. Quest Update
     mockLLM.setNextResponse("null");
-    // 7. World Updates
+    // 9. World Updates
     mockLLM.setNextResponse("[]");
-    // 8. Narrate
+    // 10. Narrate
     mockLLM.setNextResponse("You find a secret lab behind the bookshelf.");
 
     const result = await gameMaster.processPlayerAction("I search the room carefully.");

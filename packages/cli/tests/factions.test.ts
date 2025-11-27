@@ -44,6 +44,17 @@ describe('Faction System', () => {
       hook: "A stranger approaches."
     })); // Scenario
 
+    // Mock World Events Response
+    mockAdapter.setNextResponse(JSON.stringify([
+      {
+        name: "Gang War",
+        description: "Tensions between factions escalate.",
+        trigger: { type: "condition", condition: "reputation < -30" },
+        effects: [],
+        active: true
+      }
+    ]));
+
     // Mock Faction Generation Response
     mockAdapter.setNextResponse(JSON.stringify([
       {

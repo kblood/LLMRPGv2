@@ -86,6 +86,18 @@ describe('Full System Integration', () => {
         hook: "A cloaked stranger approaches you with a cryptic message."
       }));
 
+      // World Events
+      mockAdapter.setNextResponse(JSON.stringify([
+        {
+          name: "Rising Tensions",
+          description: "Tensions between factions are rising.",
+          trigger: { type: "time", turn: 10 },
+          effects: [{ type: "aspect_add", target: "world", data: { name: "Uneasy Peace", type: "situational" } }],
+          active: true
+        }
+      ]));
+
+      // Factions
       mockAdapter.setNextResponse(JSON.stringify([
         {
           name: "The Shadow Guild",

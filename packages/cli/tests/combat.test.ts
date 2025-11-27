@@ -33,32 +33,59 @@ describe('Combat System', () => {
 
     const llmProvider = new MockAdapter();
     
-    // 1. Initialize World (Theme)
-    // 2. Initialize World (Location)
-    // 3. Initialize World (Scenario)
-    // 4. Create Character
-    // 5. Combat: Classify Action (Player)
-    // 6. Combat: Select Skill (Player)
-    // 7. Combat: Set Opposition (Player)
-    // 8. Combat: Narrate (Player)
-    // 9. Combat: Decide NPC Action
-    // 10. Combat: Narrate (NPC)
-
-    // We need to queue responses for the setup phase too, or let them fall through to default logic.
-    // MockAdapter default logic handles theme, location, scenario, character.
-    // So we only need to queue combat responses.
-    
-    // BUT, MockAdapter checks queue first. So we must queue EVERYTHING or nothing until setup is done.
-    // Alternatively, we can set responses AFTER setup.
+    // Queue ALL responses including world initialization
+    // 1. Theme
+    llmProvider.setNextResponse(JSON.stringify({
+        name: "Combat Arena",
+        genre: "Fantasy",
+        tone: "Action",
+        keywords: ["battle", "combat"]
+    }));
+    // 2. Location
+    llmProvider.setNextResponse(JSON.stringify({
+        name: "Training Grounds",
+        description: "A dusty combat arena.",
+        aspects: [{ name: "Dusty Arena", type: "situation" }],
+        features: []
+    }));
+    // 3. Scenario
+    llmProvider.setNextResponse(JSON.stringify({
+        title: "Combat Test",
+        description: "Test combat.",
+        hook: "A goblin attacks!"
+    }));
+    // 4. World Events (empty)
+    llmProvider.setNextResponse(JSON.stringify([]));
+    // 5. Factions (empty)
+    llmProvider.setNextResponse(JSON.stringify([]));
+    // 6. Character
+    llmProvider.setNextResponse(JSON.stringify({
+        name: "Warrior",
+        appearance: "A strong warrior.",
+        aspects: [
+            { name: "Mighty Warrior", type: "highConcept" },
+            { name: "Hot Headed", type: "trouble" }
+        ],
+        skills: [
+            { name: "Fight", level: 4 },
+            { name: "Athletics", level: 3 }
+        ],
+        stunts: [],
+        personality: { traits: ["Brave"], values: [], quirks: [], fears: [] },
+        backstory: { origin: "Unknown", formativeEvent: "Battle", secret: "", summary: "A warrior" },
+        voice: { speechPattern: "Direct", vocabulary: "simple", phrases: [] }
+    }));
 
     const gameMaster = new GameMaster(sessionId, llmProvider, sessionWriter);
     await gameMaster.start();
     
-    // Setup World & Player (using default mock logic)
+    // Initialize World & Create Character
     await gameMaster.initializeWorld("Fantasy");
     await gameMaster.createCharacter("Warrior");
 
-    // NOW set combat responses
+    // NOW set combat responses (queue should be empty after setup)
+    // IMPORTANT: processPlayerAction first calls classifyIntent BEFORE checking for combat
+    llmProvider.setNextResponse("fate_action"); // Classify Intent (called before combat check)
     llmProvider.setNextResponse("attack"); // Classify Action
     llmProvider.setNextResponse("Fight"); // Select Skill
     llmProvider.setNextResponse("2"); // Opposition

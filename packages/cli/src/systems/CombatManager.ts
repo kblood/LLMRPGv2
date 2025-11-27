@@ -204,11 +204,12 @@ export class CombatManager {
         else if (relationship.respect <= -2) aspects.push(`${opponent.name} Disrespects You`);
       }
 
-      // Check faction reputation
-      if (factions) {
-        for (const faction of factions) {
-          if (opponent.affiliations?.some(a => a.factionId === faction.id)) {
-            const rep = faction.relationships[player.id] || 0;
+      // Check faction reputation - factions is a Record, not an array
+      if (factions && typeof factions === 'object') {
+        const factionValues = Object.values(factions);
+        for (const faction of factionValues) {
+          if (faction && opponent.affiliations?.some(a => a.factionId === faction.id)) {
+            const rep = faction.relationships?.[player.id] || 0;
             if (rep >= 50) aspects.push(`Allied with ${faction.name}`);
             else if (rep <= -50) aspects.push(`Hostile to ${faction.name}`);
           }

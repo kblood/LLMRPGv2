@@ -44,6 +44,35 @@ export class MockAdapter implements LLMProvider {
                 description: "A mock scenario description.",
                 hook: "A mock hook."
             });
+        } else if (request.userPrompt?.includes("world events") || request.userPrompt?.includes("Generate world events")) {
+            content = JSON.stringify([
+                {
+                    name: "Storm Approaching",
+                    description: "Dark clouds gather on the horizon.",
+                    trigger: { type: "time", turn: 5 },
+                    effects: [{ type: "aspect_add", target: "world", data: { name: "Ominous Storm", type: "situational" } }],
+                    active: true
+                }
+            ]);
+        } else if (request.userPrompt?.includes("factions") || request.userPrompt?.includes("Generate factions")) {
+            content = JSON.stringify([
+                {
+                    name: "The Syndicate",
+                    description: "A powerful criminal organization.",
+                    aspects: ["Underworld Connections", "Ruthless Efficiency"],
+                    goals: ["Control the black market", "Eliminate rivals"],
+                    resources: ["Safe houses", "Informants"],
+                    isHidden: false
+                },
+                {
+                    name: "The Order",
+                    description: "A secretive guild of protectors.",
+                    aspects: ["Ancient Knowledge", "Hidden Network"],
+                    goals: ["Protect the innocent", "Preserve balance"],
+                    resources: ["Hidden temples", "Trained agents"],
+                    isHidden: true
+                }
+            ]);
         } else if (request.userPrompt?.includes("character")) {
             content = JSON.stringify({
                 name: "Mock Character",
@@ -94,6 +123,40 @@ export class MockAdapter implements LLMProvider {
         content = "overcome";
     } else if (request.systemPrompt.includes("Select the most relevant skill")) {
         content = "Fight";
+    } else if (request.systemPrompt.includes("NPC") && request.systemPrompt.includes("action")) {
+        // NPC decision response - must be valid JSON
+        content = JSON.stringify({
+            action: "attack",
+            description: "lunges forward with a fierce attack",
+            target: "Player"
+        });
+    } else if (request.systemPrompt.includes("compel")) {
+        // Compel response - return null for no compel
+        content = "null";
+    } else if (request.systemPrompt.includes("dialogue") || request.systemPrompt.includes("Dialogue")) {
+        content = "Greetings, traveler. What brings you to these parts?";
+    } else if (request.systemPrompt.includes("knowledge") && request.systemPrompt.includes("gain")) {
+        content = JSON.stringify({
+            category: "locations",
+            id: "loc-discovered",
+            data: { name: "Hidden Area", discovered: true }
+        });
+    } else if (request.systemPrompt.includes("quest") && request.systemPrompt.includes("update")) {
+        content = JSON.stringify({
+            type: "update_objective",
+            questId: "quest-1",
+            objectiveId: "obj-1",
+            status: "completed"
+        });
+    } else if (request.systemPrompt.includes("world") && request.systemPrompt.includes("update")) {
+        content = JSON.stringify([{
+            type: "add_aspect",
+            data: { name: "Changed Environment", type: "situational" }
+        }]);
+    } else if (request.systemPrompt.includes("declaration")) {
+        content = "Hidden Passage Behind Bookshelf";
+    } else if (request.systemPrompt.includes("boost")) {
+        content = "Momentum";
     } else if (request.systemPrompt.includes("Game Master")) {
         content = "The Game Master narrates: You successfully performed the action.";
     }

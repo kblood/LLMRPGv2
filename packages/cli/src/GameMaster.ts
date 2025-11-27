@@ -180,6 +180,19 @@ export class GameMaster {
     console.log("Generating starting scenario...");
     const scenario = await this.contentGenerator.generateStartingScenario(theme, startingLocation);
 
+    // Generate World Events
+    console.log("Generating world events...");
+    const worldEvents = await this.contentGenerator.generateWorldEvents(theme, startingLocation);
+    this.worldManager.state.events = worldEvents.map((event: any) => ({
+      id: uuidv4(),
+      name: event.name,
+      description: event.description,
+      trigger: event.trigger,
+      effects: event.effects,
+      active: true,
+      triggered: false
+    }));
+
     // Create Initial Scene
     this.currentScene = {
         id: `scene-${Date.now()}`,

@@ -63,10 +63,17 @@ describe('Quest System', () => {
     // 3. Scenario
     mockLLM.setNextResponse(JSON.stringify({ 
         description: "You are in a tavern.", 
-        hook: "An old man waves at you." 
+        hook: "An old man waves at you.",
+        title: "Tavern Meeting"
     }));
 
-    // 4. Character Creation
+    // 4. World Events
+    mockLLM.setNextResponse(JSON.stringify([]));
+
+    // 5. Factions
+    mockLLM.setNextResponse(JSON.stringify([]));
+
+    // 6. Character Creation
     mockLLM.setNextResponse(JSON.stringify({ 
         name: "Hero", 
         highConcept: "Brave Knight", 
@@ -86,23 +93,29 @@ describe('Quest System', () => {
 
     // --- Action Phase ---
 
-    // 4.5 Classify Intent (NEW)
+    // 4.5 Classify Intent
     mockLLM.setNextResponse("fate_action");
-    // 5. Identify Target
+    // 5. Check Compels
     mockLLM.setNextResponse("null");
-    // 6. Classify Action
+    // 6. Identify Target
+    mockLLM.setNextResponse("null");
+    // 7. Classify Action
     mockLLM.setNextResponse("overcome");
 
-    // 7. Select Skill
+    // 8. Select Skill
     mockLLM.setNextResponse("Rapport");
 
-    // 8. Set Opposition
+    // 9. Set Opposition
     mockLLM.setNextResponse("2");
 
-    // 9. Knowledge Gain (None)
+    // Note: No generateBoostName because Rapport skill is 0, 
+    // roll is +4, total is 4, opposition is 2, shifts = 2
+    // That's regular success, not success_with_style
+
+    // 10. Knowledge Gain (None)
     mockLLM.setNextResponse("null");
 
-    // 10. Quest Update (NEW QUEST)
+    // 11. Quest Update (NEW QUEST)
     mockLLM.setNextResponse(JSON.stringify({
         type: "new",
         quest: {
@@ -116,10 +129,10 @@ describe('Quest System', () => {
         }
     }));
 
-    // 11. World Updates
+    // 12. World Updates
     mockLLM.setNextResponse("[]");
 
-    // 12. Narration
+    // 13. Narration
     mockLLM.setNextResponse("You agree to find the cat. The keeper is relieved.");
 
     await gameMaster.processPlayerAction("I agree to find the cat.");
@@ -139,8 +152,12 @@ describe('Quest System', () => {
     // 2. Location
     mockLLM.setNextResponse(JSON.stringify({ id: "loc-1", name: "Tavern", description: "Tavern", aspects: [], connections: [], presentNPCs: [], features: [], discovered: true, tier: "locale" }));
     // 3. Scenario
-    mockLLM.setNextResponse(JSON.stringify({ description: "Start", hook: "Hook" }));
-    // 4. Character
+    mockLLM.setNextResponse(JSON.stringify({ description: "Start", hook: "Hook", title: "Quest Time" }));
+    // 4. World Events
+    mockLLM.setNextResponse(JSON.stringify([]));
+    // 5. Factions
+    mockLLM.setNextResponse(JSON.stringify([]));
+    // 6. Character
     mockLLM.setNextResponse(JSON.stringify({ name: "Hero", highConcept: "Hero", trouble: "None", aspects: [], skills: [{ name: "Fight", level: 4 }], stunts: [], personality: { traits: [], values: [], fears: [], quirks: [], speechPattern: "" }, backstory: { summary: "", motivation: "", origin: "" }, stressTracks: [], consequences: [] }));
 
     await gameMaster.start();
@@ -162,20 +179,27 @@ describe('Quest System', () => {
 
     // --- Action Phase ---
 
-    // 4.5 Classify Intent (NEW)
+    // 4.5 Classify Intent
     mockLLM.setNextResponse("fate_action");
-    // 5. Identify Target
+    // 5. Check Compels
     mockLLM.setNextResponse("null");
-    // 6. Classify Action
+    // 6. Identify Target
+    mockLLM.setNextResponse("null");
+    // 7. Classify Action
     mockLLM.setNextResponse("overcome");
-    // 7. Select Skill
+    // 8. Select Skill
     mockLLM.setNextResponse("Investigate");
-    // 8. Set Opposition
+    // 9. Set Opposition
     mockLLM.setNextResponse("2");
-    // 9. Knowledge Gain
+    
+    // Note: No generateBoostName because Investigate skill is 0,
+    // roll is +4, total is 4, opposition is 2, shifts = 2
+    // That's regular success, not success_with_style
+    
+    // 10. Knowledge Gain
     mockLLM.setNextResponse("null");
     
-    // 10. Quest Update (UPDATE OBJECTIVE)
+    // 11. Quest Update (UPDATE OBJECTIVE)
     mockLLM.setNextResponse(JSON.stringify({
         type: "update_objective",
         questId: "quest-1",
@@ -184,10 +208,10 @@ describe('Quest System', () => {
         status: "completed"
     }));
 
-    // 11. World Updates
+    // 12. World Updates
     mockLLM.setNextResponse("[]");
 
-    // 12. Narration
+    // 13. Narration
     mockLLM.setNextResponse("You found the cat under a table!");
 
     await gameMaster.processPlayerAction("I look for the cat.");

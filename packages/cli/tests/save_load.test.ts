@@ -35,6 +35,11 @@ describe('Save and Load System', () => {
 
     const llmProvider = new MockAdapter();
     let gameMaster = new GameMaster(sessionId, llmProvider, sessionWriter, sessionLoader);
+    
+    // Mock FateDice to ensure success
+    (gameMaster as any).fateDice = {
+        roll: () => ({ total: 4, faces: [1, 1, 1, 1] })
+    };
 
     // 2. Initialize World & Character
     await gameMaster.initializeWorld("Cyberpunk");
@@ -44,9 +49,21 @@ describe('Save and Load System', () => {
     expect(player.name).toBe("Mock Character");
 
     // 3. Play a Turn (should generate deltas and save state)
+    // Set up mock responses for processPlayerAction
+    llmProvider.setNextResponse("fate_action"); // Classify Intent
+    llmProvider.setNextResponse("null"); // Check Compels
+    llmProvider.setNextResponse("null"); // Identify Target
+    llmProvider.setNextResponse("overcome"); // Classify Action
+    llmProvider.setNextResponse("Investigate"); // Select Skill
+    llmProvider.setNextResponse("2"); // Set Opposition
+    llmProvider.setNextResponse("Quick Thinking"); // Generate Boost Name (success with style)
+    llmProvider.setNextResponse("null"); // Knowledge Gain
+    llmProvider.setNextResponse("null"); // Quest Update
+    llmProvider.setNextResponse("[]"); // World Updates
+    llmProvider.setNextResponse("You hack into the terminal successfully."); // Narration
+    
     const result = await gameMaster.processPlayerAction("Hack the terminal");
     expect(result.turn).toBeDefined();
-    // expect(result.result).toBe("Success"); // Outcome depends on random dice, so we skip this check
 
     // 4. Verify Files Exist
     const sessionPath = path.join(storagePath, 'sessions', 'active', sessionId);
