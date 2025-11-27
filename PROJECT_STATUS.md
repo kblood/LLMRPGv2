@@ -200,14 +200,37 @@ All Phase 8-16 features have been fully implemented and verified. The test suite
 
 4. **Test Suite Status**: **58 tests passing across 24 test files** ✅
 
+### 18. Phased 10-Minute Test Implementation (November 27, 2025) ✅ COMPLETED
+Restructured `ten_minute_granite_test.ts` to use defined gameplay phases:
+
+1. **Phase Structure**:
+   - **Phase 1: Setup** (1 min) - World generation and character creation
+   - **Phase 2: Exploration** (2 min) - Discover location features and surroundings
+   - **Phase 3: Social** (2 min) - NPC interaction and dialogue
+   - **Phase 4: Quest** (2 min) - Accept and progress on goals
+   - **Phase 5: Combat** (2 min) - Engage in conflict or challenges
+   - **Phase 6: Meta** (1 min) - Test /inventory, /status, /save commands
+
+2. **Phase Features**:
+   - Each phase has specific objectives passed to the AI player
+   - Minimum required actions per phase
+   - Success/failure tracking based on completion criteria
+   - Per-phase timing and action statistics
+
+3. **Enhanced Reporting**:
+   - Per-phase breakdown with duration and success rate
+   - Actions by phase summary table
+   - Sample AI reasoning from each phase
+   - Overall test verdict based on phase completion
+
 ## 📋 Next Steps (Immediate)
 
-### Phase 17: Performance & Production Readiness
+### Phase 19: Performance & Production Readiness
 1. **Long Session Optimization**: Implement context windowing and memory pruning for sessions exceeding token limits.
 2. **Error Recovery**: Add graceful recovery from LLM failures mid-session.
 3. **Production CLI**: Polish the CLI experience with better formatting, colors, and progress indicators.
 
-### Phase 18: Extended Content
+### Phase 20: Extended Content
 1. **Multiple Locations**: Allow players to travel between generated locations.
 2. **NPC Memory**: NPCs remember past interactions across sessions.
 3. **Persistent World State**: World changes persist and affect future sessions.
