@@ -18,13 +18,20 @@ export class CombatManager {
     scene: SceneState,
     type: 'physical' | 'mental' | 'social',
     opponents: CharacterDefinition[],
-    player: PlayerCharacter
+    player: PlayerCharacter,
+    allies: CharacterDefinition[] = []
   ): Promise<ConflictState> {
     const conflictId = `conflict-${Date.now()}`;
     
     // 1. Determine Participants
     const participants = [
       { characterId: player.id, side: 'player' as const, hasActed: false, hasConceded: false },
+      ...allies.map(npc => ({
+        characterId: npc.id,
+        side: 'player' as const,
+        hasActed: false,
+        hasConceded: false
+      })),
       ...opponents.map(npc => ({
         characterId: npc.id,
         side: 'opposition' as const,
@@ -33,10 +40,13 @@ export class CombatManager {
       }))
     ];
 
-    // 2. Roll Initiative (Simplified: Player goes first for now, or based on Notice)
+    // 2. Roll Initiative (Simplified: Player -> Allies -> Opponents)
     // In a full implementation, we'd compare skills.
-    // Let's just alternate for now: Player, then NPCs.
-    const turnOrder = [player.id, ...opponents.map(o => o.id)];
+    const turnOrder = [
+        player.id, 
+        ...allies.map(a => a.id),
+        ...opponents.map(o => o.id)
+    ];
 
     const conflict: ConflictState = {
       id: conflictId,

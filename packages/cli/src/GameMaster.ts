@@ -1715,11 +1715,14 @@ export class GameMaster {
     }
   }
 
-  async startCombat(opponents: CharacterDefinition[]) {
+  async startCombat(opponents: CharacterDefinition[], allies: CharacterDefinition[] = []) {
     if (!this.currentScene || !this.player) return;
     
-    // Add opponents to tracked NPCs
+    // Add opponents and allies to tracked NPCs
     opponents.forEach(npc => {
+        this.npcs[npc.id] = npc;
+    });
+    allies.forEach(npc => {
         this.npcs[npc.id] = npc;
     });
 
@@ -1727,18 +1730,22 @@ export class GameMaster {
       this.currentScene,
       'physical',
       opponents,
-      this.player
+      this.player,
+      allies
     );
     
     console.log(`Combat started! ID: ${conflict.id}`);
     return conflict;
   }
 
-  async startSocialConflict(opponents: CharacterDefinition[]) {
+  async startSocialConflict(opponents: CharacterDefinition[], allies: CharacterDefinition[] = []) {
     if (!this.currentScene || !this.player) return;
     
-    // Add opponents to tracked NPCs
+    // Add opponents and allies to tracked NPCs
     opponents.forEach(npc => {
+        this.npcs[npc.id] = npc;
+    });
+    allies.forEach(npc => {
         this.npcs[npc.id] = npc;
     });
 
@@ -1746,7 +1753,8 @@ export class GameMaster {
       this.currentScene,
       'social',
       opponents,
-      this.player
+      this.player,
+      allies
     );
     
     console.log(`Social Conflict started! ID: ${conflict.id}`);
@@ -1836,13 +1844,17 @@ export class GameMaster {
         if (npc) {
             const npcTurn = this.turnManager.startTurn(npc.name, this.currentScene.id, { day: 1, timeOfDay: 'morning', timestamp: Date.now() });
             
+            // Determine Side
+            const participant = conflict.participants.find(p => p.characterId === nextActorId);
+            const side = participant?.side === 'player' ? 'player' : 'opposition';
+
             // Decide NPC Action
             const decision = await this.decisionEngine.decideNPCAction(npc, {
                 action: null,
                 player: characterDefinition,
                 worldState,
                 history: this.history
-            });
+            }, side);
 
             // Resolve NPC Action
             // Simplified: Assume NPC uses their best skill for the action or Mediocre
@@ -1881,7 +1893,12 @@ export class GameMaster {
         nextActorId = this.combatManager.nextTurn(conflict);
         
         // Check Resolution (simplified)
-        if (this.combatManager.checkResolution(conflict, [], this.player)) {
+        const opponents = conflict.participants
+            .filter(p => p.side === 'opposition')
+            .map(p => this.npcs[p.characterId])
+            .filter(n => n !== undefined) as CharacterDefinition[];
+
+        if (this.combatManager.checkResolution(conflict, opponents, this.player)) {
             narration += `\n\nCombat Ended: ${conflict.resolution}`;
             break;
         }

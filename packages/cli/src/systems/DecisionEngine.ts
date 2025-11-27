@@ -536,18 +536,19 @@ Return ONLY the integer number (e.g., 2).`
     }
   }
 
-  async decideNPCAction(npc: CharacterDefinition, context: DecisionContext): Promise<{ action: string; description: string; target?: string }> {
+  async decideNPCAction(npc: CharacterDefinition, context: DecisionContext, side: 'player' | 'opposition' = 'opposition'): Promise<{ action: string; description: string; target?: string }> {
     const systemPrompt = this.contextBuilder.buildSystemPrompt(
       "Game Master",
       `You are controlling an NPC in a Fate Core RPG. Decide their next action in a conflict.
 
 NPC: ${npc.name}
+SIDE: ${side === 'player' ? 'Ally of the Player' : 'Enemy of the Player'}
 High Concept: ${npc.highConcept}
 Trouble: ${npc.trouble}
 
 ACTIONS:
-- Attack: Harm the player.
-- Create Advantage: Set up a better position or hinder the player.
+- Attack: Harm the enemy.
+- Create Advantage: Set up a better position or hinder the enemy.
 - Overcome: Move or bypass an obstacle.
 - Defend: (Usually reactive, but can be active preparation)
 
@@ -556,12 +557,14 @@ GUIDELINES:
 - If aggressive, Attack.
 - If tactical, Create Advantage.
 - If losing, consider fleeing (Overcome) or conceding.
+- If Ally: Help the player or attack the player's enemies.
+- If Enemy: Attack the player or their allies.
 
 OUTPUT FORMAT:
 JSON with fields:
 - action: "attack" | "create_advantage" | "overcome"
 - description: string (Narrative description of the action)
-- target: string (Target name, usually "Player")`
+- target: string (Target name)`
     );
 
     const prompt = this.contextBuilder.assemblePrompt({

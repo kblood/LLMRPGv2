@@ -2,9 +2,9 @@
 
 **Last Updated:** November 27, 2025
 
-## 📍 Current Phase: Phase 13 - Teamwork & Social Mechanics
+## 📍 Current Phase: Phase 15 - Relationship Dynamics
 
-We have successfully implemented the Teamwork mechanics (Phase 13). The system now supports the "Help" action, allowing characters to assist each other by creating advantages with free invokes.
+We have successfully implemented Group Conflicts (Phase 14). The system now supports combat with multiple allies and enemies, with AI-driven NPC actions.
 
 ## ✅ Recent Accomplishments
 
@@ -154,11 +154,19 @@ We have successfully implemented the Teamwork mechanics (Phase 13). The system n
    - Success creates a situational aspect ("Assisted by [Player]") with free invokes on the target.
    - Verified with `teamwork.test.ts`.
 
+### 14. Group Conflicts & Social Dynamics (Phase 14) ✅ COMPLETED
+1. **Group Combat**: Implemented multi-participant combat.
+   - Updated `GameMaster` to handle `startCombat` with allies and multiple enemies.
+   - Updated `processCombatTurn` to loop through all participants (Player -> Allies -> Enemies).
+   - Implemented `decideNPCAction` in `DecisionEngine` to control NPC behavior based on side (Ally/Enemy).
+   - Fixed bug in `GameMaster.ts` where combat ended prematurely due to passing empty opponent list to `checkResolution`.
+   - Verified with `group_conflict.test.ts`.
+
 ## 📋 Next Steps (Immediate)
 
-### Phase 14: Group Conflicts & Social Dynamics
-1. **Group Conflicts**: Extend social/combat systems to handle multiple participants.
-2. **Relationship Dynamics**: Deepen NPC relationship tracking and social consequences.
+### Phase 15: Relationship Dynamics
+1. **Relationship Tracking**: Deepen NPC relationship tracking and social consequences.
+2. **Social Conflict**: Enhance social conflict mechanics with reputation effects.
 
 ## 🐛 Known Issues / Notes
 
