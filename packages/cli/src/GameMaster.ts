@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager, FactionManager, EconomyManager, CraftingManager } from '@llmrpg/core';
+import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager, FactionManager, EconomyManager, CraftingManager, AdvancementManager } from '@llmrpg/core';
 import { LLMProvider } from '@llmrpg/llm';
 import { SessionWriter, SessionLoader } from '@llmrpg/storage';
 import { SceneState, PlayerCharacter, KnowledgeProfile, Compel } from '@llmrpg/protocol';
@@ -603,6 +603,8 @@ export class GameMaster {
         return this.processTradeTurn(playerAction, turn);
     } else if (intent === 'craft' && this.player) {
         return this.processCraftTurn(playerAction, turn);
+    } else if (intent === 'advance' && this.player) {
+        return this.processAdvancement(playerAction, turn);
     } else if (intent === 'inventory' && this.player) {
         return this.processInventoryTurn(turn);
     } else if (intent === 'status' && this.player) {
@@ -1138,6 +1140,170 @@ export class GameMaster {
         narration,
         result
     };
+  }
+
+  private async processAdvancement(playerAction: string, turn: Turn) {
+    if (!this.player) throw new Error("No player");
+
+    const advancementData = await this.decisionEngine.parseAdvancement(playerAction);
+    
+    if (!advancementData) {
+        const narration = "The GM is unsure how you want to advance. Please be more specific.";
+        this.turnManager.addEvent('system', 'advancement_failed', { description: narration });
+        return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    const validation = AdvancementManager.validateAdvancement(this.player, advancementData);
+    if (!validation.valid) {
+        const narration = `You cannot perform this advancement: ${validation.reason}`;
+        this.turnManager.addEvent('system', 'advancement_failed', { description: narration, reason: validation.reason });
+        return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // Apply Advancement
+    this.applyAdvancement(advancementData, turn);
+
+    const narration = `You spend a ${advancementData.milestoneRequired} milestone to improve yourself.`;
+    return this.finalizeTurn(turn, narration, "success");
+  }
+
+  private applyAdvancement(action: any, turn: Turn) {
+      if (!this.player) return;
+      
+      // Deduct Milestone
+      const milestoneType = action.milestoneRequired as keyof typeof this.player.milestones;
+      this.player.milestones[milestoneType]--;
+      
+      this.deltaCollector.collect({
+          target: 'player',
+          operation: 'decrement',
+          path: ['milestones', milestoneType],
+          previousValue: this.player.milestones[milestoneType] + 1,
+          newValue: this.player.milestones[milestoneType],
+          cause: 'advancement_cost',
+          eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
+      });
+
+      // Apply specific changes
+      switch (action.type) {
+          case 'increase_skill':
+              const skill = this.player.skills.find(s => s.name.toLowerCase() === action.details.skillName.toLowerCase());
+              if (skill) {
+                  const oldRank = skill.rank;
+                  skill.rank++;
+                  
+                  this.deltaCollector.collect({
+                      target: 'player',
+                      operation: 'increment',
+                      path: ['skills', this.player.skills.indexOf(skill).toString(), 'rank'],
+                      previousValue: oldRank,
+                      newValue: skill.rank,
+                      cause: 'advancement_skill_increase',
+                      eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
+                  });
+                  
+                  this.turnManager.addEvent('state_change', 'skill_increase', {
+                      description: `Increased ${skill.name} to +${skill.rank}`,
+                      metadata: { skill: skill.name, newRank: skill.rank }
+                  });
+              }
+              break;
+          case 'buy_skill':
+              // Assuming buying a skill starts it at Average (+1)
+              const newSkill = { name: action.details.skillName, rank: 1 };
+              this.player.skills.push(newSkill);
+              
+              this.deltaCollector.collect({
+                  target: 'player',
+                  operation: 'append',
+                  path: ['skills'],
+                  newValue: newSkill,
+                  previousValue: null,
+                  cause: 'advancement_buy_skill',
+                  eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
+              });
+
+              this.turnManager.addEvent('state_change', 'skill_acquired', {
+                  description: `Acquired new skill: ${newSkill.name} at +1`,
+                  metadata: { skill: newSkill }
+              });
+              break;
+          case 'rename_aspect':
+              const aspect = this.player.aspects.find(a => a.name.toLowerCase() === action.details.aspectName.toLowerCase());
+              if (aspect) {
+                  const oldName = aspect.name;
+                  aspect.name = action.details.newAspectName;
+                  
+                  this.deltaCollector.collect({
+                      target: 'player',
+                      operation: 'set',
+                      path: ['aspects', this.player.aspects.indexOf(aspect).toString(), 'name'],
+                      previousValue: oldName,
+                      newValue: aspect.name,
+                      cause: 'advancement_rename_aspect',
+                      eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
+                  });
+
+                  this.turnManager.addEvent('state_change', 'aspect_renamed', {
+                      description: `Renamed aspect '${oldName}' to '${aspect.name}'`,
+                      metadata: { oldName, newName: aspect.name }
+                  });
+              }
+              break;
+          case 'buy_stunt':
+              const newStunt = {
+                  name: action.details.newStuntName,
+                  description: action.details.newStuntDescription || "No description",
+                  cost: 1,
+                  refresh: 0
+              };
+              this.player.stunts.push(newStunt);
+              this.player.fatePoints.refresh--;
+              
+              this.deltaCollector.collect({
+                  target: 'player',
+                  operation: 'append',
+                  path: ['stunts'],
+                  newValue: newStunt,
+                  previousValue: null,
+                  cause: 'advancement_buy_stunt',
+                  eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
+              });
+              
+              this.deltaCollector.collect({
+                  target: 'player',
+                  operation: 'decrement',
+                  path: ['fatePoints', 'refresh'],
+                  previousValue: this.player.fatePoints.refresh + 1,
+                  newValue: this.player.fatePoints.refresh,
+                  cause: 'advancement_buy_stunt_cost',
+                  eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
+              });
+
+              this.turnManager.addEvent('state_change', 'stunt_acquired', {
+                  description: `Acquired new stunt: ${newStunt.name}`,
+                  metadata: { stunt: newStunt }
+              });
+              break;
+          case 'increase_refresh':
+              this.player.fatePoints.refresh++;
+              
+              this.deltaCollector.collect({
+                  target: 'player',
+                  operation: 'increment',
+                  path: ['fatePoints', 'refresh'],
+                  previousValue: this.player.fatePoints.refresh - 1,
+                  newValue: this.player.fatePoints.refresh,
+                  cause: 'advancement_increase_refresh',
+                  eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
+              });
+
+              this.turnManager.addEvent('state_change', 'refresh_increased', {
+                  description: `Refresh increased to ${this.player.fatePoints.refresh}`,
+                  metadata: { newRefresh: this.player.fatePoints.refresh }
+              });
+              break;
+      }
   }
 
   private async processInventoryTurn(turn: Turn) {

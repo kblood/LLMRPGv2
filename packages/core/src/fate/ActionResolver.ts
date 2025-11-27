@@ -1,10 +1,10 @@
-import { FateRollResult } from './FateDice';
+import { FateRollResult, FateDieResult } from './FateDice';
 
 export type FateOutcome = 'failure' | 'tie' | 'success' | 'success_with_style';
 
 export interface InvokeBonus {
   aspectId: string;
-  bonus: number; // +2 or reroll
+  bonus: number | 'reroll'; // +2 or reroll
   fatePointSpent: boolean;
 }
 
@@ -40,16 +40,24 @@ export class ActionResolver {
     // Apply reroll if used (take the better of original or reroll)
     let finalRoll = roll;
     if (rerollUsed) {
-      const reroll = { dice: [Math.floor(Math.random() * 3) - 1, Math.floor(Math.random() * 3) - 1, Math.floor(Math.random() * 3) - 1, Math.floor(Math.random() * 3) - 1], total: 0 };
-      reroll.total = reroll.dice.reduce((sum, die) => sum + die, 0);
+      const dice: [FateDieResult, FateDieResult, FateDieResult, FateDieResult] = [
+          (Math.floor(Math.random() * 3) - 1) as FateDieResult,
+          (Math.floor(Math.random() * 3) - 1) as FateDieResult,
+          (Math.floor(Math.random() * 3) - 1) as FateDieResult,
+          (Math.floor(Math.random() * 3) - 1) as FateDieResult
+      ];
+      const total = dice.reduce((sum: number, die: number) => sum + die, 0);
+      const reroll: FateRollResult = { dice, total };
+      
       finalRoll = reroll.total > roll.total ? reroll : roll;
-      invokeBonus += 2; // Rerolls cost 1 FP but give +2 bonus
+      // Reroll itself doesn't add +2, it just replaces the roll.
+      // But if we are invoking for a reroll, we don't add +2.
     }
     
     // Add other invoke bonuses
     invokeBonus += invokes
       .filter(invoke => invoke.bonus !== 'reroll')
-      .reduce((sum, invoke) => sum + invoke.bonus, 0);
+      .reduce((sum, invoke) => sum + (typeof invoke.bonus === 'number' ? invoke.bonus : 0), 0);
 
     const total = finalRoll.total + skillRating + invokeBonus;
     const shifts = total - difficulty;
