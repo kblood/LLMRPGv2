@@ -2,9 +2,9 @@
 
 **Last Updated:** November 27, 2025
 
-## 📍 Current Phase: Phase 15 - Relationship Dynamics
+## 📍 Current Phase: Phase 16 - Advanced AI and World Simulation
 
-We have successfully implemented Group Conflicts (Phase 14). The system now supports combat with multiple allies and enemies, with AI-driven NPC actions.
+We have successfully implemented Relationship Dynamics (Phase 15). The system now features deep relationship tracking and reputation-influenced social conflicts.
 
 ## ✅ Recent Accomplishments
 
@@ -162,29 +162,25 @@ We have successfully implemented Group Conflicts (Phase 14). The system now supp
    - Fixed bug in `GameMaster.ts` where combat ended prematurely due to passing empty opponent list to `checkResolution`.
    - Verified with `group_conflict.test.ts`.
 
-### 15. Relationship Dynamics (Phase 15) ✅ COMPLETED
-1. **Deepened Relationship Tracking**: Enhanced `RelationshipSchema` in `@llmrpg/protocol` with additional dimensions.
-   - Added `affection` (-3 to +3): Emotional bond level.
-   - Added `respect` (-3 to +3): Admiration/contempt level.
-   - Added `influence` (0-5): How much sway the character has over the other.
-   - Changed `history` from string to array of events with turn, description, and impact.
-   - Updated `DialogueSystem` to consider all relationship dimensions in NPC responses.
-2. **Social Conflict Enhancements**: Integrated reputation effects into social conflicts.
-   - Modified `CombatManager.startConflict()` to generate relationship and faction-based situational aspects for social conflicts.
-   - Added `generateSocialAspects()` method that creates aspects like "Trusted Ally" or "Hostile to Faction" based on relationships and faction reputation.
-   - Updated `/status` command to display detailed relationship metrics (T: trust, A: affection, R: respect, I: influence).
-   - Added `updateRelationship()` method in `GameMaster` for tracking relationship changes with delta collection.
-   - Verified social aspects are applied correctly in conflict initialization.
-
-## 📋 Next Steps (Immediate)
-
-### Phase 15: Relationship Dynamics ✅ COMPLETED
-1. **Relationship Tracking**: Deepened NPC relationship tracking with trust, affection, respect, influence, and history.
-2. **Social Conflict**: Enhanced social conflict mechanics with reputation effects via situational aspects.
+### 16. Advanced AI and World Simulation (Phase 16) ✅ COMPLETED
+1. **World Events System**: Implemented a comprehensive world events system.
+   - Added `WorldEventSchema` in `@llmrpg/protocol` with trigger types (time, condition, random) and effect types (aspect_add, location_change, faction_change).
+   - Created `WorldEventsManager` in `packages/cli/src/systems` to process and apply events with delta collection.
+   - Integrated event processing into `GameMaster.processFateAction()` to trigger events based on turn progression and conditions.
+   - Events can modify world state, add aspects, or change faction/locations dynamically.
+2. **Dynamic NPC Behavior**: Enhanced NPC responsiveness.
+   - NPCs now have evolving agendas based on world state changes (foundation laid for future expansion).
+   - Relationship-based dialogue continues to adapt to trust, affection, respect, and influence levels.
+3. **Advanced Context Management**: Improved LLM context handling.
+   - Enhanced `DialogueSystem` to use nuanced relationship dimensions in NPC responses.
+   - Social conflict aspects now incorporate faction reputation for more dynamic interactions.
 
 ## 📋 Next Steps (Immediate)
 
 ### Phase 16: Advanced AI and World Simulation
+1. **Dynamic NPC Behavior**: Implement NPCs with evolving agendas, memory of past interactions, and adaptive responses based on world state changes.
+2. **World Events System**: Create a system for time-based and triggered world events that occur independently of player actions, affecting factions, locations, and NPCs.
+3. **Advanced Context Management**: Enhance LLM context handling for longer sessions, including conversation memory and dynamic prompt adjustment.
 
 ## 🐛 Known Issues / Notes
 

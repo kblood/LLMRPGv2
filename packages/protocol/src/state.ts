@@ -5,6 +5,35 @@ import { QuestSchema } from './quests.js';
 import { FactionSchema } from './factions.js';
 import { ZoneMapSchema } from './combat.js';
 
+// World Event - something that happens in the world
+export const WorldEventSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string(),
+  
+  // When it triggers
+  trigger: z.discriminatedUnion('type', [
+    z.object({ type: z.literal('time'), turn: z.number().int() }),
+    z.object({ type: z.literal('condition'), condition: z.string() }), // e.g., "faction_reputation < -50"
+    z.object({ type: z.literal('random'), chance: z.number().min(0).max(1) }),
+  ]),
+  
+  // Effects when triggered
+  effects: z.array(z.object({
+    type: z.enum(['aspect_add', 'aspect_remove', 'location_change', 'npc_change', 'faction_change', 'quest_trigger']),
+    target: z.string(), // ID of target
+    data: z.unknown(), // Effect-specific data
+  })),
+  
+  // Is it active?
+  active: z.boolean().default(true),
+  
+  // Has it been triggered?
+  triggered: z.boolean().default(false),
+});
+
+export type WorldEvent = z.infer<typeof WorldEventSchema>;
+
 // Location in the world
 export const LocationSchema = z.object({
   id: z.string(),
@@ -142,6 +171,9 @@ export const WorldStateSchema = z.object({
   
   // Factions in the world
   factions: z.record(z.string(), FactionSchema).default({}),
+  
+  // Scheduled world events
+  events: z.array(WorldEventSchema).default([]),
   
   // World-level facts that have been established
   establishedFacts: z.record(z.string(), z.unknown()),

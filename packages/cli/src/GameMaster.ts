@@ -9,6 +9,7 @@ import { DecisionEngine } from './systems/DecisionEngine';
 import { WorldManager } from './systems/WorldManager';
 import { CombatManager } from './systems/CombatManager';
 import { DialogueSystem } from './systems/DialogueSystem';
+import { WorldEventsManager } from './systems/WorldEventsManager';
 
 export class GameMaster {
   private turnManager: TurnManager;
@@ -23,6 +24,7 @@ export class GameMaster {
   private craftingManager: CraftingManager;
   private combatManager: CombatManager;
   private dialogueSystem: DialogueSystem;
+  private worldEventsManager: WorldEventsManager;
   private sessionWriter: SessionWriter;
   private sessionLoader: SessionLoader | undefined;
   private currentScene: SceneState | undefined;
@@ -53,6 +55,7 @@ export class GameMaster {
     this.contentGenerator = new ContentGenerator(llmProvider);
     this.decisionEngine = new DecisionEngine(llmProvider);
     this.dialogueSystem = new DialogueSystem(llmProvider);
+    this.worldEventsManager = new WorldEventsManager(this.deltaCollector);
     this.combatManager = new CombatManager(
       this.turnManager,
       this.decisionEngine,
@@ -846,6 +849,16 @@ export class GameMaster {
   }
 
   private async processFateAction(playerAction: string, turn: Turn, playerReasoning?: string, skipCompelCheck: boolean = false) {
+    // Process world events
+    const triggeredEvents = this.worldEventsManager.processEvents(this.worldManager.state, turn.turnId as number);
+    if (triggeredEvents.length > 0) {
+      for (const event of triggeredEvents) {
+        this.turnManager.addEvent('world_event', 'triggered', {
+          description: `World Event: ${event.name} - ${event.description}`,
+          metadata: { eventId: event.id, effects: event.effects }
+        });
+      }
+    }
     // Check for Compels
     if (!skipCompelCheck) {
         const compel = await this.checkCompels(playerAction);
