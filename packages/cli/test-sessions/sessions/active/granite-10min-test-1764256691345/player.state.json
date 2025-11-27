@@ -1,0 +1,159 @@
+{
+  "id": "player-1764256702147",
+  "type": "player",
+  "name": "Eldrin Thorne",
+  "appearance": "Wears tattered robes of dark blue and black, adorned with sigils that mark his lineage to the ancient mages. His long hair is cut short and tied back, revealing a gaunt face lined with wisdom and sorrow.",
+  "aspects": [
+    {
+      "id": "asp-jrw08ycqc",
+      "name": "The Wandering Scholar-Mage",
+      "type": "high_concept",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-bfinq0skw",
+      "name": "Shattered Legacy",
+      "type": "trouble",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-qdw2ynzbi",
+      "name": "Secret Lore",
+      "type": "background",
+      "freeInvokes": 0
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcane Studies",
+      "rank": 4
+    },
+    {
+      "name": "Spellcrafting",
+      "rank": 3
+    },
+    {
+      "name": "Inscription Mastery",
+      "rank": 3
+    },
+    {
+      "name": "Historical Research",
+      "rank": 2
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Insightful Scholar",
+      "description": "Whenever Eldrin uses Arcane Studies to uncover ancient knowledge, he can also discover an additional piece of lore.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Mastery Over Magic",
+      "description": "Eldrin can attempt Spellcrafting even when facing a high difficulty due to his deep understanding of arcane principles.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Forgotten Script",
+      "description": "Eldrin has studied ancient languages that are rarely spoken. If he encounters any inscription or scroll written in these tongues, he knows how to interpret it.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Intellectual",
+      "Curious",
+      "Meticulous",
+      "Reserved"
+    ],
+    "values": [
+      "Seeking Knowledge",
+      "Preserving History",
+      "Protecting the Innocent"
+    ],
+    "quirks": [
+      "Prefers silence over conversation",
+      "Collects ancient tomes",
+      "Finds solace in solitude"
+    ],
+    "fears": [
+      "Being consumed by power",
+      "Reputation as a sorcerer",
+      "Never finding what he's searching for"
+    ],
+    "desires": [
+      "Unearth the lost knowledge of his ancestors",
+      "Gain recognition among scholars",
+      "Leave a positive mark on the world"
+    ]
+  },
+  "backstory": {
+    "origin": "Born into an ancient lineage of mages in the crumbling ruins of Eldoria, Eldrin's childhood was marked by tales of forbidden magic and forgotten realms.",
+    "formativeEvent": "The massacre of his family during a ritual gone wrong left him with nothing but shattered dreams and a burning desire for truth.",
+    "secret": "Eldrin carries an ancient amulet passed down through generations, rumored to unlock the secrets of the Shattered Realms.",
+    "summary": "Haunted by his past and driven by curiosity, Eldrin roams the land searching for clues to the lost knowledge that could reshape the world or doom it."
+  },
+  "voice": {
+    "speechPattern": "Precise yet contemplative",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "In this realm of shadows and whispers...",
+      "The veil between worlds is thinner than one might perceive..."
+    ],
+    "quirks": "Delivers a thoughtful pause before speaking, often using poetic turns of phrase"
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {
+      "loc-1764256693832": {
+        "name": "The Hidden Chamber of the Necromancer",
+        "details": "Eldrin discovered a hidden entrance to an ancient chamber within The Shattered Keep, protected by dark rituals and wards. This discovery deepened his understanding of the Whispering Prophecy's connection to necromantic practices.",
+        "known": true,
+        "confidence": "high"
+      }
+    }
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764256693832",
+  "isAlive": true,
+  "createdAt": "2025-11-27T15:18:22.147Z",
+  "updatedAt": "2025-11-27T15:18:22.147Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

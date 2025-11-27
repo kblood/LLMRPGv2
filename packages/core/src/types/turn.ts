@@ -24,5 +24,9 @@ export interface Turn {
 
   events: GameEvent[];
   
+  narration?: string; // GM narration of the turn's events
+  
+  playerReasoning?: string; // AI player's reasoning for their action (if applicable)
+  
   llmContext?: TurnContext;
 }

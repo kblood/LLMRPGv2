@@ -271,6 +271,22 @@ async function generateMarkdown(
           lines.push('');
         }
         
+        // Include narration if available
+        if (turn.narration) {
+          lines.push('#### GM Narration');
+          lines.push('');
+          lines.push(turn.narration);
+          lines.push('');
+        }
+        
+        // Include AI player reasoning if available
+        if (turn.playerReasoning) {
+          lines.push('#### AI Player Reasoning');
+          lines.push('');
+          lines.push(turn.playerReasoning);
+          lines.push('');
+        }
+        
         // Load deltas for this turn if requested
         if (includeDeltas) {
           try {

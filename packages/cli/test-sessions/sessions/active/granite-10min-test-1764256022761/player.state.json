@@ -1,0 +1,167 @@
+{
+  "id": "player-1764256035168",
+  "type": "player",
+  "name": "Eldrin Thorne",
+  "appearance": "Tall and gaunt with piercing grey eyes, Eldrin wears tattered robes stained with ink and dust. A long braid of silver hair trails down his back.",
+  "aspects": [
+    {
+      "id": "asp-73cn1aa65",
+      "name": "Wandering Scholar-Mage",
+      "type": "high_concept",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-xjn9y31jm",
+      "name": "Lost Knowledge",
+      "type": "trouble",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-plxip2h5c",
+      "name": "Haunted Past",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-gm7muyokf",
+      "name": "Misfit Mage",
+      "type": "background",
+      "freeInvokes": 0
+    },
+    {
+      "id": "asp-th185nzr4",
+      "name": "Secret Lore",
+      "type": "background",
+      "freeInvokes": 0
+    }
+  ],
+  "skills": [
+    {
+      "name": "Arcana",
+      "rank": 4
+    },
+    {
+      "name": "Diplomacy",
+      "rank": 3
+    },
+    {
+      "name": "Engineering",
+      "rank": 2
+    },
+    {
+      "name": "Investigation",
+      "rank": 1
+    }
+  ],
+  "stunts": [
+    {
+      "name": "Master of Arcane Lore",
+      "description": "Rolls +4 to any skill check involving ancient magic or forgotten spells. Can recall obscure incantations and summoning rituals.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "The Scholar's Eye",
+      "description": "Can see through deception with a single glance, noticing hidden messages or coded symbols in books and scrolls.",
+      "cost": 0,
+      "refresh": 0
+    },
+    {
+      "name": "Lone Wanderer",
+      "description": "May always find shelter or food on the road, but must travel light. No permanent home or possessions.",
+      "cost": 0,
+      "refresh": 0
+    }
+  ],
+  "stressTracks": [
+    {
+      "type": "physical",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    },
+    {
+      "type": "mental",
+      "capacity": 2,
+      "boxes": [
+        false,
+        false
+      ]
+    }
+  ],
+  "consequences": [],
+  "fatePoints": {
+    "current": 3,
+    "refresh": 3
+  },
+  "personality": {
+    "traits": [
+      "Deeply analytical",
+      "Quiet observer",
+      "Skeptical of authority"
+    ],
+    "values": [
+      "Seeking truth above all else",
+      "Preserving knowledge from being lost"
+    ],
+    "quirks": [
+      "Frequently daydreams about forgotten worlds",
+      "Keeps a grimoire filled with scribbled notes and sketches"
+    ],
+    "fears": [
+      "Being hunted by cultists seeking his arcane secrets",
+      "Discovering the true cost of power"
+    ],
+    "desires": [
+      "Uncover lost magic to rewrite reality",
+      "Share his findings with those willing to learn"
+    ]
+  },
+  "backstory": {
+    "origin": "Eldrin grew up in a secluded tower, where he was raised by an eccentric and reclusive mage who taught him the ways of ancient magic.",
+    "formativeEvent": "A cult discovered Eldrin's hidden tower during a solar eclipse. In a desperate bid to protect his secrets, the mage sacrificed himself, leaving Eldrin alone with the burden of knowledge.",
+    "secret": "Eldrin carries a single, unmarked amulet passed down from his mentor, said to contain the essence of forgotten magic.",
+    "summary": "Haunted by his mentor's death and determined to uncover more lost knowledge, Eldrin sets out on a perilous journey across the shattered realms."
+  },
+  "voice": {
+    "speechPattern": "Precise and measured",
+    "vocabulary": "sophisticated",
+    "phrases": [
+      "It is said...",
+      "The arcane records indicate...",
+      "In my studies..."
+    ],
+    "quirks": "Often trails off, lost in thought about ancient mysteries"
+  },
+  "knowledge": {
+    "locations": {},
+    "npcs": {},
+    "quests": {},
+    "factions": {},
+    "secrets": {},
+    "items": {},
+    "topics": {
+      "loc-1764256027809": {
+        "name": "The Shattered Realms",
+        "details": "Eldrin deciphers an ancient script, revealing a reference to the lost kingdom of Eldoria and its connection to powerful arcane secrets that could reshape magic in the shattered realms.",
+        "known": true,
+        "confidence": "high"
+      }
+    }
+  },
+  "relationships": [],
+  "currentLocation": "loc-1764256027809",
+  "isAlive": true,
+  "createdAt": "2025-11-27T15:07:15.168Z",
+  "updatedAt": "2025-11-27T15:07:15.169Z",
+  "goals": [],
+  "wealth": 100,
+  "inventory": [],
+  "milestones": {
+    "minor": 0,
+    "significant": 0,
+    "major": 0
+  }
+}

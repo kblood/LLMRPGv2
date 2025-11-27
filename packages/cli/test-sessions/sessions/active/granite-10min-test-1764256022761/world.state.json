@@ -1,0 +1,168 @@
+{
+  "theme": {
+    "name": "The Shattered Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Gritty",
+    "keywords": [
+      "ancient magic",
+      "forgotten kingdoms",
+      "dark sorcery",
+      "ruined palaces",
+      "mystical ruins"
+    ]
+  },
+  "locations": {
+    "loc-1764256027809": {
+      "id": "loc-1764256027809",
+      "name": "Ruins of Eldoria",
+      "description": "The once-great capital city of the forgotten kingdom of Eldoria now lies in ruins, its towering walls crumbling and overgrown with twisted vines. The air is thick with the smell of decay and the remnants of dark sorcery that permeate the land.",
+      "aspects": [
+        {
+          "id": "asp-6tfx4cn29",
+          "name": "Echoes of Ancient Magic",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-ywx8b2lbm",
+          "name": "Shadows of Forgotten Legends",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-vfjqmurv4",
+          "name": "Ruined Palaces and Mystical Ruins",
+          "kind": "environment",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-hhwumrwzh",
+          "name": "The Grand Keep",
+          "description": "A massive, crumbling castle that once housed the royal family. Now, it serves as a stronghold for those who dare to venture into its depths.",
+          "interactable": true
+        },
+        {
+          "id": "feat-ng5rjbyt5",
+          "name": "The Cursed Gardens",
+          "description": "An ancient botanical garden where poisonous plants and cursed flowers grow, rumored to hold secrets of dark magic.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "51",
+    "period": "Day 1, morning"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-7890",
+      "title": "Unraveling the Secrets of Eldoria",
+      "description": "Eldrin must delve into the ancient ruins of Eldoria to uncover lost knowledge and forgotten spells that could help him overcome the eerie presence he feels. He seeks to understand why these ruins were abandoned and what secrets they hold.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Explore the Grand Keep and gather any clues or artifacts related to the ancient kingdom of Eldoria.",
+          "type": "custom",
+          "requiredCount": 1
+        },
+        {
+          "id": "obj-2",
+          "description": "Decode an ancient script etched into one of the temple walls, uncovering its meaning and significance.",
+          "type": "custom",
+          "requiredCount": 1
+        },
+        {
+          "id": "obj-3",
+          "description": "Discover a hidden mechanism or trap within the ruins that reveals more about their purpose and why they were abandoned.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "id": "quest-7891",
+      "title": "Unraveling the Secrets of Eldoria",
+      "description": "Eldrin must delve into the ancient ruins of Eldoria to uncover lost knowledge and forgotten spells that could help him overcome the eerie presence he feels. He seeks to understand why these ruins were abandoned and what secrets they hold.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Explore the Grand Keep and gather any clues or artifacts related to the ancient kingdom of Eldoria.",
+          "type": "custom",
+          "requiredCount": 1
+        },
+        {
+          "id": "obj-2",
+          "description": "Decode an ancient script etched into one of the temple walls, uncovering its meaning and significance.",
+          "type": "custom",
+          "requiredCount": 1
+        },
+        {
+          "id": "obj-3",
+          "description": "Discover a hidden mechanism or trap within the ruins that reveals more about their purpose and why they were abandoned.",
+          "type": "custom",
+          "requiredCount": 1
+        }
+      ]
+    },
+    {
+      "id": "quest-7892",
+      "title": "Unraveling the Secrets of Eldoria",
+      "description": "Eldrin must delve into the ancient ruins of Eldoria to uncover lost knowledge and forgotten spells that could help him overcome the eerie presence he feels. He seeks to understand why these ruins were abandoned and what secrets they hold.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Explore the Grand Keep and gather any clues or artifacts related to the ancient kingdom of Eldoria.",
+          "type": "custom",
+          "requiredCount": 1
+        },
+        {
+          "id": "obj-2",
+          "description": "Decode an ancient script etched into one of the temple walls, uncovering its meaning and significance.",
+          "type": "custom",
+          "requiredCount": 1
+        }
+      ]
+    },
+    {
+      "id": "quest-7893",
+      "title": "Unraveling the Secrets of Eldoria",
+      "description": "Eldrin must delve into the ancient ruins of Eldoria to uncover lost knowledge and forgotten spells that could help him overcome the eerie presence he feels. He seeks to understand why these ruins were abandoned and what secrets they hold.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Explore the Grand Keep and gather any clues or artifacts related to the ancient kingdom of Eldoria.",
+          "type": "custom",
+          "requiredCount": 1
+        },
+        {
+          "id": "obj-2",
+          "description": "Decode an ancient script etched into one of the temple walls, uncovering its meaning and significance.",
+          "type": "custom",
+          "requiredCount": 1
+        }
+      ]
+    }
+  ],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764256029059",
+    "name": "Whispers from the Ruins",
+    "description": "As you stand amidst the crumbling walls of Eldoria, an eerie glow emanates from one of the most ancient structures - the Temple of the Forgotten. The air shivers with an unseen presence, and a sense of dread washes over you like a tidal wave. The once-mighty city now lies in ruins, its history reduced to dust by the relentless march of time.",
+    "locationId": "loc-1764256027809",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}

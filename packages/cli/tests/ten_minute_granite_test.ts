@@ -16,6 +16,7 @@
 import { GameMaster } from '../src/GameMaster';
 import { OllamaAdapter } from '@llmrpg/llm';
 import { SessionWriter, SessionLoader, FileSystemAdapter } from '@llmrpg/storage';
+import { AIPlayer } from '../src/systems/AIPlayer';
 import path from 'path';
 import fs from 'fs';
 
@@ -32,11 +33,13 @@ interface TestResult {
   narration?: string;
   duration: number;
   error?: string;
+  playerReasoning?: string;
 }
 
 class TenMinuteTest {
   private results: TestResult[] = [];
   private gameMaster: GameMaster | null = null;
+  private aiPlayer: AIPlayer | null = null;
   private startTime: number = 0;
   private errors: string[] = [];
   
@@ -84,6 +87,9 @@ class TenMinuteTest {
     
     this.gameMaster = new GameMaster(SESSION_ID, llmProvider, sessionWriter, sessionLoader);
     
+    // Initialize AI Player
+    this.aiPlayer = new AIPlayer(llmProvider);
+    
     console.log('✅ Environment ready\n');
     
     // Initialize world
@@ -104,162 +110,62 @@ class TenMinuteTest {
   }
   
   private async runGameLoop() {
-    // Define test phases with actions
-    const phases = [
-      // Phase 1: Exploration and Observation
-      {
-        name: 'Exploration',
-        actions: [
-          'Look around carefully and observe my surroundings',
-          'Examine any interesting features nearby',
-          'Search for clues or hidden objects',
-          'Listen for any sounds or movement',
-        ]
-      },
-      // Phase 2: NPC Interaction
-      {
-        name: 'NPC Interaction',
-        actions: [
-          'Approach the nearest person and greet them',
-          'Ask them about the local area and its history',
-          'Inquire about any rumors or strange occurrences',
-          'Thank them and ask if they need any help',
-        ]
-      },
-      // Phase 3: Quest and Goals
-      {
-        name: 'Quest Pursuit',
-        actions: [
-          'Ask about any jobs or tasks that need doing',
-          'Accept any available quest or mission',
-          'Gather information about the quest objective',
-          'Begin traveling toward the quest destination',
-        ]
-      },
-      // Phase 4: Challenges and Skill Use
-      {
-        name: 'Challenges',
-        actions: [
-          'Use my scholarly knowledge to solve a problem',
-          'Attempt to overcome any obstacle in my path',
-          'Create an advantage using my magic abilities',
-          'Carefully navigate through a dangerous area',
-        ]
-      },
-      // Phase 5: Combat
-      {
-        name: 'Combat',
-        actions: [
-          'If enemies appear, prepare to defend myself',
-          'Cast a protective spell around me',
-          'Attack the nearest threat with arcane energy',
-          'Dodge incoming attacks and counterattack',
-        ]
-      },
-      // Phase 6: Economy and Inventory
-      {
-        name: 'Economy',
-        actions: [
-          '/inventory',
-          '/status',
-          'Find a merchant or shop',
-          'Browse their wares and ask about prices',
-        ]
-      },
-      // Phase 7: Save/Load Test
-      {
-        name: 'Save/Load',
-        actions: [
-          '/save',
-          'Continue exploring after saving',
-        ]
-      },
-      // Phase 8: Extended Exploration (fills remaining time)
-      {
-        name: 'Extended Play',
-        actions: [
-          'Explore a new area',
-          'Investigate something unusual',
-          'Use my skills creatively',
-          'Interact with my environment',
-          'Talk to another NPC',
-          'Search for secrets',
-          'Rest and observe',
-          'Plan my next move',
-        ]
-      }
-    ];
+    let actionCount = 0;
     
-    let phaseIndex = 0;
-    let actionIndex = 0;
-    
-    while (this.getElapsedTime() < TEST_DURATION_MS && this.gameMaster) {
-      const phase = phases[phaseIndex % phases.length];
-      const action = phase.actions[actionIndex % phase.actions.length];
-      
-      console.log(`\n[${this.getTimeString()}] Phase: ${phase.name}`);
-      console.log(`➡️  Action: ${action}`);
+    while (this.getElapsedTime() < TEST_DURATION_MS && this.gameMaster && this.aiPlayer) {
+      console.log(`\n[${this.getTimeString()}] Turn ${actionCount + 1}`);
       
       try {
-        const result = await this.executeAction(action);
-        this.results.push(result);
+        // Get AI player context and decide action
+        const context = this.gameMaster.getAIPlayerContext();
+        const actionDecision = await this.aiPlayer.decideAction(context);
         
-        if (result.success) {
-          console.log(`✅ Turn ${result.turnNumber}: ${result.eventCount} events, ${result.narrationLength} chars (${result.duration}ms)`);
-          if (result.narrationLength > 0 && result.narration) {
-            // Truncate long narrations for display - use narration directly from result
+        console.log(`🤖 AI Player Reasoning: ${actionDecision.reasoning}`);
+        console.log(`➡️  Action: ${actionDecision.action}`);
+        
+        // Execute the action using the AI player method
+        const result = await this.gameMaster.processAIPlayerAction(actionDecision.action, actionDecision.reasoning);
+        this.results.push({
+          action: actionDecision.action,
+          success: true,
+          turnNumber: result.turn?.turnNumber ?? actionCount + 1,
+          eventCount: result.turn?.events?.length ?? 0,
+          narrationLength: result.narration?.length ?? 0,
+          narration: result.narration || '',
+          duration: 0, // We'll calculate this differently since we don't have start time per action
+          playerReasoning: actionDecision.reasoning
+        });
+        
+        if (result.success !== false) {
+          console.log(`✅ Turn ${result.turn?.turnNumber ?? actionCount + 1}: ${result.turn?.events?.length ?? 0} events, ${result.narration?.length ?? 0} chars`);
+          if (result.narration && result.narration.length > 0) {
+            // Truncate long narrations for display
             const narration = result.narration.substring(0, 200);
             console.log(`   📜 "${narration}..."`);
           }
         } else {
-          console.log(`❌ Error: ${result.error}`);
-          this.errors.push(`Turn ${result.turnNumber}: ${result.error}`);
+          console.log(`❌ Error: ${result.error || 'Unknown error'}`);
+          this.errors.push(`Turn ${actionCount + 1}: ${result.error || 'Unknown error'}`);
         }
       } catch (loopError: any) {
         console.error(`💥 LOOP ERROR: ${loopError.message}`);
         console.error(loopError.stack);
         this.errors.push(`Loop error: ${loopError.message}`);
+        this.results.push({
+          action: 'error',
+          success: false,
+          turnNumber: actionCount + 1,
+          eventCount: 0,
+          narrationLength: 0,
+          duration: 0,
+          error: loopError.message
+        });
       }
       
-      actionIndex++;
-      if (actionIndex >= phase.actions.length) {
-        actionIndex = 0;
-        phaseIndex++;
-      }
+      actionCount++;
       
       // Small delay between actions to avoid overwhelming the LLM
-      await this.delay(500);
-    }
-  }
-  
-  private async executeAction(action: string): Promise<TestResult> {
-    const start = Date.now();
-    
-    try {
-      const result = await this.gameMaster!.processPlayerAction(action);
-      const duration = Date.now() - start;
-      
-      return {
-        action,
-        success: true,
-        turnNumber: result.turn?.turnNumber ?? 0,
-        eventCount: result.turn?.events?.length ?? 0,
-        narrationLength: result.narration?.length ?? 0,
-        narration: result.narration || '',
-        duration
-      };
-    } catch (error: any) {
-      console.error(`💥 executeAction error for "${action}":`, error.message);
-      console.error(error.stack);
-      return {
-        action,
-        success: false,
-        turnNumber: 0,
-        eventCount: 0,
-        narrationLength: 0,
-        duration: Date.now() - start,
-        error: error.message
-      };
+      await this.delay(1000); // Increased delay for AI decision making
     }
   }
   
@@ -282,9 +188,7 @@ class TenMinuteTest {
     const totalTime = this.getElapsedTime();
     const successfulActions = this.results.filter(r => r.success);
     const failedActions = this.results.filter(r => !r.success);
-    const avgDuration = successfulActions.length > 0
-      ? successfulActions.reduce((sum, r) => sum + r.duration, 0) / successfulActions.length
-      : 0;
+    const totalActions = this.results.length;
     
     console.log('\n');
     console.log('╔══════════════════════════════════════════════════════════════════╗');
@@ -292,11 +196,10 @@ class TenMinuteTest {
     console.log('╚══════════════════════════════════════════════════════════════════╝');
     console.log('');
     console.log(`⏱️  Total Runtime:       ${(totalTime / 1000 / 60).toFixed(2)} minutes`);
-    console.log(`📊 Total Actions:       ${this.results.length}`);
+    console.log(`📊 Total Actions:       ${totalActions}`);
     console.log(`✅ Successful:          ${successfulActions.length}`);
     console.log(`❌ Failed:              ${failedActions.length}`);
-    console.log(`⚡ Success Rate:        ${((successfulActions.length / this.results.length) * 100).toFixed(1)}%`);
-    console.log(`⏳ Avg Response Time:   ${(avgDuration / 1000).toFixed(2)}s`);
+    console.log(`⚡ Success Rate:        ${totalActions > 0 ? ((successfulActions.length / totalActions) * 100).toFixed(1) : '0.0'}%`);
     console.log('');
     
     if (this.errors.length > 0) {
@@ -324,10 +227,24 @@ class TenMinuteTest {
     });
     console.log('');
     
+    // Sample AI reasoning
+    const reasoningExamples = this.results
+      .filter(r => r.playerReasoning && r.playerReasoning.length > 0)
+      .slice(0, 3);
+    
+    if (reasoningExamples.length > 0) {
+      console.log('🤖 Sample AI Reasoning:');
+      console.log('─'.repeat(60));
+      reasoningExamples.forEach((result, i) => {
+        console.log(`  ${i + 1}. "${result.playerReasoning!.substring(0, 100)}..."`);
+      });
+      console.log('');
+    }
+    
     // Final verdict
     if (failedActions.length === 0) {
       console.log('🎉 TEST PASSED - All actions completed successfully!');
-    } else if (successfulActions.length / this.results.length >= 0.8) {
+    } else if (successfulActions.length / totalActions >= 0.8) {
       console.log('⚠️  TEST PASSED WITH WARNINGS - Some actions failed but overall success rate is acceptable');
     } else {
       console.log('💥 TEST FAILED - Too many action failures');

@@ -1,0 +1,122 @@
+{
+  "theme": {
+    "name": "The Shattered Realms",
+    "genre": "Dark Fantasy",
+    "tone": "Grim and brooding",
+    "keywords": [
+      "ancient magic",
+      "forgotten realms",
+      "dark necromancy",
+      "ruined citadels",
+      "shadowy cults"
+    ]
+  },
+  "locations": {
+    "loc-1764256693832": {
+      "id": "loc-1764256693832",
+      "name": "The Shattered Keep",
+      "description": "A crumbling fortress perched atop a jagged cliff overlooking the treacherous Whispering Coast. The once-mighty citadel now serves as a base for shadowy cults and forgotten rituals, with ancient runes etched into its walls. Ruins of fallen towers dot the perimeter, while dark magic permeates the air.",
+      "aspects": [
+        {
+          "id": "asp-wd8v0nppf",
+          "name": "Echoes of Forgotten Magic",
+          "kind": "environment",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-iqzudx45o",
+          "name": "Cultists' Cultivation",
+          "kind": "situation",
+          "isTemporary": false
+        },
+        {
+          "id": "asp-gjigw9fi9",
+          "name": "Ruined Sanctum of the Necromancer",
+          "kind": "environment",
+          "isTemporary": false
+        }
+      ],
+      "connections": [],
+      "presentNPCs": [],
+      "features": [
+        {
+          "id": "feat-w8bc2yjub",
+          "name": "The Cursed Altar",
+          "description": "A weathered stone altar, marked with symbols that seem to writhe and shift in the wind. Those who approach feel an eerie sense of dread.",
+          "interactable": true
+        },
+        {
+          "id": "feat-55r3gl1l2",
+          "name": "Hidden Sanctum Entrance",
+          "description": "An ancient door concealed behind vines and overgrown roots, leading to a hidden chamber rumored to hold secrets of dark necromancy.",
+          "interactable": true
+        }
+      ],
+      "discovered": true,
+      "tier": "locale"
+    }
+  },
+  "aspects": [],
+  "time": {
+    "value": "51",
+    "period": "Day 1, morning"
+  },
+  "plotThreads": [],
+  "quests": [
+    {
+      "id": "quest-7x9m2p4q8",
+      "title": "The Whispering Prophecy",
+      "description": "An ancient prophecy, inscribed in the ruins of Eldoria, speaks of a hidden knowledge that could either save or doom the world. Eldrin must uncover its meaning and decipher the secrets it holds.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Locate the fragment of the prophecy written on an ancient scroll in The Shattered Keep.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        },
+        {
+          "id": "obj-2",
+          "description": "Decode the meaning of the cryptic message and its connection to the cultists' activities.",
+          "type": "custom",
+          "requiredCount": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-quest-id-1",
+      "title": "The Hidden Chamber of the Necromancer",
+      "description": "Deep within The Shattered Keep lies a hidden chamber, protected by ancient wards and guarded by dark rituals. Eldrin must uncover its secrets to learn more about the Whispering Prophecy.",
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Discover the entrance to the hidden chamber within The Shattered Keep.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "completed"
+        },
+        {
+          "id": "obj-2",
+          "description": "Uncover the ancient rituals and wards protecting the chamber, seeking to understand their purpose and how they might relate to the Whispering Prophecy.",
+          "type": "custom",
+          "requiredCount": 1,
+          "currentCount": null,
+          "status": "failed"
+        }
+      ]
+    }
+  ],
+  "factions": {},
+  "establishedFacts": {},
+  "currentScene": {
+    "id": "scene-1764256695721",
+    "name": "Whispers of the Fallen",
+    "description": "As you stand atop the crumbling walls of the Shattered Keep, the wind howls through the ruins, carrying with it the faintest whispers of forgotten spells. The once-mighty fortress now serves as a base for shadowy cults that have taken up residence within its decaying halls. Ancient runes etched into the stone seem to pulse with an eerie energy, hinting at dark secrets long buried beneath the surface. A sense of unease permeates the air, as if the very fabric of reality is starting to fray at the edges. Suddenly, a group of cultists emerges from one of the abandoned towers, their faces painted black and eyes gleaming with madness. They beckon you forward, offering a cryptic message in exchange for safe passage through the keep's gates.",
+    "locationId": "loc-1764256693832",
+    "aspects": [],
+    "startTurn": 1,
+    "type": "exploration"
+  }
+}
