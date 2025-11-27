@@ -23,6 +23,8 @@ Thumbs.db
 
 # Session Data
 packages/cli/sessions/
+packages/cli/test-sessions/
+test-sessions/
 packages/cli/tests/temp_sessions*/
 
 # LLM/AI

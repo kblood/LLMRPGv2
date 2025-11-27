@@ -2,9 +2,9 @@
 
 **Last Updated:** November 27, 2025
 
-## 📍 Current Phase: Phase 9 - Integration & System Interoperability (Completed)
+## 📍 Current Phase: Phase 12 - Character Advancement
 
-We have integrated all systems, added comprehensive testing, and ensured system interoperability.
+We have successfully implemented all planned features for Phase 11 (Advanced Fate Mechanics & Compels). The system now supports a robust Fate Point economy, including self-compels, boosts, concessions, session refresh, and story declarations.
 
 ## ✅ Recent Accomplishments
 
@@ -71,16 +71,7 @@ We have integrated all systems, added comprehensive testing, and ensured system 
 - **Testing**: All tests passing (Core, Storage, LLM, CLI).
 - **Meta-Commands**: Implemented in-game commands for `/save`, `/load`, `/inventory`, `/help`, and `/status`. Added `tests/meta_commands.test.ts`.
 
-## 🚧 Current Context
-- `packages/cli` is built and compiles.
-- World Generation, Character Creation, Save/Load, Knowledge System, Quest System, and Social Conflict are implemented.
-- `WorldManager` is now fully implemented.
-- **Combat System**: Fully implemented and tested. The system now supports structured combat encounters with initiative, turns, and NPC AI.
-- **Storage**: Updated to persist NPC states alongside player and world state.
-- **Mocking**: Enhanced `MockAdapter` to support response queuing for deterministic testing of complex flows.
-- Prompts are more robust and aligned with documentation.
-- Error handling is in place for LLM calls.
-- CLI supports automated execution for testing.
+### 9. Advanced Systems (Phase 9)
 - **NPC Interaction**: Implemented `DialogueSystem` and integrated it into `GameMaster`. NPCs now respond with generated dialogue based on personality and relationship. Added `tests/npc_interaction.test.ts`.
 - **World Persistence**: Implemented `determineWorldUpdates` in `DecisionEngine` and `applyWorldUpdates` in `GameMaster`. Actions can now permanently alter the world state (e.g., adding aspects). Added `tests/world_persistence.test.ts`.
 - **Faction System**: Implemented `FactionManager` in `packages/core` and `Faction` types in `packages/protocol`. Integrated faction generation into `ContentGenerator` and `GameMaster`. Added `tests/factions.test.ts`.
@@ -101,64 +92,59 @@ We have integrated all systems, added comprehensive testing, and ensured system 
   - Exports saved to `packages/cli/exports/`
   - **Bug Fixed**: Resolved duplicate turns issue - each turn now appears once with both GM narration and AI player reasoning included.
 
-### 9. Integration & System Interoperability (Phase 9)
-- **Comprehensive Integration Test**: Created `tests/integration.test.ts` that exercises all major systems in a cohesive gameplay scenario: World Generation, Character Creation, Combat, Social Conflict, Knowledge System, Quest System, Economy, Factions, and Save/Load.
-- **Faction-Based Shop Prices**: Enhanced `EconomyManager` with `calculateFactionPriceModifier()` to adjust shop prices based on faction reputation. Allies get discounts (0.7x), hostile factions pay premium (1.5x). Updated `buyFromShop()` and `sellToShop()` to accept optional faction reputation parameter.
-- **Quest Prerequisites System**: Added `QuestPrerequisitesSchema` to the Quest schema supporting knowledge requirements (locations, npcs, quests, factions, secrets, items, topics) and faction reputation thresholds. Implemented `QuestManager.checkPrerequisites()` and `QuestManager.getAvailableQuests()` to filter quests based on player knowledge and reputation.
-- **Enhanced GameLoop**: Upgraded `GameLoop` with mode-aware prompts (exploration, combat, dialogue, trade), context display, visual formatting with box-drawing characters, outcome indicators (✨ for success with style, ✓ for success, ⚖️ for tie, ✗ for failure), and save-on-exit confirmation.
-- **AI Player with Reasoning**: Implemented `AIPlayer` system in `packages/cli/src/systems/AIPlayer.ts` that:
-  - Generates player actions based on character personality, goals, and situation
-  - Provides transparent reasoning explaining WHY each action was chosen
-  - Includes strategy and expected outcome fields
-  - Supports dialogue responses and event reactions
-- **Enhanced GM Narration**: Updated `NarrativeEngine` with `narrateActionResolution()` method that:
-  - Receives full action resolution context (skill, roll, shifts, outcome)
-  - Generates immersive second-person narration
-  - Matches narrative drama to mechanical outcome
-  - Includes player reasoning in narration context when available
-- **GameMaster AI Player Support**: Added `processAIPlayerAction()` and `getAIPlayerContext()` methods to facilitate AI-controlled gameplay
-- **Demo Test**: Created `tests/ai_player_demo.ts` demonstrating full AI player + GM narration flow
-- **Testing**: All 36 tests passing across 6 packages. Economy tests now include 5 faction price modifier tests. Quest system tests include 3 prerequisite validation tests.
-- **Export Functionality Bug Fix**: Fixed duplicate turns issue in session export to markdown. Each turn now appears once with both GM narration and AI player reasoning included. Modified `GameMaster.ts` to pass `playerReasoning` through the action processing chain and include it in the single turn save operation.
+### 10. Fate Point Economy & Aspect Invocations (Phase 10) ✅ COMPLETED
+- **Fate Point Management**: Implemented `refreshFatePoints()`, `awardFatePoints()`, and `spendFatePoints()` methods in `GameMaster.ts` with proper event logging and delta collection.
+- **Aspect Invocation System**: Updated `ActionResolver.resolve()` to accept `InvokeBonus` array supporting +2 bonuses and rerolls. Added validation for free invokes vs. Fate Point costs.
+- **AI Player Fate Point Integration**: Enhanced `AIPlayer.ts` to include Fate Point count in system prompt and generate aspect invocations in decision output (JSON format with `aspectInvokes` array).
+- **Turn Management Fix**: Resolved "No active turn" error by deferring Fate Point spending and aspect invocations until after turn initialization. Updated `processFateAction()` to handle pending invokes and FP costs.
+- **Event Logging**: Added detailed event logging for Fate Point spends (declaration vs. aspect_invoke) and aspect invocations with proper metadata.
+- **Testing**: Successfully ran `ai_player_demo.ts` for 10 turns, confirming Fate Point system works correctly (AI attempts invokes but gracefully handles insufficient FP with warnings).
+- **Validation**: System properly rejects invalid Fate Point spends and aspect invocations when player has insufficient resources.
+
+### 11. Advanced Fate Mechanics & Compels (Phase 11) ✅ COMPLETED
+1. **Compel System**: ✅ Implemented GM compels where NPCs/fate can force players to spend Fate Points or accept complications to gain FP.
+   - Defined `Compel` and `CompelType` schemas in `@llmrpg/protocol`.
+   - Implemented `generateCompel` in `DecisionEngine` with LLM integration.
+   - Implemented `checkCompels` and `resolveCompel` in `GameMaster`.
+   - Updated `GameLoop` to handle interactive compel offers.
+   - Verified with `compel_system.test.ts`.
+2. **Self-Compels**: ✅ Implemented player-initiated compels.
+   - Updated `CompelSchema` in `@llmrpg/protocol` to include `source` ('gm' | 'player').
+   - Updated `DecisionEngine` to classify `self_compel` intent and parse compel details.
+   - Updated `GameMaster` to handle `self_compel` intent, validate aspect, and award FP.
+   - Updated `EventType` in `@llmrpg/core` to include `fate_compel` and FP events.
+   - Verified with `self_compel.test.ts`.
+3. **Boost System**: ✅ Implemented temporary advantages.
+   - Updated `GameMaster` to create `boost` aspects on `success_with_style`.
+   - Implemented `generateBoostName` in `DecisionEngine`.
+   - Updated `processFateAction` to auto-remove boosts when their free invoke is used.
+   - Verified with `boost_system.test.ts`.
+4. **Concession Mechanics**: ✅ Implemented conflict concessions.
+   - Updated `DecisionEngine` to classify `concede` intent.
+   - Updated `GameMaster` to handle concessions, end conflicts, and award FP.
+   - Updated `CombatManager` to support `endConflict`.
+   - Verified with `concession.test.ts`.
+5. **Fate Point Refresh**: ✅ Implemented refresh mechanics.
+   - Updated `createCharacter` to calculate refresh based on stunt count (3 free, then -1 refresh).
+   - Updated `refreshFatePoints` to reset to refresh rate but keep excess FP (Fate Core rule).
+   - Verified with `refresh_mechanics.test.ts`.
+6. **Story Declarations**: ✅ Implemented player declarations.
+   - Updated `DecisionEngine` to classify `declaration` intent and parse declaration details.
+   - Updated `GameMaster` to handle `declaration` intent, spend FP, and create situational aspects.
+   - Verified with `declaration.test.ts`.
 
 ## 📋 Next Steps (Immediate)
 
-### Phase 10: Replay System Completion
-The replay/debug system is partially implemented. Complete the following to make it fully functional:
+### Phase 12: Character Advancement
+1. **Milestone System**: Implement Minor, Significant, and Major milestones for character growth.
+2. **Skill Advancement**: Allow players to increase skill ratings through milestone rewards.
+3. **Aspect Refresh**: Enable players to change aspects at major milestones.
+4. **Stunt Acquisition**: Allow players to learn new stunts through gameplay.
 
-1. **Add `loadSnapshot()` to SessionLoader**
-   - Load snapshot JSON files from `sessions/{id}/snapshots/`
-   - Find nearest snapshot to a given turn for efficient replay
-
-2. **Add `loadInitialState()` method**
-   - Load or reconstruct the initial state at turn 0
-   - Required for `ReplayDebugger` to function
-
-3. **Create `SessionDataBuilder` helper**
-   - Build `SessionData` object from a session ID
-   - Combine metadata, turns, deltas, and initial state
-   - Make it easy to initialize `ReplayDebugger`
-
-4. **Complete event loading in replay**
-   - `TurnResult.events` currently always empty
-   - Load actual `GameEvent` objects for each turn
-
-5. **Add replay tests**
-   - Replace `packages/debug/tests/placeholder.test.ts`
-   - Test step forward/backward, breakpoints, watch paths
-   - Test state reconstruction accuracy
-
-6. **Add CLI replay command** (optional)
-   - `/replay <sessionId>` command in GameLoop
-   - Or standalone replay viewer tool
-
-### Phase 11: Future Features & Expansions
-1.  **Magic/Power System**: Implement specific mechanics for magic or special powers (Extras).
-2.  **Stealth & Infiltration**: Implement mechanics for stealth, detection, and infiltration missions.
-3.  **Fate Point Economy & Compels**: Implement the full Fate Point economy, including GM compels, self-compels, and refusals.
-4.  **Character Advancement (Milestones)**: Implement Minor, Significant, and Major milestones for character growth.
-5.  **Conflict Concessions**: Allow players/NPCs to concede conflicts to mitigate consequences.
-6.  **Teamwork Mechanics**: Implement mechanics for characters helping each other (stacking advantages).
+### Phase 13: Teamwork & Social Mechanics
+1. **Teamwork Actions**: Implement mechanics for characters helping each other (stacking advantages).
+2. **Group Conflicts**: Extend social/combat systems to handle multiple participants.
+3. **Relationship Dynamics**: Deepen NPC relationship tracking and social consequences.
 
 ## 🐛 Known Issues / Notes
 

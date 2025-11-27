@@ -180,3 +180,24 @@ export const ActionResolutionSchema = z.object({
 });
 
 export type ActionResolution = z.infer<typeof ActionResolutionSchema>;
+
+// Compels
+export const CompelTypeSchema = z.enum([
+  'decision', // Forces a specific decision/action
+  'event',    // Introduces a complicating event
+]);
+
+export type CompelType = z.infer<typeof CompelTypeSchema>;
+
+export const CompelSchema = z.object({
+  id: z.string().uuid(),
+  aspectId: z.string().uuid(),
+  aspectName: z.string(),
+  type: CompelTypeSchema,
+  description: z.string(), // The complication
+  status: z.enum(['offered', 'accepted', 'refused', 'completed']),
+  turnId: z.union([z.string(), z.number()]),
+  source: z.enum(['gm', 'player']).default('gm'),
+});
+
+export type Compel = z.infer<typeof CompelSchema>;

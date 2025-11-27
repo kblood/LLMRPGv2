@@ -118,6 +118,15 @@ export class CombatManager {
   }
 
   /**
+   * Ends the conflict with a specific resolution.
+   */
+  endConflict(conflict: ConflictState, winner: 'player' | 'opposition' | 'draw', resolution: string) {
+    conflict.isResolved = true;
+    conflict.winner = winner;
+    conflict.resolution = resolution;
+  }
+
+  /**
    * Move a character between zones.
    */
   moveCharacter(scene: SceneState, characterId: string, targetZoneId: string): { success: boolean, message: string } {

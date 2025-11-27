@@ -12,7 +12,11 @@ export type EventType =
   | 'narrative'
   | 'knowledge_gain'
   | 'quest_update'
-  | 'system';
+  | 'system'
+  | 'fate_compel'
+  | 'fate_point_spend'
+  | 'fate_point_award'
+  | 'fate_point_refresh';
 
 export interface GameEvent {
   eventId: string; // Unique: "{sessionId}-{turnId}-{seq}"

@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager, FactionManager, EconomyManager, CraftingManager } from '@llmrpg/core';
 import { LLMProvider } from '@llmrpg/llm';
 import { SessionWriter, SessionLoader } from '@llmrpg/storage';
-import { SceneState, PlayerCharacter, KnowledgeProfile } from '@llmrpg/protocol';
+import { SceneState, PlayerCharacter, KnowledgeProfile, Compel } from '@llmrpg/protocol';
 import { NarrativeEngine } from './systems/NarrativeEngine';
 import { ContentGenerator } from './systems/ContentGenerator';
 import { DecisionEngine } from './systems/DecisionEngine';
@@ -267,7 +267,10 @@ export class GameMaster {
             { type: "mental", capacity: 2, boxes: [false, false] }
         ],
         consequences: [],
-        fatePoints: { current: 3, refresh: 3 },
+        fatePoints: { 
+            current: Math.max(1, 3 - Math.max(0, charData.stunts.length - 3)), 
+            refresh: Math.max(1, 3 - Math.max(0, charData.stunts.length - 3)) 
+        }, 
         personality: charData.personality,
         backstory: charData.backstory,
         voice: charData.voice || {
@@ -330,6 +333,180 @@ export class GameMaster {
     return false;
   }
 
+  /**
+   * Refresh Fate Points at the start of a new session (Fate Core rule)
+   */
+  refreshFatePoints(): void {
+    if (this.player) {
+      const oldFP = this.player.fatePoints.current;
+      const refresh = this.player.fatePoints.refresh;
+      
+      // Fate Core: Reset to Refresh level. If current > refresh, keep current.
+      if (oldFP < refresh) {
+          this.player.fatePoints.current = refresh;
+          
+          console.log(`Fate Points refreshed from ${oldFP} to ${this.player.fatePoints.current}`);
+          
+          // Log event
+          this.turnManager.addEvent('fate_point_refresh', 'session_start', {
+            description: `Fate Points refreshed to ${this.player.fatePoints.current}`,
+            metadata: { oldAmount: oldFP, newAmount: this.player.fatePoints.current }
+          });
+          
+          // Record delta
+          this.deltaCollector.collect({
+            target: 'player',
+            operation: 'set',
+            path: ['fatePoints', 'current'],
+            previousValue: oldFP,
+            newValue: this.player.fatePoints.current,
+            cause: 'session_refresh',
+            eventId: 'session-start'
+          });
+      } else {
+          console.log(`Current FP (${oldFP}) >= Refresh (${refresh}). No change.`);
+      }
+    }
+  }
+
+  /**
+   * Award Fate Points to player (for compels, concessions, GM awards)
+   */
+  awardFatePoints(amount: number, reason: string): void {
+    if (this.player && amount > 0) {
+      const oldFP = this.player.fatePoints.current;
+      this.player.fatePoints.current += amount;
+      
+      console.log(`Awarded ${amount} Fate Points for: ${reason}. Total: ${this.player.fatePoints.current}`);
+      
+      // Log event
+      this.turnManager.addEvent('fate_point_award', 'gm_award', {
+        description: `Awarded ${amount} Fate Points: ${reason}`,
+        metadata: { amount, reason, newTotal: this.player.fatePoints.current }
+      });
+      
+      // Record delta
+      this.deltaCollector.collect({
+        target: 'player',
+        operation: 'increment',
+        path: ['fatePoints', 'current'],
+        previousValue: oldFP,
+        newValue: this.player.fatePoints.current,
+        cause: 'fate_point_award',
+        eventId: 'gm-award'
+      });
+    }
+  }
+
+  /**
+   * Spend Fate Points (for invocations, declarations)
+   */
+  spendFatePoints(amount: number, reason: string): boolean {
+    if (this.player && this.player.fatePoints.current >= amount) {
+      const oldFP = this.player.fatePoints.current;
+      this.player.fatePoints.current -= amount;
+      
+      console.log(`Spent ${amount} Fate Points for: ${reason}. Remaining: ${this.player.fatePoints.current}`);
+      
+      // Log event
+      this.turnManager.addEvent('fate_point_spend', 'player_action', {
+        description: `Spent ${amount} Fate Points: ${reason}`,
+        metadata: { amount, reason, remaining: this.player.fatePoints.current }
+      });
+      
+      // Record delta
+      this.deltaCollector.collect({
+        target: 'player',
+        operation: 'decrement',
+        path: ['fatePoints', 'current'],
+        previousValue: oldFP,
+        newValue: this.player.fatePoints.current,
+        cause: 'fate_point_spend',
+        eventId: 'player-spend'
+      });
+      
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Check if a compel should be triggered based on the player's action and context
+   */
+  async checkCompels(playerAction: string): Promise<Compel | null> {
+    if (!this.player) return null;
+
+    // We don't want to spam compels, so we could add a random check or cooldown here.
+    // For now, we'll rely on the DecisionEngine to be judicious (or just check every time for testing).
+    
+    const context = {
+        action: { description: playerAction },
+        player: this.getCharacterDefinition(),
+        worldState: this.worldManager.state,
+        history: this.history
+    };
+
+    const compelData = await this.decisionEngine.generateCompel(context);
+    
+    if (compelData) {
+        return {
+            id: uuidv4(),
+            aspectId: this.player.aspects.find(a => a.name === compelData.aspectName)?.id || 'unknown',
+            aspectName: compelData.aspectName,
+            type: compelData.type,
+            description: compelData.description,
+            status: 'offered',
+            turnId: 'pending'
+        };
+    }
+    
+    return null;
+  }
+
+  /**
+   * Resolve a player's decision to accept or refuse a compel
+   */
+  async resolveCompel(compel: Compel, accepted: boolean): Promise<{ narration: string; result: string }> {
+    if (!this.player) return { narration: "Error: No player found.", result: "error" };
+
+    if (accepted) {
+        this.awardFatePoints(1, `Accepted compel on ${compel.aspectName}`);
+        compel.status = 'accepted';
+        
+        // Log the compel event
+        this.turnManager.addEvent('fate_compel', 'accept', {
+            description: `Compel Accepted: ${compel.description}`,
+            metadata: compel
+        });
+        
+        return {
+            narration: `You accept the complication. ${compel.description}`,
+            result: 'compel_accepted'
+        };
+    } else {
+        if (this.player.fatePoints.current > 0) {
+            this.spendFatePoints(1, `Refused compel on ${compel.aspectName}`);
+            compel.status = 'refused';
+            
+            this.turnManager.addEvent('fate_compel', 'refuse', {
+                description: `Compel Refused: ${compel.description}`,
+                metadata: compel
+            });
+            
+            return {
+                narration: `You grit your teeth and push through, refusing to let your nature get the better of you.`,
+                result: 'compel_refused'
+            };
+        } else {
+            // Cannot refuse if no FP
+            return {
+                narration: `You don't have enough Fate Points to refuse this compel! You must accept it. ${compel.description}`,
+                result: 'compel_forced'
+            };
+        }
+    }
+  }
+
   async movePlayer(targetZoneName: string) {
     if (!this.currentScene || !this.player) {
       console.log("No active scene or player.");
@@ -386,10 +563,22 @@ export class GameMaster {
     return undefined;
   }
 
-  async processPlayerAction(playerAction: string, playerReasoning?: string) {
+  async processPlayerAction(playerAction: string, playerReasoning?: string, skipCompelCheck: boolean = false) {
     // Check for Meta Commands
     if (playerAction.startsWith('/')) {
         return this.handleMetaCommand(playerAction);
+    }
+
+    // Classify Intent EARLY to catch Concede and other meta-actions
+    const intent = await this.decisionEngine.classifyIntent(playerAction);
+
+    // Handle Concession immediately (bypassing combat loop)
+    if (intent === 'concede' && this.player) {
+        const gameTime: GameTime = { day: 1, timeOfDay: 'morning', timestamp: Date.now() };
+        const sceneId = this.currentScene?.id || "scene-unknown";
+        const turn = this.turnManager.startTurn("player", sceneId, gameTime);
+        this.deltaCollector = new DeltaCollector(this.sessionId, turn.turnId);
+        return this.processConcession(turn);
     }
 
     // Check for Combat
@@ -410,9 +599,6 @@ export class GameMaster {
     // Update DeltaCollector with new turn ID
     this.deltaCollector = new DeltaCollector(this.sessionId, turn.turnId);
 
-    // 2. Classify Intent (only if player exists for inventory/status)
-    const intent = await this.decisionEngine.classifyIntent(playerAction);
-
     if (intent === 'trade' && this.player) {
         return this.processTradeTurn(playerAction, turn);
     } else if (intent === 'craft' && this.player) {
@@ -421,12 +607,264 @@ export class GameMaster {
         return this.processInventoryTurn(turn);
     } else if (intent === 'status' && this.player) {
         return this.processStatusTurn(turn);
+    } else if (intent === 'self_compel' && this.player) {
+        return this.processSelfCompel(playerAction, turn);
+    } else if (intent === 'declaration' && this.player) {
+        return this.processDeclaration(playerAction, turn);
     }
 
-    return this.processFateAction(playerAction, turn, playerReasoning);
+    return this.processFateAction(playerAction, turn, playerReasoning, skipCompelCheck);
   }
 
-  private async processFateAction(playerAction: string, turn: Turn, playerReasoning?: string) {
+  private async processConcession(turn: Turn) {
+      if (!this.currentScene?.conflict || this.currentScene.conflict.isResolved) {
+          const narration = "You can only concede during an active conflict.";
+          this.turnManager.addEvent('system', 'concession_failed', { description: narration });
+          return this.finalizeTurn(turn, narration, "failure");
+      }
+      
+      // Calculate FP
+      // 1 FP base + 1 per consequence taken (simplified: all current consequences)
+      const consequences = this.player?.consequences.length || 0;
+      const award = 1 + consequences;
+      
+      this.awardFatePoints(award, "Concession");
+      
+      // End Conflict
+      this.combatManager.endConflict(this.currentScene.conflict, 'opposition', 'Player conceded');
+      
+      const narration = "You concede the conflict, escaping with your life but leaving the victory to your enemies.";
+      
+      this.turnManager.addEvent('state_change', 'concession', {
+          description: narration,
+          metadata: { fpAwarded: award }
+      });
+      
+      return this.finalizeTurn(turn, narration, "conceded");
+  }
+
+  private async processSelfCompel(playerAction: string, turn: Turn) {
+    if (!this.player) throw new Error("No player");
+
+    const compelData = await this.decisionEngine.parseSelfCompel(playerAction, this.getCharacterDefinition()!);
+    
+    if (!compelData) {
+        const narration = "The GM is confused by your request. Please be more specific about which aspect you are compelling and why.";
+        this.turnManager.addEvent('system', 'compel_failed', { description: narration });
+        return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // Validate aspect exists
+    // Try exact match first, then partial match
+    let aspect = this.player.aspects.find(a => a.name.toLowerCase() === compelData.aspectName.toLowerCase());
+    if (!aspect) {
+        aspect = this.player.aspects.find(a => a.name.toLowerCase().includes(compelData.aspectName.toLowerCase()));
+    }
+
+    if (!aspect) {
+         const narration = `You try to compel '${compelData.aspectName}', but that is not one of your aspects.`;
+         this.turnManager.addEvent('system', 'compel_failed', { description: narration });
+         return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // Accept the self-compel
+    this.awardFatePoints(1, `Self-compel on ${aspect.name}`);
+    
+    const compel: Compel = {
+        id: uuidv4(),
+        aspectId: aspect.id,
+        aspectName: aspect.name,
+        type: 'decision', 
+        description: compelData.description,
+        status: 'accepted',
+        turnId: turn.turnId,
+        source: 'player'
+    };
+
+    this.turnManager.addEvent('fate_compel', 'self_compel', {
+        description: `Self-Compel Accepted: ${compel.description}`,
+        metadata: compel
+    });
+
+    const narration = `You give in to your nature. ${compel.description} (Gain 1 Fate Point)`;
+    
+    return this.finalizeTurn(turn, narration, "success");
+  }
+
+  private async processDeclaration(playerAction: string, turn: Turn) {
+    if (!this.player) throw new Error("No player");
+
+    // 1. Check Fate Points
+    if (this.player.fatePoints.current < 1) {
+        const narration = "You don't have enough Fate Points to make a declaration.";
+        this.turnManager.addEvent('system', 'declaration_failed', { description: narration });
+        return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // 2. Parse Declaration
+    const declarationData = await this.decisionEngine.parseDeclaration(playerAction);
+    
+    if (!declarationData) {
+        const narration = "The GM is unsure what fact you are trying to declare. Please be more specific.";
+        this.turnManager.addEvent('system', 'declaration_failed', { description: narration });
+        return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // 3. Spend Fate Point
+    this.spendFatePoints(1, `Story Declaration: ${declarationData.fact}`);
+
+    // 4. Apply Declaration (Add Aspect or Modify World)
+    // For simplicity, we'll add a situational aspect to the scene or location
+    if (this.currentScene) {
+        const location = this.worldManager.getLocation(this.currentScene.locationId);
+        if (location) {
+            const newAspect = {
+                id: uuidv4(),
+                name: declarationData.aspectName || declarationData.fact, // Use provided name or the fact itself
+                type: 'situational',
+                freeInvokes: 0, // Declarations don't give free invokes usually, just establish truth
+                description: `Declared by player: ${declarationData.fact}`
+            };
+            
+            location.aspects.push(newAspect);
+            
+            this.turnManager.addEvent('state_change', 'declaration', {
+                description: `Player declared: ${declarationData.fact}`,
+                metadata: { aspect: newAspect }
+            });
+            
+            this.deltaCollector.collect({
+                target: 'world',
+                operation: 'append',
+                path: ['locations', location.id, 'aspects'],
+                newValue: newAspect,
+                previousValue: null,
+                cause: 'declaration',
+                eventId: turn.events[turn.events.length - 1].eventId
+            });
+        }
+    }
+
+    const narration = `You spend a Fate Point to declare a detail about the world. ${declarationData.fact}`;
+    return this.finalizeTurn(turn, narration, "success");
+  }
+
+  private async processFateAction(playerAction: string, turn: Turn, playerReasoning?: string, skipCompelCheck: boolean = false) {
+    // Check for Compels
+    if (!skipCompelCheck) {
+        const compel = await this.checkCompels(playerAction);
+        if (compel) {
+            return {
+                turn,
+                narration: `The GM offers you a compel on your aspect '${compel.aspectName}': ${compel.description}`,
+                result: 'compel_offered',
+                compel
+            };
+        }
+    }
+
+    // Handle pending Fate Point spending from AI player
+    const pendingFatePointsSpent = (this as any)._pendingFatePointsSpent || 0;
+    const pendingAspectInvokes = (this as any)._pendingAspectInvokes || [];
+    
+    if (pendingFatePointsSpent > 0 && this.player) {
+      if (this.player.fatePoints.current >= pendingFatePointsSpent) {
+        const oldFP = this.player.fatePoints.current;
+        this.player.fatePoints.current -= pendingFatePointsSpent;
+        
+        // Log the spending
+        this.turnManager.addEvent('fate_point_spend', 'declaration', {
+          description: `Spent ${pendingFatePointsSpent} Fate Points on story declaration`,
+          metadata: { amount: pendingFatePointsSpent, reason: 'story_declaration' }
+        });
+        
+        // Record delta
+        this.deltaCollector.collect({
+          target: 'player',
+          operation: 'decrement',
+          path: ['fatePoints', 'current'],
+          previousValue: oldFP,
+          newValue: this.player.fatePoints.current,
+          cause: 'fate_point_spend',
+          eventId: turn.events[0]?.eventId || 'unknown'
+        });
+      } else {
+        console.warn(`AI Player tried to spend ${pendingFatePointsSpent} FP but only has ${this.player.fatePoints.current}`);
+      }
+    }
+
+    // Handle pending aspect invokes
+    let invokeObjects: any[] = [];
+    if (pendingAspectInvokes.length > 0 && this.player) {
+      for (const invoke of pendingAspectInvokes) {
+        // Find the aspect by name
+        const aspect = this.player.aspects.find(a => a.name.toLowerCase() === invoke.aspectName.toLowerCase());
+        if (!aspect) {
+          console.warn(`AI Player tried to invoke unknown aspect: ${invoke.aspectName}`);
+          continue;
+        }
+
+        // Check if we need to spend FP for this invoke
+        const needsFP = invoke.bonus === 'reroll' || (invoke.bonus === '+2' && aspect.freeInvokes <= 0);
+        if (needsFP && (!this.player || this.player.fatePoints.current <= 0)) {
+          console.warn(`AI Player tried to invoke ${invoke.aspectName} but has no FP`);
+          continue;
+        }
+
+        if (needsFP) {
+          this.player.fatePoints.current -= 1;
+          this.turnManager.addEvent('fate_point_spend', 'aspect_invoke', {
+            description: `Spent 1 Fate Point to invoke ${aspect.name}`,
+            metadata: { aspectName: aspect.name, bonus: invoke.bonus }
+          });
+          
+          // Record delta for FP spend
+          this.deltaCollector.collect({
+            target: 'player',
+            operation: 'decrement',
+            path: ['fatePoints', 'current'],
+            previousValue: this.player.fatePoints.current + 1,
+            newValue: this.player.fatePoints.current,
+            cause: 'fate_point_spend',
+            eventId: turn.events[0]?.eventId || 'unknown'
+          });
+        } else if (invoke.bonus === '+2' && aspect.freeInvokes > 0) {
+          // Use free invoke
+          aspect.freeInvokes -= 1;
+
+          // If it's a boost and used up, remove it
+          if (aspect.type === 'boost' && aspect.freeInvokes === 0) {
+              this.player.aspects = this.player.aspects.filter(a => a.id !== aspect.id);
+              
+              this.turnManager.addEvent('state_change', 'boost_removed', {
+                  description: `Boost used and removed: ${aspect.name}`,
+                  metadata: { aspectId: aspect.id }
+              });
+              
+              this.deltaCollector.collect({
+                  target: 'player',
+                  operation: 'set',
+                  path: ['aspects'],
+                  newValue: this.player.aspects,
+                  previousValue: null,
+                  cause: 'boost_removed',
+                  eventId: turn.events[0]?.eventId || 'unknown'
+              });
+          }
+        }
+
+        invokeObjects.push({
+          aspectId: aspect.id,
+          bonus: invoke.bonus === 'reroll' ? 'reroll' : 2,
+          fatePointSpent: needsFP
+        });
+      }
+    }
+
+    // Clear pending data
+    (this as any)._pendingFatePointsSpent = 0;
+    (this as any)._pendingAspectInvokes = [];
+
     // 2. Determine Fate Action
     const characterDefinition = this.getCharacterDefinition();
     const worldState = this.worldManager.state;
@@ -479,19 +917,29 @@ export class GameMaster {
         factionReputation
     });
 
-    // 5. Roll Dice
+    // 5. Roll Dice (invokes will be handled by AI player separately)
     const roll = this.fateDice.roll();
-    const resolution = ActionResolver.resolve(roll, skillSelection.rating, opposition);
+    const resolution = ActionResolver.resolve(roll, skillSelection.rating, opposition, invokeObjects);
 
     // 6. Generate Events
+    let invokeDescription = '';
+    if (invokeObjects.length > 0) {
+      const invokeNames = invokeObjects.map(inv => {
+        const aspect = this.player?.aspects.find(a => a.id === inv.aspectId);
+        return aspect?.name || 'Unknown Aspect';
+      });
+      invokeDescription = ` (invoking: ${invokeNames.join(', ')})`;
+    }
+
     this.turnManager.addEvent('skill_check', fateAction, {
-        description: `Player attempted to ${playerAction} using ${skillSelection.name}. Outcome: ${resolution.outcome}`,
+        description: `Player attempted to ${playerAction} using ${skillSelection.name}${invokeDescription}. Outcome: ${resolution.outcome}`,
         roll,
         difficulty: opposition,
-        shifts: resolution.shifts
+        shifts: resolution.shifts,
+        invokes: invokeObjects
     });
 
-    // 7. Collect Deltas & Apply Consequences
+    // 9. Collect Deltas & Apply Consequences
     // Always record time passing
     const oldTime = this.worldManager.state.time.value;
     // Safely parse time value, defaulting to 0 if not a number
@@ -589,7 +1037,7 @@ export class GameMaster {
         }
     }
 
-    // 8. Narrate - Use enhanced action resolution narration
+    // 10. Narrate - Use enhanced action resolution narration
     const narration = await this.narrativeEngine.narrateActionResolution({
         events: turn.events,
         player: characterDefinition,
@@ -605,22 +1053,23 @@ export class GameMaster {
             roll: roll.total,
             shifts: resolution.shifts,
             outcome: resolution.outcome,
-            targetName: targetNPC?.name
+            targetName: targetNPC?.name,
+            invokes: invokeObjects
         }
     });
 
     return this.finalizeTurn(turn, narration, resolution.outcome, playerReasoning);
   }
 
-  /**
-   * Process an action from an AI-controlled player, including their reasoning
-   * @param action The action text
-   * @param reasoning The AI player's reasoning for the action
-   * @returns Turn result with narration
-   */
-  async processAIPlayerAction(action: string, reasoning?: string): Promise<any> {
+  async processAIPlayerAction(action: string, reasoning?: string, fatePointsSpent?: number, aspectInvokes?: Array<{aspectName: string, bonus: '+2' | 'reroll'}>): Promise<any> {
+    // Store the invoke decisions for later processing
+    (this as any)._pendingAspectInvokes = aspectInvokes || [];
+    (this as any)._pendingFatePointsSpent = fatePointsSpent || 0;
+    
     // Pass reasoning directly to processPlayerAction
-    return await this.processPlayerAction(action, reasoning);
+    const result = await this.processPlayerAction(action, reasoning);
+    
+    return result;
   }
 
   /**
@@ -942,25 +1391,43 @@ export class GameMaster {
 
     // Handle Success with Style (General)
     if (resolution.outcome === 'success_with_style') {
-        // Grant a boost (simplified as a Fate Point for now if no boost system)
-        // Or just log it.
-        // For now, let's stick to the previous logic of granting a FP on style
-        /*
-        const oldFP = this.player.fatePoints.current;
-        this.player.fatePoints.current += 1;
-        
+        // Generate Boost Name
+        const boostName = await this.decisionEngine.generateBoostName({
+            action: { description: `Player action: ${action}` },
+            player: this.getCharacterDefinition(),
+            worldState: this.worldManager.state,
+            history: this.history
+        });
+
+        // Create Boost Aspect
+        // Cast to any to avoid strict type issues if AspectTypeSchema isn't perfectly aligned in local types
+        const boostAspect: any = {
+            id: uuidv4(),
+            name: boostName,
+            type: 'boost',
+            freeInvokes: 1,
+            description: 'Temporary boost from Success with Style'
+        };
+
+        // Add to player
+        this.player.aspects.push(boostAspect);
+
+        // Log event
+        this.turnManager.addEvent('state_change', 'boost_created', {
+            description: `Gained a Boost: ${boostName}`,
+            metadata: { aspect: boostAspect }
+        });
+
+        // Delta
         this.deltaCollector.collect({
             target: 'player',
-            operation: 'increment',
-            path: ['fatePoints', 'current'],
-            previousValue: oldFP,
-            newValue: this.player.fatePoints.current,
+            operation: 'append',
+            path: ['aspects'],
+            newValue: boostAspect,
+            previousValue: null,
             cause: 'success_with_style',
             eventId: lastEventId
         });
-        */
-       // Actually, Success with Style usually gives a Boost, not a FP.
-       // But let's keep it simple.
     }
 
     // Handle Create Advantage

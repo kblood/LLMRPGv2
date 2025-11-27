@@ -61,8 +61,27 @@ export class GameLoop {
         break;
       }
 
-      const result = await this.gameMaster.processPlayerAction(action);
+      let result = await this.gameMaster.processPlayerAction(action);
       this.printResult(result);
+
+      // Handle Compel Offer
+      if (result.result === 'compel_offered' && result.compel) {
+        const accept = await confirm({ 
+            message: `Accept Compel? (Gain 1 FP, but face complication: ${result.compel.description})`,
+            default: true 
+        });
+        
+        const compelResult = await this.gameMaster.resolveCompel(result.compel, accept);
+        this.printResult(compelResult);
+        
+        if (!accept && compelResult.result === 'compel_refused') {
+            // Re-run the original action, skipping compel check
+            console.log("Retrying action...");
+            result = await this.gameMaster.processPlayerAction(action, undefined, true);
+            this.printResult(result);
+        }
+      }
+
       this.updateMode(result);
     }
   }

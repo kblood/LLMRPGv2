@@ -79,20 +79,23 @@ Return ONLY the exact name of the skill.`
     }
   }
 
-  async classifyIntent(playerInput: string): Promise<'fate_action' | 'trade' | 'craft' | 'inventory' | 'status'> {
+  async classifyIntent(playerInput: string): Promise<'fate_action' | 'trade' | 'craft' | 'inventory' | 'status' | 'self_compel' | 'concede' | 'declaration'> {
     const systemPrompt = this.contextBuilder.buildSystemPrompt(
       "Game Master",
       `You are the Game Master. Classify the player's intent into one of the following categories:
 
 CATEGORIES:
-1. Trade: Buying, selling, or browsing goods at a shop. (e.g., "Buy a sword", "Sell my loot", "What do you have for sale?")
-2. Craft: Creating items, potions, or gear. (e.g., "Craft a potion", "Make a sword", "What can I build?")
-3. Inventory: Checking carried items or wealth. (e.g., "Check inventory", "What do I have?", "Look in bag")
-4. Status: Checking health, stress, or character sheet. (e.g., "Status", "How am I doing?", "Check health")
-5. Fate Action: Any other gameplay action (fighting, talking, exploring, moving, using skills).
+1. Trade: Buying, selling, or browsing goods at a shop.
+2. Craft: Creating items, potions, or gear.
+3. Inventory: Checking carried items or wealth.
+4. Status: Checking health, stress, or character sheet.
+5. Self Compel: The player explicitly proposes a complication for themselves based on one of their aspects to gain a Fate Point.
+6. Concede: Giving up in a conflict to avoid being taken out.
+7. Declaration: Spending a Fate Point to declare a story detail without rolling. (e.g., "I spend a FP to declare there's a ladder", "I declare I know this guy", "Spending a fate point to say...").
+8. Fate Action: Any other gameplay action (fighting, talking, exploring, moving, using skills).
 
 OUTPUT FORMAT:
-Return ONLY the category key: "trade", "craft", "inventory", "status", or "fate_action".`
+Return ONLY the category key: "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", or "fate_action".`
     );
 
     const prompt = this.contextBuilder.assemblePrompt({
@@ -108,13 +111,87 @@ Return ONLY the category key: "trade", "craft", "inventory", "status", or "fate_
       });
 
       const intent = response.content.trim().toLowerCase();
-      if (["trade", "craft", "inventory", "status"].includes(intent)) {
+      if (["trade", "craft", "inventory", "status", "self_compel", "concede", "declaration"].includes(intent)) {
         return intent as any;
       }
       return "fate_action";
     } catch (error) {
       console.error("Intent classification failed:", error);
       return "fate_action";
+    }
+  }
+
+  async parseDeclaration(playerInput: string): Promise<string> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Extract the story detail the player is declaring.
+
+Examples:
+- "I spend a FP to declare there's a ladder here." -> "There is a ladder here"
+- "I declare I know this guy from my past." -> "I know this NPC from the past"
+
+OUTPUT FORMAT:
+Return ONLY the declared fact as a short sentence or phrase.`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Player Input: "${playerInput}"\n\nExtract declaration.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1
+      });
+
+      return response.content.trim();
+    } catch (error) {
+      return "Something is true";
+    }
+  }
+
+  async parseSelfCompel(playerInput: string, player: CharacterDefinition): Promise<{ aspectName: string; description: string } | null> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Parse the player's self-compel proposal.
+
+PLAYER ASPECTS:
+${player.aspects.map(a => `- ${a.name}`).join('\n')}
+
+INSTRUCTIONS:
+- Identify which aspect the player is trying to compel.
+- Identify the proposed complication/description.
+- If the aspect is not clear, pick the most likely one from the list.
+
+OUTPUT FORMAT:
+Return a JSON object:
+{
+  "aspectName": "Name of the aspect",
+  "description": "The complication description"
+}
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      characterDefinition: player,
+      immediateContext: `Player Input: "${playerInput}"\n\nParse self-compel.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1,
+        jsonMode: true
+      });
+
+      return JSON.parse(response.content);
+    } catch (error) {
+      console.error("Self-compel parsing failed:", error);
+      return null;
     }
   }
 
@@ -575,6 +652,97 @@ Return ONLY the target name or "null".`
       return target.toLowerCase() === "null" ? null : target;
     } catch (error) {
       return null;
+    }
+  }
+
+  async generateCompel(context: DecisionContext): Promise<any | null> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Determine if a Compel is appropriate for the player based on their Aspects and the current situation.
+
+FATE CORE COMPEL RULES:
+- A Compel complicates the player's life due to one of their Aspects.
+- It offers a Fate Point in exchange for the complication.
+- Types:
+  1. Decision Compel: The aspect forces a specific decision (e.g., "Because you are 'Stubborn', you refuse to back down.").
+  2. Event Compel: The aspect causes an external complication (e.g., "Because you have 'Enemies in High Places', the guard recognizes you.").
+
+PLAYER ASPECTS:
+${context.player?.aspects.map(a => `- ${a.name} (${a.type}): ${a.description || ''}`).join('\n')}
+
+INSTRUCTIONS:
+- Only generate a compel if it makes narrative sense and adds drama.
+- Do NOT generate a compel every turn. Only when relevant.
+- If no compel is appropriate, return null.
+
+OUTPUT FORMAT:
+Return a JSON object or null:
+{
+  "aspectName": "Name of the aspect being compelled",
+  "type": "decision" | "event",
+  "description": "The complication being introduced",
+  "reasoning": "Why this compel fits the narrative"
+}
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      characterDefinition: context.player,
+      worldState: context.worldState ? JSON.stringify(context.worldState, null, 2) : undefined,
+      history: context.history,
+      immediateContext: `Current Situation: The player is acting in the scene.\n\nIs there a relevant Compel? Return JSON or null.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.3,
+        jsonMode: true
+      });
+
+      const content = response.content.trim();
+      if (content === 'null' || content.toLowerCase() === 'no') return null;
+
+      return JSON.parse(content);
+    } catch (error) {
+      console.error("Compel generation failed:", error);
+      return null;
+    }
+  }
+
+  async generateBoostName(context: DecisionContext): Promise<string> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. The player has succeeded with style and earned a Boost (a temporary advantage).
+Generate a short, punchy name for this Boost based on the action.
+
+Examples:
+- Action: "I slash at the goblin" -> "Off Balance" or "Momentum"
+- Action: "I search the room" -> "Clue Found" or "Eye for Detail"
+- Action: "I run away" -> "Head Start"
+
+OUTPUT FORMAT:
+Return ONLY the name of the boost.`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      characterDefinition: context.player,
+      immediateContext: `Action: "${context.action.description}"\n\nGenerate Boost Name.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.3
+      });
+
+      return response.content.trim();
+    } catch (error) {
+      return "Momentum";
     }
   }
 

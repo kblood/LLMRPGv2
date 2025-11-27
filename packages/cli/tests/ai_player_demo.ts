@@ -97,7 +97,9 @@ async function runDemo() {
         
         const result = await gameMaster.processAIPlayerAction(
             aiDecision.action,
-            aiDecision.reasoning
+            aiDecision.reasoning,
+            aiDecision.fatePointsSpent,
+            aiDecision.aspectInvokes
         );
 
         // Display GM narration

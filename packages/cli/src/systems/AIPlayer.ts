@@ -15,6 +15,11 @@ export interface AIPlayerAction {
   reasoning: string;
   strategy?: string;
   expectedOutcome?: string;
+  fatePointsSpent?: number;
+  aspectInvokes?: Array<{
+    aspectName: string;
+    bonus: '+2' | 'reroll';
+  }>;
 }
 
 /**
@@ -46,12 +51,18 @@ export class AIPlayer {
         ? (player.skills as any[]).map(s => `${s.name}: +${s.rating || s.rank || 0}`).join(', ')
         : 'Unknown skills';
 
-    // Get current location info
-    const locationName = worldState?.currentLocation?.name || currentScene?.name || 'Unknown location';
-    const locationDescription = worldState?.currentLocation?.description || currentScene?.description || '';
-    const presentNPCs = worldState?.currentLocation?.presentNPCs || currentScene?.npcsPresent || [];
-    const locationFeatures = worldState?.currentLocation?.features || [];
-    const locationAspects = worldState?.currentLocation?.aspects || currentScene?.aspects || [];
+    // FILTERED CONTEXT: Only provide information the character actually knows
+    // In Fate Core, players don't get god-like knowledge of the world
+    const knownLocation = worldState?.currentLocation;
+    const knownNPCs = worldState?.currentLocation?.presentNPCs || [];
+    const sceneAspects = currentScene?.aspects || [];
+    
+    // Only include location details if discovered (simplified for now)
+    const locationName = knownLocation?.name || 'Unknown location';
+    const locationDescription = knownLocation?.description || 'You\'re not sure where you are exactly.';
+    const presentNPCs = knownNPCs;
+    const locationFeatures = knownLocation?.features || [];
+    const locationAspects = sceneAspects;
 
     // Build objectives string
     const objectivesText = objectives && objectives.length > 0
@@ -84,11 +95,12 @@ Think like your character would think. Consider:
 4. What skills can I leverage?
 5. Are there any dangers or opportunities?
 
-ACTION TYPES (Fate Core):
-- Overcome: Get past obstacles, solve problems, travel, search, investigate
-- Create Advantage: Gather information, prepare, set up aspects, assess situations
-- Attack: Only when in combat with a valid hostile target present
-- Defend: Only when being attacked or resisting something
+FATE CORE MECHANICS:
+- Four Actions: Overcome, Create Advantage, Attack, Defend
+- You can spend Fate Points to invoke aspects (+2 bonus or reroll)
+- You can DECLARE story details by spending Fate Points (e.g., "I know someone here" or "There's a hidden passage")
+- Aspects can be compelled against you for complications (but you get a Fate Point)
+- Current Fate Points: ${player.fatePoints || 0}
 
 GUIDELINES:
 - Be proactive and curious - explore, interact, investigate
@@ -96,7 +108,8 @@ GUIDELINES:
 - Don't repeat the same action multiple times
 - Consider your objectives but also react to the current situation
 - If someone is talking to you, respond appropriately
-- Be specific about what you're doing, not vague
+- You only know what your character has experienced - if something isn't mentioned, you don't know it
+- Use Fate Points to declare new story elements when needed
 
 OUTPUT FORMAT:
 You must respond with a JSON object containing:
@@ -104,13 +117,14 @@ You must respond with a JSON object containing:
   "action": "The specific action you take (what you say or do)",
   "reasoning": "Your character's internal thoughts explaining WHY you chose this action (1-2 sentences)",
   "strategy": "Your tactical thinking about HOW this helps your goals (optional)",
-  "expectedOutcome": "What you hope to achieve (optional)"
+  "expectedOutcome": "What you hope to achieve (optional)",
+  "fatePointsSpent": "Number of Fate Points spent on declarations (optional)",
+  "aspectInvokes": "Array of aspects to invoke for bonuses (optional): [{ \"aspectName\": \"Aspect Name\", \"bonus\": \"+2\" or \"reroll\" }]"
 }`
     );
 
     const userPrompt = `CURRENT SITUATION:
-Location: ${locationName}
-${locationDescription}
+${lastNarration ? `GM DESCRIPTION:\n"${lastNarration}"\n` : 'You find yourself in a new situation.'}
 
 ${locationAspects.length > 0 ? `Scene Aspects: ${locationAspects.map((a: any) => a.name || a).join(', ')}` : ''}
 ${presentNPCs.length > 0 ? `People Present: ${presentNPCs.map((n: any) => n.name || n).join(', ')}` : 'You are alone.'}
@@ -121,7 +135,7 @@ ${objectivesText}
 RECENT HISTORY:
 ${recentHistory}
 
-${lastNarration ? `LAST NARRATION FROM GM:\n"${lastNarration}"\n` : ''}
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can declare new story details by spending Fate Points if it fits your character's background or makes narrative sense.
 
 What do you do next? Respond with a JSON object containing your action and reasoning.`;
 
@@ -139,7 +153,9 @@ What do you do next? Respond with a JSON object containing your action and reaso
         action: parsed.action || "I look around carefully.",
         reasoning: parsed.reasoning || "Assessing the situation before acting.",
         strategy: parsed.strategy,
-        expectedOutcome: parsed.expectedOutcome
+        expectedOutcome: parsed.expectedOutcome,
+        fatePointsSpent: parsed.fatePointsSpent || 0,
+        aspectInvokes: parsed.aspectInvokes || []
       };
     } catch (error) {
       console.error("AI Player decision failed:", error);
