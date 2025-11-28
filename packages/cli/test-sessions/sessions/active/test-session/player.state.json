@@ -1,29 +1,29 @@
 {
-  "id": "player-1764367431925",
+  "id": "player-1764367501213",
   "type": "player",
   "name": "Mock Character",
   "appearance": "A mock appearance.",
   "aspects": [
     {
-      "id": "asp-68dd01en4",
+      "id": "asp-utztp6ax7",
       "name": "Mock High Concept",
       "type": "high_concept",
       "freeInvokes": 0
     },
     {
-      "id": "asp-sswxsl7ds",
+      "id": "asp-qbwnf1crl",
       "name": "Mock Trouble",
       "type": "trouble",
       "freeInvokes": 0
     },
     {
-      "id": "asp-pbpoxz94p",
+      "id": "asp-qliqlvtjz",
       "name": "Mock Aspect 3",
       "type": "background",
       "freeInvokes": 0
     },
     {
-      "id": "db96feec-72e6-48f0-96a3-d8b4d563e26c",
+      "id": "adf11a17-e537-4f37-bd47-1f77c7107421",
       "name": "Intimidating Presence",
       "type": "boost",
       "freeInvokes": 1,
@@ -114,10 +114,10 @@
     "topics": {}
   },
   "relationships": [],
-  "currentLocation": "loc-1764367431913",
+  "currentLocation": "loc-1764367501203",
   "isAlive": true,
-  "createdAt": "2025-11-28T22:03:51.925Z",
-  "updatedAt": "2025-11-28T22:03:51.925Z",
+  "createdAt": "2025-11-28T22:05:01.213Z",
+  "updatedAt": "2025-11-28T22:05:01.213Z",
   "goals": [],
   "wealth": 100,
   "inventory": [],

@@ -1,10 +1,17 @@
 import { WorldState, Location, Aspect, WorldStateSchema } from '@llmrpg/protocol';
+import { LocationRegistry } from '@llmrpg/core';
 
 export class WorldManager {
   private _state: WorldState;
+  private locationRegistry: LocationRegistry;
 
   constructor(initialState?: WorldState) {
     this._state = initialState || this.createDefaultState();
+    this.locationRegistry = new LocationRegistry();
+    // Initialize registry with existing locations
+    if (this._state.locations) {
+      this.locationRegistry.registerLocations(Object.values(this._state.locations));
+    }
   }
 
   private createDefaultState(): WorldState {
@@ -103,9 +110,11 @@ export class WorldManager {
 
   /**
    * Add or update a location (minimal for Fate Core)
+   * Also registers it in the LocationRegistry (Phase 23)
    */
   setLocation(location: Location): void {
     this._state.locations[location.id] = location;
+    this.locationRegistry.registerLocation(location);
   }
 
   /**
@@ -168,5 +177,76 @@ export class WorldManager {
    */
   establishFact(key: string, value: any): void {
     this._state.establishedFacts[key] = value;
+  }
+
+  // ============ Phase 23: Location Persistence Methods ============
+
+  /**
+   * Get the LocationRegistry for advanced location operations
+   */
+  getLocationRegistry(): LocationRegistry {
+    return this.locationRegistry;
+  }
+
+  /**
+   * Add a bidirectional connection between two locations (Phase 23)
+   */
+  addLocationConnection(
+    fromId: string,
+    toId: string,
+    fromDirection: string,
+    toDirection: string,
+    description?: string
+  ): void {
+    try {
+      this.locationRegistry.addConnection(fromId, toId, fromDirection, toDirection, description);
+
+      // Update the location objects in state
+      const fromLoc = this._state.locations[fromId];
+      const toLoc = this._state.locations[toId];
+      if (fromLoc && toLoc) {
+        // Location objects are already updated by registry.addConnection()
+        // Just ensure they're in sync with world state
+        this.setLocation(fromLoc);
+        this.setLocation(toLoc);
+      }
+    } catch (error) {
+      console.error(`Failed to add location connection: ${error}`);
+    }
+  }
+
+  /**
+   * Get nearby locations for exploration/travel (Phase 23)
+   */
+  getNearbyLocations(locationId: string): Location[] {
+    return this.locationRegistry.getNearbyLocations(locationId);
+  }
+
+  /**
+   * Get locations within graph distance (for map generation, Phase 23)
+   */
+  getLocationsWithinDistance(locationId: string, maxDistance: number): Map<string, number> {
+    return this.locationRegistry.getLocationsWithin(locationId, maxDistance);
+  }
+
+  /**
+   * Find location by name in registry (supports multiple same-named locations, Phase 23)
+   */
+  findLocationsByName(name: string): Location[] {
+    return this.locationRegistry.getLocationsByName(name);
+  }
+
+  /**
+   * Check if a connection already exists (prevents duplicates, Phase 23)
+   */
+  hasLocationConnection(fromId: string, toId: string, direction?: string): boolean {
+    return this.locationRegistry.hasConnection(fromId, toId, direction);
+  }
+
+  /**
+   * Generate a stable location ID for a region (Phase 23)
+   */
+  generateStableLocationId(regionPrefix: string, sequenceNumber: number): string {
+    return this.locationRegistry.generateStableLocationId(regionPrefix, sequenceNumber);
   }
 }
