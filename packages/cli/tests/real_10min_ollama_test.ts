@@ -13,8 +13,8 @@ import fs from 'fs';
 
 const SESSION_ID = `real-ollama-${Date.now()}`;
 const STORAGE_PATH = path.join(__dirname, '../test-sessions');
-const TEST_DURATION = 2 * 60 * 1000; // 2 minutes (for testing, can extend to 10)
-const SNAPSHOT_INTERVAL = 10; // Snapshot every 10 turns (shorter for real LLM)
+const TEST_DURATION = 10 * 60 * 1000; // 10 minutes (full test)
+const SNAPSHOT_INTERVAL = 20; // Snapshot every 20 turns to manage memory
 
 async function runRealSession() {
   console.log('╔══════════════════════════════════════════════════════════════════╗');
@@ -177,7 +177,14 @@ async function runRealSession() {
     console.log(`\n📁 Session ID: ${SESSION_ID}`);
     console.log(`📊 Total Turns: ${turnCount}`);
     console.log(`⏱️  Duration: ${((Date.now() - startTime) / 1000).toFixed(1)}s`);
-    console.log(`\nExport with: npx tsx src/exportSessionToMarkdown.ts ${SESSION_ID}`);
+    console.log(`\n📝 Next steps:`);
+    console.log(`1. Continue session: npx tsx tests/session_continuation_test.ts ${SESSION_ID}`);
+    console.log(`2. Export to markdown: npx tsx src/exportSessionToMarkdown.ts ${SESSION_ID}`);
+    console.log(`3. View analytics: npx tsx src/exportSessionAnalytics.ts ${SESSION_ID}`);
+
+    // Write session ID to a file for easy capture by continuation test
+    fs.writeFileSync(path.join(STORAGE_PATH, 'LAST_SESSION_ID.txt'), SESSION_ID, 'utf-8');
+    console.log(`\n✅ Session ID saved to: ${path.join(STORAGE_PATH, 'LAST_SESSION_ID.txt')}`);
 
     return { sessionId: SESSION_ID, turnCount, success: true };
 
