@@ -24,18 +24,18 @@
 - **Aspects:** Including "Haunted Past" (being used by GM for compels)
 - **Generation Time:** 4.7 seconds
 
-### 🎮 Gameplay Progress (Turn 19+)
+### 🎮 Gameplay Progress (Turn 35+ and continuing)
 
 #### Location Exploration
-1. **Grand Bazaar** - Starting area, limited interaction
-2. **Ruins of Aeloria** - First travel destination
-3. **The Forgotten Sanctum** - Deep exploration location
-4. **Echoing Caverns** - Further progression
-5. **The Shattered Sanctum** - Current location
+1. **Grand Bazaar** - Starting area, limited interaction (Turns 1-7)
+2. **Ruins of Aeloria** - First travel destination (Turns 8-11)
+3. **The Forgotten Sanctum** - Deep exploration location (Turns 12-13)
+4. **Echoing Caverns** - Further progression (Turns 14-15)
+5. **The Shattered Sanctum** - Cathedral location (Turns 16-35+)
 
 #### Turn Outcomes Distribution
-- **Compel Offered:** High frequency (player aspect "Haunted Past" being compelled)
-- **Successes:** Multiple successful location travels
+- **Compel Offered:** Very high frequency (~70%+) - player aspect "Haunted Past" being compelled heavily
+- **Successes:** Multiple successful location travels (Turns 8, 12, 13, 15)
 - **Failures:** NPC/Shop interactions when not present
 - **Ties:** Navigation uncertainty
 
