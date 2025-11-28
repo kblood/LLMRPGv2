@@ -2,6 +2,7 @@
  * Session to Markdown Exporter
  * 
  * Interactive CLI tool to export session history to a Markdown file.
+ * Supports multiple export formats for different use cases.
  */
 import { FileSystemAdapter, SessionLoader } from '@llmrpg/storage';
 import { Turn, Delta } from '@llmrpg/core';
@@ -15,6 +16,8 @@ interface SessionInfo {
   metadata?: any;
   turnCount?: number;
 }
+
+type ExportFormat = 'story' | 'playreport' | 'technical';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Formatting Helpers
@@ -31,6 +34,53 @@ function formatDice(dice: number[]): string {
     return '0';
   });
   return `\`[${symbols.join('')}]\``;
+}
+
+// Extract the player's action from turn events
+function extractPlayerAction(turn: Turn): string | null {
+  if (!turn.events || turn.events.length === 0) return null;
+  
+  // Look for skill_check events which contain the action description
+  const skillCheck = turn.events.find((e: any) => e.type === 'skill_check');
+  if (skillCheck && skillCheck.description) {
+    // Extract action from "Player attempted to X using Y" format
+    const match = skillCheck.description.match(/Player attempted to (.+?) using/);
+    if (match) return match[1].trim();
+    return skillCheck.description;
+  }
+  
+  // Look for other action-related events
+  const actionEvent = turn.events.find((e: any) => e.action && e.action !== 'player_action');
+  if (actionEvent && actionEvent.description) {
+    return actionEvent.description;
+  }
+  
+  return null;
+}
+
+// Extract dice roll information from turn events
+function extractRollInfo(turn: Turn): { dice: number[], total: number, skill: string, difficulty: number, shifts: number, outcome: string } | null {
+  if (!turn.events || turn.events.length === 0) return null;
+  
+  const skillCheck = turn.events.find((e: any) => e.type === 'skill_check' && e.roll);
+  if (!skillCheck) return null;
+  
+  const outcome = (skillCheck as any).shifts >= 3 ? 'Success with Style!' :
+                  (skillCheck as any).shifts >= 0 ? 'Success' :
+                  (skillCheck as any).shifts === 0 ? 'Tie' : 'Failure';
+  
+  // Extract skill from description
+  const skillMatch = (skillCheck as any).description?.match(/using ([^(]+) \(\+?\d+\)/);
+  const skill = skillMatch ? skillMatch[1].trim() : 'Unknown';
+  
+  return {
+    dice: (skillCheck as any).roll.dice,
+    total: (skillCheck as any).roll.total,
+    skill,
+    difficulty: (skillCheck as any).difficulty || 0,
+    shifts: (skillCheck as any).shifts || 0,
+    outcome
+  };
 }
 
 function formatEvent(event: any): string[] {
@@ -146,7 +196,8 @@ async function discoverSessions(basePath: string): Promise<SessionInfo[]> {
 async function generateMarkdown(
   basePath: string,
   session: SessionInfo,
-  includeDeltas: boolean = true
+  includeDeltas: boolean = true,
+  format: ExportFormat = 'playreport'
 ): Promise<string> {
   const sessionBasePath = session.folder === 'test-sessions' 
     ? path.join(basePath, 'test-sessions') 
@@ -161,6 +212,9 @@ async function generateMarkdown(
   lines.push(`# Session: ${session.id}`);
   lines.push('');
   lines.push(`> Exported on ${new Date().toLocaleString()}`);
+  if (format !== 'technical') {
+    lines.push(`> *This is a ${format === 'story' ? 'story-focused' : 'play report'} export*`);
+  }
   lines.push('');
   
   // Metadata
@@ -241,7 +295,24 @@ async function generateMarkdown(
   lines.push('');
   
   try {
-    const turns = await loader.loadTurns(session.id, 1, 10000);
+    const rawTurns = await loader.loadTurns(session.id, 1, 10000);
+    
+    // Deduplicate turns by turnId - keep the most complete version (one with playerReasoning)
+    const turnMap = new Map<number, Turn>();
+    for (const turn of rawTurns) {
+      const existing = turnMap.get(turn.turnId);
+      if (!existing) {
+        turnMap.set(turn.turnId, turn);
+      } else {
+        // Keep the version with more data (playerReasoning indicates complete turn)
+        if ((turn as any).playerReasoning && !(existing as any).playerReasoning) {
+          turnMap.set(turn.turnId, turn);
+        }
+      }
+    }
+    
+    // Sort turns by turnId
+    const turns = Array.from(turnMap.values()).sort((a, b) => a.turnId - b.turnId);
     
     if (turns.length === 0) {
       lines.push('*No turns recorded*');
@@ -254,41 +325,110 @@ async function generateMarkdown(
         
         lines.push(`### Turn ${turn.turnId}`);
         lines.push('');
-        lines.push(`| | |`);
-        lines.push(`|---|---|`);
-        lines.push(`| **Actor** | ${turn.actor} |`);
-        lines.push(`| **Scene** | ${turn.sceneId} |`);
-        lines.push(`| **Game Time** | ${timeStr} |`);
-        lines.push(`| **Real Time** | ${formatTimestamp(turn.timestamp)} |`);
-        lines.push('');
         
-        if (turn.events && turn.events.length > 0) {
-          lines.push('#### Events');
+        if (format === 'technical') {
+          // Technical format - detailed tables
+          lines.push(`| | |`);
+          lines.push(`|---|---|`);
+          lines.push(`| **Actor** | ${turn.actor} |`);
+          lines.push(`| **Scene** | ${turn.sceneId} |`);
+          lines.push(`| **Game Time** | ${timeStr} |`);
+          lines.push(`| **Real Time** | ${formatTimestamp(turn.timestamp)} |`);
           lines.push('');
-          for (const event of turn.events) {
-            lines.push(...formatEvent(event));
+          
+          if (turn.events && turn.events.length > 0) {
+            lines.push('#### Events');
+            lines.push('');
+            for (const event of turn.events) {
+              lines.push(...formatEvent(event));
+            }
+            lines.push('');
           }
-          lines.push('');
+          
+          // Include narration if available
+          if ((turn as any).narration) {
+            lines.push('#### GM Narration');
+            lines.push('');
+            lines.push((turn as any).narration);
+            lines.push('');
+          }
+          
+          // Include AI player reasoning if available
+          if ((turn as any).playerReasoning) {
+            lines.push('#### AI Player Reasoning');
+            lines.push('');
+            lines.push((turn as any).playerReasoning);
+            lines.push('');
+          }
+        } else {
+          // Story or Playreport format - narrative focus
+          const playerAction = extractPlayerAction(turn);
+          const rollInfo = extractRollInfo(turn);
+          
+          // Show game time as a story element
+          if (format === 'playreport') {
+            lines.push(`*${timeStr}*`);
+            lines.push('');
+          }
+          
+          // Player Action (what the player tried to do)
+          if (playerAction) {
+            lines.push(`**Player Action:** ${playerAction}`);
+            lines.push('');
+          }
+          
+          // Dice roll and outcome (playreport only)
+          if (rollInfo && format === 'playreport') {
+            const diceStr = formatDice(rollInfo.dice);
+            const outcomeEmoji = rollInfo.shifts >= 3 ? '✨' : 
+                                 rollInfo.shifts >= 0 ? '✓' : 
+                                 rollInfo.shifts === 0 ? '⚖️' : '✗';
+            lines.push(`> 🎲 *${rollInfo.skill}* ${diceStr} = **${rollInfo.total}** vs Difficulty ${rollInfo.difficulty}`);
+            lines.push(`> ${outcomeEmoji} **${rollInfo.outcome}** (${rollInfo.shifts >= 0 ? '+' : ''}${rollInfo.shifts} shifts)`);
+            lines.push('');
+          }
+          
+          // GM Narration (the main story content)
+          if ((turn as any).narration) {
+            lines.push((turn as any).narration);
+            lines.push('');
+          }
+          
+          // AI Player Reasoning (in collapsible for playreport, hidden for story)
+          if ((turn as any).playerReasoning && format === 'playreport') {
+            lines.push('<details>');
+            lines.push('<summary>🤔 AI Player Reasoning</summary>');
+            lines.push('');
+            lines.push(`*${(turn as any).playerReasoning}*`);
+            lines.push('');
+            lines.push('</details>');
+            lines.push('');
+          }
+          
+          // Events (collapsible for playreport, hidden for story)
+          if (turn.events && turn.events.length > 0 && format === 'playreport') {
+            // Filter to only interesting events
+            const interestingEvents = turn.events.filter((e: any) => 
+              ['knowledge_gain', 'quest_update', 'combat', 'dialogue', 'location_change', 
+               'fate_point_spend', 'fate_point_award', 'fate_compel'].includes(e.type)
+            );
+            
+            if (interestingEvents.length > 0) {
+              lines.push('<details>');
+              lines.push('<summary>📌 Game Events</summary>');
+              lines.push('');
+              for (const event of interestingEvents) {
+                lines.push(...formatEvent(event));
+              }
+              lines.push('');
+              lines.push('</details>');
+              lines.push('');
+            }
+          }
         }
         
-        // Include narration if available
-        if (turn.narration) {
-          lines.push('#### GM Narration');
-          lines.push('');
-          lines.push(turn.narration);
-          lines.push('');
-        }
-        
-        // Include AI player reasoning if available
-        if (turn.playerReasoning) {
-          lines.push('#### AI Player Reasoning');
-          lines.push('');
-          lines.push(turn.playerReasoning);
-          lines.push('');
-        }
-        
-        // Load deltas for this turn if requested
-        if (includeDeltas) {
+        // Load deltas for this turn if requested and in technical mode
+        if (includeDeltas && format === 'technical') {
           try {
             const deltas = await loader.loadDeltas(session.id, turn.turnId, turn.turnId);
             if (deltas.length > 0) {
@@ -460,8 +600,17 @@ async function runInteractiveMenu() {
       console.log(`Selected: ${selectedSession.id}`);
       console.log('');
       
-      const includeDeltas = await prompt(rl, 'Include state changes (deltas)? [Y/n]: ');
-      const withDeltas = includeDeltas.toLowerCase() !== 'n';
+      // Ask for format
+      console.log('Export formats:');
+      console.log('  1. story     - Narrative focus, minimal mechanics');
+      console.log('  2. playreport - Mix of narrative and key mechanics (default)');
+      console.log('  3. technical - Detailed log with all events and deltas');
+      console.log('');
+      const formatInput = await prompt(rl, 'Choose format [1/2/3]: ');
+      const format: ExportFormat = formatInput === '1' ? 'story' : 
+                                   formatInput === '3' ? 'technical' : 'playreport';
+      
+      const includeDeltas = format === 'technical';
       
       // Ask for output filename
       const defaultFilename = `${selectedSession.id}.md`;
@@ -470,10 +619,10 @@ async function runInteractiveMenu() {
       
       // Generate and save
       console.log('');
-      console.log('📝 Generating Markdown...');
+      console.log(`📝 Generating ${format} Markdown...`);
       
       try {
-        const markdown = await generateMarkdown(basePath, selectedSession, withDeltas);
+        const markdown = await generateMarkdown(basePath, selectedSession, includeDeltas, format);
         
         const outputPath = path.join(basePath, 'exports');
         if (!fs.existsSync(outputPath)) {
@@ -504,8 +653,9 @@ async function runInteractiveMenu() {
 // CLI Entry Point
 // ═══════════════════════════════════════════════════════════════════════════
 
-async function exportDirect(sessionId: string, options: { noDeltas?: boolean, output?: string }) {
+async function exportDirect(sessionId: string, options: { noDeltas?: boolean, output?: string, format?: ExportFormat }) {
   const basePath = path.resolve(__dirname, '..');
+  const format = options.format || 'playreport';
   
   console.log('🔍 Finding session...');
   const sessions = await discoverSessions(basePath);
@@ -520,9 +670,10 @@ async function exportDirect(sessionId: string, options: { noDeltas?: boolean, ou
     process.exit(1);
   }
   
-  console.log(`📝 Generating Markdown for ${sessionId}...`);
+  console.log(`📝 Generating ${format} Markdown for ${sessionId}...`);
   
-  const markdown = await generateMarkdown(basePath, session, !options.noDeltas);
+  const includeDeltas = format === 'technical' && !options.noDeltas;
+  const markdown = await generateMarkdown(basePath, session, includeDeltas, format);
   
   const outputPath = path.join(basePath, 'exports');
   if (!fs.existsSync(outputPath)) {
@@ -555,20 +706,26 @@ Usage:
   npx tsx src/exportSessionToMarkdown.ts --help             # Show this help
 
 Options:
-  --no-deltas         Don't include state changes in export
+  --format <type>     Export format: story, playreport (default), or technical
   --output <file>     Specify output filename (default: <sessionId>.md)
+
+Format Types:
+  story       - Narrative focus, minimal mechanics. Best for reading as a story.
+  playreport  - Mix of narrative and key mechanics. Good for sharing sessions.
+  technical   - Detailed log with all events, deltas, and state changes.
 
 Examples:
   npx tsx src/exportSessionToMarkdown.ts
   npx tsx src/exportSessionToMarkdown.ts granite-10min-test-1764180846356
-  npx tsx src/exportSessionToMarkdown.ts granite-10min-test-1764180846356 --no-deltas
+  npx tsx src/exportSessionToMarkdown.ts granite-10min-test-1764180846356 --format story
+  npx tsx src/exportSessionToMarkdown.ts granite-10min-test-1764180846356 --format playreport
   npx tsx src/exportSessionToMarkdown.ts granite-10min-test-1764180846356 --output my-session.md
 
 The interactive menu allows you to:
   - Browse all available sessions (regular and test sessions)
   - View session info (player, date, turn count)
   - Select a session to export
-  - Choose whether to include state changes (deltas)
+  - Choose export format
   - Specify the output filename
 
 Exported files are saved to: packages/cli/exports/
@@ -580,11 +737,15 @@ Exported files are saved to: packages/cli/exports/
   const sessionId = args.find(a => !a.startsWith('--'));
   
   if (sessionId) {
-    const noDeltas = args.includes('--no-deltas');
     const outputIdx = args.indexOf('--output');
     const output = outputIdx !== -1 ? args[outputIdx + 1] : undefined;
     
-    await exportDirect(sessionId, { noDeltas, output });
+    const formatIdx = args.indexOf('--format');
+    const formatArg = formatIdx !== -1 ? args[formatIdx + 1] : undefined;
+    const format: ExportFormat = formatArg === 'story' ? 'story' : 
+                                  formatArg === 'technical' ? 'technical' : 'playreport';
+    
+    await exportDirect(sessionId, { output, format });
   } else {
     await runInteractiveMenu();
   }

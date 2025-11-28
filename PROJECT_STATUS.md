@@ -2,11 +2,420 @@
 
 **Last Updated:** November 28, 2025
 
-## 📍 Current Phase: Phase 20 - Story-Readable Session Exports (PLANNING)
+## 📍 Current Phase: Phase 22 - Gameplay Quality Improvements (IN PROGRESS)
 
-All Phase 8-19 features have been fully implemented. Phase 19 focused on performance optimization and production-ready CLI experience.
+All Phase 8-21 features have been fully implemented. Phase 21 revealed significant gameplay quality issues that are now being addressed.
+
+### Phase 22 Progress
+
+**Quick Wins Completed (November 28, 2025):**
+- ✅ Added `analyzeRecentHistory()` function to detect repetition patterns
+- ✅ Scene-type detection (combat/social/exploration) to allow appropriate repeats
+- ✅ Consecutive failure tracking
+- ✅ Enhanced system prompt with anti-repetition guidelines
+- ✅ Added recent actions list to AI Player prompt
+- ✅ Added dynamic feedback when player is stuck or failing repeatedly
+- ✅ Context-aware suggestions based on scene type
+
+**Next Steps:**
+- 🔄 Test AIPlayer changes with a real session
+- 📋 Implement location connections for travel
+- 📋 Add travel context to AI prompt
+- 📋 Implement GM-evaluated repetition system (if prompt approach insufficient)
+
+---
+
+## 🔬 Gameplay Analysis Findings (Phase 21 Analytics)
+
+Session analytics from `granite-10min-test-1764256691345` revealed critical issues:
+
+### Problem Summary
+
+| Issue | Severity | Impact |
+|-------|----------|--------|
+| **AI Player Repetition Loop** | 🔴 Critical | Player repeats same action 5+ times consecutively |
+| **78% Failure Rate** | 🔴 Critical | Opposition too high or bad luck compounded |
+| **No Location Variety** | 🟡 Medium | Player never left starting location |
+| **No Combat Triggers** | 🟡 Medium | 51 turns, 0 combat events |
+| **No NPC Dialogue Events** | 🟡 Medium | Talking to cultists but no dialogue system triggers |
+| **Only 5/34 Features Used** | 🟠 High | Most game mechanics never activated |
+
+### Root Cause Analysis
+
+1. **AI Player Gets Stuck**
+   - The AI prompt says "Don't repeat the same action multiple times" but has no memory of recent actions
+   - When actions fail, the AI tries slight variations that are semantically identical
+   - Example: "Demand to speak privately with cultist" → "Demand more information from cultist" → "Ask cultists about..."
+
+2. **No Travel Options Presented**
+   - `connections: []` in generated locations - no exits defined
+   - AI Player context doesn't include available destinations
+   - `movePlayer()` exists but only works within zones of a scene, not between locations
+
+3. **High Opposition Without Compel Relief**
+   - 78% failures with Difficulty 3 against +2/+3/+4 skills
+   - No Fate Point spending to invoke aspects
+   - No compels offered to gain Fate Points
+   - Player stuck in failure spiral with no mechanical escape
+
+4. **Narrative Engine Doesn't Trigger Dialogue System**
+   - Player says "ask the cultists" but it's treated as a skill check
+   - `DialogueSystem` exists but isn't being invoked
+   - NPC responses are in narration, not structured dialogue events
+
+---
+
+## 📋 Phase 22 Plan: Gameplay Quality Improvements
+
+### 22.1 Action Repetition Prevention
+
+**Option A: Prompt Enhancement (Quick Fix)**
+```typescript
+// Add to AIPlayer.decideAction() context
+const recentActionsStr = history?.slice(-5).map(t => {
+  const action = extractPlayerActionText(t);
+  return action ? `- ${action}` : null;
+}).filter(Boolean).join('\n');
+
+// Add to prompt:
+`IMPORTANT - DO NOT REPEAT THESE RECENT ACTIONS:
+${recentActionsStr}
+
+If your previous attempts have failed repeatedly, try something COMPLETELY DIFFERENT:
+- Move to a new location
+- Interact with a different object or person
+- Use a different skill entirely
+- Change your approach (if talking failed, try action; if investigation failed, try diplomacy)`
+```
+
+**Option B: GM-Evaluated Repetition System (Recommended)**
+
+Instead of hardcoding cooldowns, let the GM evaluate whether repetition is appropriate for the current context. Combat actions are legitimate repeats; interrogating the same NPC 10 times is not.
+
+```typescript
+interface RepetitionContext {
+  action: string;
+  consecutiveCount: number;
+  totalInScene: number;
+  currentSceneType: 'combat' | 'social' | 'exploration' | 'puzzle';
+  hasTargetChanged: boolean;  // Attacking different enemies = OK
+  hasOutcomeProgressed: boolean;  // Are we making progress?
+}
+
+// In GameMaster - called before processing AI player action
+async evaluateRepetition(context: RepetitionContext): Promise<{
+  allow: boolean;
+  suggestion?: string;
+  intervention?: string;
+}> {
+  // Combat: Allow repeated attacks if targets change or stress is being dealt
+  if (context.currentSceneType === 'combat') {
+    if (context.hasTargetChanged || context.hasOutcomeProgressed) {
+      return { allow: true };
+    }
+    // Even in combat, 5+ identical attacks on same target with no progress = stuck
+    if (context.consecutiveCount >= 5 && !context.hasOutcomeProgressed) {
+      return { 
+        allow: false, 
+        suggestion: "Your attacks aren't getting through. Try creating an advantage first, or change tactics.",
+        intervention: "The enemy adapts to your predictable assault..."
+      };
+    }
+    return { allow: true };
+  }
+  
+  // Exploration/Social: 3+ repeats of same action = likely stuck
+  if (context.consecutiveCount >= 3) {
+    return {
+      allow: false,
+      suggestion: "This approach isn't working. Try something different.",
+      intervention: await this.generateContextualInterruption(context)
+    };
+  }
+  
+  return { allow: true };
+}
+
+// Generate a narrative reason to change the situation
+async generateContextualInterruption(context: RepetitionContext): Promise<string> {
+  // LLM generates an interruption appropriate to the scene
+  // - Social: NPC gets frustrated and leaves
+  // - Exploration: Something else catches your attention
+  // - Puzzle: A new clue becomes apparent
+}
+```
+
+**Option C: Hybrid Prompt + GM Feedback**
+```typescript
+// In AIPlayer.decideAction() - add context about what's working/not working
+const actionFeedback = await gameMaster.getActionFeedback(history.slice(-5));
+// Returns: "Your attempts to interrogate the cultists have failed 4 times. 
+//           They seem unwilling to share information this way."
+
+// Add to AI prompt:
+`SITUATION ASSESSMENT:
+${actionFeedback}
+
+GUIDANCE: If an approach isn't working after 2-3 attempts, the GM recommends trying:
+${gameMaster.suggestAlternatives(currentScene, failedApproaches)}`
+```
+
+**Option D: Scene-Aware Action Tracking**
+```typescript
+interface SceneActionTracker {
+  sceneId: string;
+  sceneType: 'combat' | 'social' | 'exploration';
+  actionCounts: Map<string, number>;  // action pattern -> count
+  progressMarkers: string[];  // What has changed/progressed
+  
+  // Combat allows many attacks
+  // Social allows 2-3 attempts per NPC before suggesting change
+  // Exploration allows repeated searches IF location changes
+  getRepetitionThreshold(): number {
+    switch(this.sceneType) {
+      case 'combat': return 10;  // High tolerance in combat
+      case 'social': return 3;   // Low tolerance for social
+      case 'exploration': return 4;
+    }
+  }
+  
+  isProgressBeingMade(): boolean {
+    // Check if stress dealt, advantages created, knowledge gained, etc.
+    return this.progressMarkers.length > 0;
+  }
+}
+```
+
+### 22.2 Location & Travel System
+
+**Current State:**
+- Locations have `connections: []` (empty)
+- No travel prompt in AI Player context
+- `movePlayer()` only handles zone movement within a scene
+
+**Proposed Fix:**
+
+1. **Generate Connections in ContentGenerator**
+```typescript
+// In generateStartingLocation() and generateLocation()
+connections: [
+  { targetId: 'loc-unexplored-1', description: 'A dark passageway', direction: 'north', discovered: false },
+  { targetId: 'loc-unexplored-2', description: 'A crumbling stairway', direction: 'down', discovered: false }
+]
+```
+
+2. **Add Travel Context to AI Player**
+```typescript
+// In AIPlayer.decideAction()
+const availableExits = worldState?.currentLocation?.connections
+  ?.filter(c => c.discovered)
+  ?.map(c => `${c.direction}: ${c.description}`)
+  ?.join('\n') || 'No obvious exits discovered';
+
+// Add to prompt:
+`AVAILABLE EXITS:
+${availableExits}
+You can attempt to leave via any discovered exit, or search for hidden passages.`
+```
+
+3. **Implement travelToLocation() in GameMaster**
+```typescript
+async travelToLocation(connectionId: string): Promise<void> {
+  const connection = currentLocation.connections.find(c => c.targetId === connectionId);
+  if (!connection) throw new Error('Invalid destination');
+  
+  // Generate new location if not yet created
+  if (!worldManager.getLocation(connection.targetId)) {
+    const newLocation = await contentGenerator.generateLocation(theme, connection);
+    worldManager.setLocation(newLocation);
+  }
+  
+  // Create new scene at destination
+  await this.changeScene(connection.targetId);
+}
+```
+
+### 22.3 Difficulty & Fate Point Balancing
+
+**Issues:**
+- Difficulty 3 is "Fair" but player skills are +2/+3/+4
+- Expected success rate for +2 vs 3: ~38% (close to observed)
+- But Fate Points should allow recovery
+
+**Proposed Fixes:**
+
+1. **Dynamic Difficulty Adjustment**
+```typescript
+// Track success rate over rolling window
+if (recentSuccessRate < 30% && consecutiveFailures >= 3) {
+  // Reduce difficulty by 1 for next action
+  difficultyModifier = -1;
+  // Or offer a compel to gain Fate Points
+}
+```
+
+2. **Proactive Compel Offers**
+```typescript
+// After 2+ consecutive failures, offer compel
+if (consecutiveFailures >= 2 && player.trouble) {
+  const compelOffer = await generateCompelOffer(player.trouble, currentSituation);
+  // "Your Shattered Legacy catches up with you - accept this complication for 1 FP?"
+}
+```
+
+3. **AI Player Fate Point Usage Prompt**
+```typescript
+// Add reminder to prompt when FP > 0
+`You have ${player.fatePoints} Fate Points. Consider:
+- INVOKE an aspect for +2 or a reroll on important actions
+- DECLARE a story detail ("I know someone here")
+- Don't hoard them - use them to succeed at key moments!`
+```
+
+### 22.4 Dialogue System Integration
+
+**Issue:** "Ask the cultists about X" triggers skill_check, not dialogue
+
+**Proposed Fix:**
+```typescript
+// In DecisionEngine.classifyIntent()
+const dialoguePatterns = ['ask', 'tell', 'speak', 'talk', 'say', 'question', 'inquire', 'demand'];
+if (dialoguePatterns.some(p => action.toLowerCase().includes(p))) {
+  return 'dialogue'; // Route to DialogueSystem
+}
+
+// In GameMaster.processPlayerAction()
+if (intent === 'dialogue') {
+  const targetNPC = findNPCByName(extractTarget(action));
+  if (targetNPC) {
+    return await dialogueSystem.initiateConversation(player, targetNPC, action);
+  }
+}
+```
+
+---
+
+## 🎯 Implementation Priority
+
+| Task | Priority | Effort | Impact | Notes |
+|------|----------|--------|--------|-------|
+| GM-evaluated repetition system | 🔴 High | Medium | Very High | Context-aware; allows combat repeats |
+| Add recent actions + feedback to AI prompt | 🔴 High | Low | High | Quick win |
+| Proactive compel offers after failures | 🔴 High | Medium | High | Fate Core mechanic |
+| Generate location connections | 🟡 Medium | Medium | Medium | Enables exploration |
+| Travel context in AI prompt | 🟡 Medium | Low | Medium | Tell AI where it can go |
+| Dialogue system routing | 🟡 Medium | Medium | Medium | Fix "ask NPC" → dialogue |
+| Scene-aware action tracking | 🟢 Low | Medium | High | Tracks progress per scene type |
+| Narrative interruption generation | 🟢 Low | High | Very High | GM generates situation changes |
+
+### Recommended Implementation Order
+
+1. **Quick Wins (1-2 hours):**
+   - Add recent actions list to AI Player prompt
+   - Add "this isn't working" feedback for failed patterns
+   - Add scene type detection (combat vs exploration vs social)
+
+2. **Core Fix (2-4 hours):**
+   - Implement `evaluateRepetition()` in GameMaster
+   - Scene-type-aware thresholds (combat=10, social=3, exploration=4)
+   - Progress tracking (is stress being dealt? knowledge gained?)
+
+3. **Polish (4+ hours):**
+   - LLM-generated narrative interruptions
+   - Contextual suggestions for alternative approaches
+   - Integration with compel system for graceful failures
+
+---
 
 ## ✅ Recent Accomplishments
+
+### 22. AI Player Anti-Repetition System (Phase 22 Quick Win) 🔄 IN PROGRESS (November 28, 2025)
+
+Implemented intelligent repetition detection and prevention in `AIPlayer.ts`:
+
+**New Features:**
+- `analyzeRecentHistory()` function that extracts and analyzes recent player actions
+- Scene-type detection (combat vs social vs exploration) from scene data and event types
+- Pattern detection: identifies when similar actions repeat 3+ times
+- Consecutive failure tracking to identify failure spirals
+- Context-aware suggestions based on what's not working
+
+**System Prompt Enhancements:**
+- Added critical anti-repetition guidelines
+- Scene-type-aware messaging (combat allows attacks, social/exploration don't allow loops)
+- Fate Point usage reminders when player is struggling
+
+**User Prompt Enhancements:**
+- Dynamic action feedback inserted before RECENT HISTORY section
+- Warning banners when repeated patterns detected
+- Specific suggestions for alternative approaches
+
+**Key Design Decision:** Combat scenes allow repeated attacks (legitimate strategy), while social and exploration scenes are flagged when actions repeat 3+ times without progress.
+
+### 21. Session Analytics Export (Phase 21) ✅ COMPLETED (November 28, 2025)
+
+Created `exportSessionAnalytics.ts` - a dedicated analytics tool for analyzing gameplay patterns and feature usage.
+
+**Features Implemented:**
+- Session Summary Stats (turns, duration, events, repetition score)
+- Outcome Statistics (success/failure rates per skill)
+- Skill Usage Analysis with success rate calculation
+- Event Type Distribution
+- Fate Point Economy tracking
+- Feature Usage Checklist (34 features across 5 categories)
+- Repetition Detection with pattern tracking
+- Unused Features Report
+
+**CLI Usage:**
+```bash
+npx tsx src/exportSessionAnalytics.ts <sessionId>
+npx tsx src/exportSessionAnalytics.ts <sessionId> --json
+npx tsx src/exportSessionAnalytics.ts --list
+```
+
+### 20. Story-Readable Session Exports (Phase 20) ✅ COMPLETED (November 28, 2025)
+
+Completely rewrote the session export system to generate readable adventure stories instead of technical logs.
+
+1. **Duplicate Turn Handling**: ✅ Fixed
+   - JSONL files contained duplicate turn entries (same turnId appearing twice)
+   - Implemented deduplication logic that keeps the most complete version (with playerReasoning)
+   - 51 unique turns properly exported from a session with 102 raw entries
+
+2. **Player Action Display**: ✅ Implemented
+   - Added `extractPlayerAction()` function to parse action descriptions from skill_check events
+   - Shows what the player attempted to do at the start of each turn
+   - Parses action from "Player attempted to X using Y" format
+
+3. **Multiple Export Formats**: ✅ Implemented
+   - **Story Format**: Pure narrative focus, no mechanics. Best for reading as a story.
+     - Only shows player action and GM narration
+     - No dice rolls, no game events, no AI reasoning
+   - **Playreport Format** (default): Mix of narrative and key mechanics
+     - Player action with dice roll summary
+     - GM narration as main content
+     - AI reasoning in collapsible `<details>` section
+     - Game events (quests, knowledge) in collapsible section
+   - **Technical Format**: Detailed log with all events, deltas, and state changes
+     - Full event tables
+     - All metadata displayed
+     - State change deltas included
+
+4. **Improved Turn Formatting**: ✅ Implemented
+   - Story flow: Player Action → Dice Roll/Outcome → GM Narration → (optional) AI Reasoning
+   - Dice rolls displayed with emoji: ✨ for success with style, ✓ for success, ⚖️ for tie, ✗ for failure
+   - Technical details moved to collapsible sections
+
+5. **CLI Enhancements**: ✅ Implemented
+   - Added `--format <type>` flag: story, playreport, or technical
+   - Updated interactive menu with format selection
+   - Updated help text with format descriptions and examples
+
+**Test Results**:
+- `granite-10min-test-1764256691345` session exported successfully:
+  - Playreport format: 127 KB, 51 turns, 1904 lines
+  - Story format: 94.7 KB, 51 turns, 948 lines
+  - All turns now include full narrative content
 
 ### 1. Project Scaffolding (Phase 1)
 - Initialized Git repository.
@@ -276,85 +685,15 @@ Restructured `ten_minute_granite_test.ts` to use defined gameplay phases:
 
 ## 📋 Next Steps (Immediate)
 
-### Phase 20: Story-Readable Session Exports (IN PLANNING)
-
-**Current Problem**: The `exportSessionToMarkdown.ts` tool generates technical logs instead of readable adventure stories. Analysis of a 10-minute test session export revealed:
-- Only system-level turns exported (inventory checks, crafting attempts)
-- Missing all narrative content (exploration, compels, discoveries)
-- No player action prompts or context
-- Repetitive system messages without story flow
-- Compel interactions not captured
-
-**Goals**: Transform session exports into engaging adventure play reports that read like actual RPG sessions.
-
-**Planned Improvements**:
-
-1. **Comprehensive Turn Capture** (Priority: High)
-   - Export ALL turns, not just system events
-   - Include turns where players explored, investigated, fought
-   - Capture compel offers and player responses (accept/refuse)
-   - Include NPC combat turns and AI player decision-making
-
-2. **Player Action Context** (Priority: High)
-   - Show the player's actual input/action for each turn
-   - Include AI player reasoning when available (`turn.playerReasoning`)
-   - Display what the player was trying to accomplish
-
-3. **Narrative Flow Formatting** (Priority: High)
-   - **Story Mode**: Chronological narrative with player actions and GM responses
-   - **Play Report Style**: Format like traditional RPG session reports
-   - **Action → Narration → Outcome** structure per turn
-   - Collapsible mechanics sections for dice rolls and technical details
-
-4. **Compel System Integration** (Priority: Medium)
-   - Detect and format compel offers as story moments
-   - Show player choices (accepted for FP gain or refused for FP spend)
-   - Highlight aspect-driven complications in narrative
-
-5. **Combat & Conflict Readability** (Priority: Medium)
-   - Format combat exchanges as dramatic sequences
-   - Show initiative order and participant actions
-   - Narrative descriptions of attacks, defenses, and outcomes
-   - Track stress/consequences taken
-
-6. **Enhanced Metadata** (Priority: Low)
-   - Character development arc (milestones, advancements)
-   - Fate Point economy summary (earned, spent, current)
-   - Quest progression timeline
-   - NPC relationship changes
-   - World state evolution
-
-7. **Export Format Options** (Priority: Low)
-   - **Story Format**: Pure narrative, minimal mechanics
-   - **Play Report Format**: Mix of narrative and key mechanics
-   - **Technical Format**: Current detailed log (keep for debugging)
-   - Command-line flag: `--format story|playreport|technical`
-
-**Implementation Plan**:
-1. ✅ Analyze current exporter and identify filtering logic causing missing turns
-2. 📝 Update `Turn` interface to ensure all required fields are captured (narration, playerReasoning, playerAction)
-3. 📝 Rewrite `generateMarkdown()` with story-first formatting
-4. 📝 Add turn type detection (exploration, combat, social, compel, system)
-5. 📝 Implement format templates (story, playreport, technical)
-6. 📝 Test with 10-minute session export and validate readability
-7. 📝 Add examples to documentation
-
-**Testing Criteria**:
-- Export of 10-minute test session reads like an adventure story
-- All player actions and GM narrations are included
-- Compel interactions are clearly visible
-- Combat flows narratively
-- No repetitive system spam
-- Non-technical readers can follow the story
-
-**Estimated Effort**: 2-3 hours
-
-### Phase 21: Extended Content (Future)
+### Phase 21: Extended Content (FUTURE)
 1. **Multiple Locations**: Allow players to travel between generated locations.
 2. **NPC Memory**: NPCs remember past interactions across sessions.
 3. **Persistent World State**: World changes persist and affect future sessions.
 
-## 🐛 Known Issues / Notes
+### Phase 22: Additional Export Enhancements (OPTIONAL)
+1. **Combat & Conflict Readability**: Format combat exchanges as dramatic sequences.
+2. **Enhanced Metadata Summary**: Character development arc, Fate Point economy summary, quest progression timeline.
+3. **Export Format Options**: HTML export, PDF generation.
 
 ## 🐛 Known Issues / Notes
 
@@ -421,21 +760,78 @@ Restructured `ten_minute_granite_test.ts` to use defined gameplay phases:
   3. Updated `processCombatTurn()` to set `turn.narration` before saving combat turns
   4. Updated `exportSessionToMarkdown.ts` to display narration per turn
 
-#### BUG-010: Session Export Only Shows System Turns 📄
+#### BUG-010: Session Export Only Shows System Turns ✅
 - **Location**: `packages/cli/src/exportSessionToMarkdown.ts:generateMarkdown()`
 - **Identified**: November 28, 2025 - 10-minute test export analysis
+- **Resolved**: Phase 20 implementation
+- **Root Cause**: JSONL files contained duplicate turn entries; narrative content in `turn.narration` field was being displayed but format wasn't reader-friendly
+- **Fix Applied**:
+  - Added turn deduplication (by turnId, keeping version with playerReasoning)
+  - Added `extractPlayerAction()` to show player actions from skill_check events
+  - Added `extractRollInfo()` to display dice rolls with skill, difficulty, shifts
+  - Implemented 3 export formats: `story` (narrative-only), `playreport` (mixed), `technical` (detailed)
+  - Added `--format` CLI flag and interactive format selection
+- **Status**: ✅ FIXED - Verified with 51-turn session export (was showing 12 turns before fix)
+
+#### BUG-011: AI Player Repetition Loop 🔄
+- **Location**: `packages/cli/src/systems/AIPlayer.ts:decideAction()`
+- **Identified**: November 28, 2025 - Phase 21 analytics
 - **Symptoms**:
-  - Exported markdown only contains turns with specific event types (inventory_check, craft_list, system)
-  - Missing all exploration, combat, compel, and narrative turns
-  - Only 12 turns exported from a 75-turn session
-  - Reads as technical log instead of adventure story
-- **Root Cause**: Current implementation exports all turns but narrative content is in `turn.narration` field
-  - Only turns with explicit events show up as "interesting"
-  - Many turns have narration but no formal events logged
-  - Compel offers may be in narration text but not structured events
-- **Impact**: Session exports are unusable for play reports or story documentation
-- **Status**: 📝 PLANNED FOR FIX - See Phase 20 implementation plan
-- **Workaround**: None - export feature currently non-functional for narrative purposes
+  - AI player repeats semantically identical actions (e.g., "demand information from cultists" 9 times)
+  - 5+ consecutive attempts of the same action pattern
+  - Repetition score 40/100 indicates borderline loop behavior
+  - Story reads as stuck/repetitive rather than progressive
+- **Root Cause**: 
+  - Prompt says "don't repeat" but AI has no memory of its recent actions
+  - Failed actions lead to slight rephrasing, not strategy change
+  - No mechanism to detect or break loops
+- **Impact**: Sessions become narratively stale; player makes no progress
+- **Status**: 📋 PLANNED FOR PHASE 22 - See Phase 22 plan for solutions
+
+#### BUG-012: No Location Travel Possible 🗺️
+- **Location**: `packages/cli/src/systems/ContentGenerator.ts:generateStartingLocation()`
+- **Identified**: November 28, 2025 - Phase 21 analytics
+- **Symptoms**:
+  - Player stuck at starting location for entire 51-turn session
+  - No zone movement, no location change events
+  - AI player never attempts to travel
+- **Root Cause**:
+  - Generated locations have `connections: []` (empty array)
+  - AI Player context doesn't include available exits
+  - `movePlayer()` only handles zone movement within a scene, not between locations
+  - No `travelToLocation()` method implemented
+- **Impact**: Exploration impossible; world feels like single room
+- **Status**: 📋 PLANNED FOR PHASE 22 - Need to generate connections and implement travel
+
+#### BUG-013: Dialogue Not Triggering DialogueSystem 💬
+- **Location**: `packages/cli/src/GameMaster.ts:processPlayerAction()`
+- **Identified**: November 28, 2025 - Phase 21 analytics
+- **Symptoms**:
+  - Player says "ask the cultists about X" 
+  - Results in skill_check event, not dialogue event
+  - 0 dialogue events in 51-turn session despite many NPC interactions
+  - DialogueSystem exists but never invoked
+- **Root Cause**:
+  - `classifyIntent()` doesn't recognize dialogue patterns
+  - "Ask about" classified as investigation/create_advantage
+  - No routing from intent classification to DialogueSystem
+- **Impact**: NPCs feel like obstacles rather than characters; no relationship building
+- **Status**: 📋 PLANNED FOR PHASE 22 - Need dialogue pattern detection and routing
+
+#### BUG-014: No Compel Offers Despite Failures 🎲
+- **Location**: `packages/cli/src/GameMaster.ts`
+- **Identified**: November 28, 2025 - Phase 21 analytics
+- **Symptoms**:
+  - 78% failure rate (40 failures in 51 turns)
+  - 0 compels offered during entire session
+  - Player has Trouble aspect "Shattered Legacy" but never compelled
+  - 0 Fate Points spent or gained
+- **Root Cause**:
+  - Compel system exists but only triggers on specific conditions
+  - No proactive compel offers after repeated failures
+  - AI Player doesn't know to spend Fate Points on important rolls
+- **Impact**: Player trapped in failure spiral with no mechanical escape
+- **Status**: 📋 PLANNED FOR PHASE 22 - Need proactive compel offers and FP prompts
 
 ### Build Issues (November 28, 2025)
 

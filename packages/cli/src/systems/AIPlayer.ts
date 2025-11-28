@@ -23,6 +23,159 @@ export interface AIPlayerAction {
 }
 
 /**
+ * Analyze recent history to detect repetition patterns and provide feedback
+ */
+interface ActionAnalysis {
+  recentActions: string[];
+  repeatedPatterns: string[];
+  consecutiveFailures: number;
+  sceneType: 'combat' | 'social' | 'exploration' | 'unknown';
+  feedbackMessage: string;
+  suggestedApproaches: string[];
+}
+
+function normalizeActionText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractPlayerAction(turn: Turn): string | null {
+  if (!turn.events || turn.events.length === 0) return null;
+  
+  // Look for skill_check events which contain the action description
+  const skillCheck = turn.events.find(e => e.type === 'skill_check');
+  if (skillCheck?.description) {
+    const match = skillCheck.description.match(/Player attempted to (.+?) using/);
+    if (match) return match[1].trim();
+  }
+  
+  // Try other event types
+  for (const event of turn.events) {
+    if (event.description && event.actor === 'player') {
+      return event.description;
+    }
+  }
+  
+  return null;
+}
+
+function detectSceneType(currentScene: any, recentEvents: any[]): 'combat' | 'social' | 'exploration' | 'unknown' {
+  // Check scene type directly if available
+  if (currentScene?.type) {
+    if (currentScene.type === 'combat' || currentScene.type === 'conflict') return 'combat';
+    if (currentScene.type === 'social' || currentScene.type === 'dialogue') return 'social';
+    if (currentScene.type === 'exploration') return 'exploration';
+  }
+  
+  // Infer from recent events
+  const eventTypes = recentEvents.map(e => e.type);
+  if (eventTypes.includes('combat_attack') || eventTypes.includes('combat_defend')) {
+    return 'combat';
+  }
+  if (eventTypes.includes('dialogue')) {
+    return 'social';
+  }
+  
+  return 'exploration';
+}
+
+function analyzeRecentHistory(history: Turn[] | undefined, currentScene: any): ActionAnalysis {
+  const result: ActionAnalysis = {
+    recentActions: [],
+    repeatedPatterns: [],
+    consecutiveFailures: 0,
+    sceneType: 'unknown',
+    feedbackMessage: '',
+    suggestedApproaches: []
+  };
+  
+  if (!history || history.length === 0) {
+    return result;
+  }
+  
+  const recentTurns = history.slice(-10);
+  const allEvents = recentTurns.flatMap(t => t.events || []);
+  
+  // Detect scene type
+  result.sceneType = detectSceneType(currentScene, allEvents);
+  
+  // Extract recent player actions
+  for (const turn of recentTurns) {
+    const action = extractPlayerAction(turn);
+    if (action) {
+      result.recentActions.push(action);
+    }
+  }
+  
+  // Count consecutive failures (from most recent)
+  for (let i = recentTurns.length - 1; i >= 0; i--) {
+    const turn = recentTurns[i];
+    const skillCheck = turn.events?.find(e => e.type === 'skill_check');
+    if (skillCheck && skillCheck.shifts !== undefined && skillCheck.shifts !== null) {
+      if (skillCheck.shifts < 0) {
+        result.consecutiveFailures++;
+      } else {
+        break; // Stop counting at first success
+      }
+    }
+  }
+  
+  // Detect repeated action patterns
+  const actionCounts: Record<string, number> = {};
+  for (const action of result.recentActions) {
+    const normalized = normalizeActionText(action).substring(0, 40);
+    actionCounts[normalized] = (actionCounts[normalized] || 0) + 1;
+  }
+  
+  // Find patterns that appear 3+ times
+  result.repeatedPatterns = Object.entries(actionCounts)
+    .filter(([_, count]) => count >= 3)
+    .map(([pattern, count]) => `"${pattern}" (${count} times)`);
+  
+  // Generate feedback based on analysis
+  if (result.repeatedPatterns.length > 0 && result.sceneType !== 'combat') {
+    result.feedbackMessage = `⚠️ You've been repeating similar actions: ${result.repeatedPatterns.join(', ')}. This approach doesn't seem to be working.`;
+    
+    // Generate suggestions based on scene type
+    if (result.sceneType === 'social') {
+      result.suggestedApproaches = [
+        'Try a completely different approach - perhaps leave and explore elsewhere',
+        'Use a different skill (e.g., if Persuade failed, try Deceive or Provoke)',
+        'Look for environmental clues or objects to interact with',
+        'Consider whether this NPC will ever cooperate, or if you need a different source'
+      ];
+    } else if (result.sceneType === 'exploration') {
+      result.suggestedApproaches = [
+        'Move to a different area or room',
+        'Interact with a different object or feature',
+        'Look for hidden exits or passages',
+        'Try talking to someone instead of investigating'
+      ];
+    } else {
+      result.suggestedApproaches = [
+        'Try a completely different type of action',
+        'Change location or target',
+        'Use a skill you haven\'t tried yet',
+        'Spend a Fate Point to declare a story advantage'
+      ];
+    }
+  } else if (result.consecutiveFailures >= 3) {
+    result.feedbackMessage = `⚠️ You've failed ${result.consecutiveFailures} actions in a row. Consider spending Fate Points to invoke aspects, or try a different approach.`;
+    result.suggestedApproaches = [
+      'Invoke one of your aspects for +2 or a reroll',
+      'Create an advantage first to get free invokes',
+      'Try using your best skill instead',
+      'Accept a compel to gain Fate Points'
+    ];
+  }
+  
+  return result;
+}
+
+/**
  * AIPlayer - An LLM-controlled player character that explains its reasoning
  * 
  * This system allows the AI to play as the character, making decisions
@@ -42,6 +195,9 @@ export class AIPlayer {
    */
   async decideAction(context: AIPlayerContext): Promise<AIPlayerAction> {
     const { player, worldState, history, currentScene, objectives, lastNarration } = context;
+
+    // Analyze recent history for repetition and failure patterns
+    const analysis = analyzeRecentHistory(history, currentScene);
 
     // Build character context
     const aspectsList = player.aspects?.join(', ') || 'Unknown aspects';
@@ -63,15 +219,35 @@ export class AIPlayer {
     const presentNPCs = knownNPCs;
     const locationFeatures = knownLocation?.features || [];
     const locationAspects = sceneAspects;
+    
+    // Get available exits/connections if any
+    const availableExits = knownLocation?.connections
+      ?.filter((c: any) => c.discovered !== false)
+      ?.map((c: any) => `${c.direction || 'exit'}: ${c.description || c.name || 'passage'}`)
+      ?.join(', ') || '';
 
     // Build objectives string
     const objectivesText = objectives && objectives.length > 0
       ? `CURRENT OBJECTIVES:\n${objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}`
       : 'OBJECTIVE: Explore and discover opportunities';
 
-    // Build recent history summary
-    const recentHistory = history?.slice(-5).map(t => {
-      const eventSummary = t.events?.map(e => e.description || e.action).join('; ') || 'Unknown action';
+    // Build recent actions list (more specific than event summaries)
+    const recentActionsText = analysis.recentActions.length > 0
+      ? `YOUR RECENT ACTIONS (do not repeat these exactly):\n${analysis.recentActions.slice(-5).map((a, i) => `${i + 1}. ${a}`).join('\n')}`
+      : '';
+
+    // Build feedback message if there are issues
+    const feedbackSection = analysis.feedbackMessage
+      ? `\n⚠️ IMPORTANT FEEDBACK:\n${analysis.feedbackMessage}\n\nSUGGESTED ALTERNATIVES:\n${analysis.suggestedApproaches.map((s, i) => `${i + 1}. ${s}`).join('\n')}`
+      : '';
+
+    // Build recent history summary (for context, not action tracking)
+    const recentHistory = history?.slice(-3).map(t => {
+      const narration = (t as any).narration;
+      if (narration) {
+        return `Turn ${t.turnNumber}: ${narration.substring(0, 150)}...`;
+      }
+      const eventSummary = t.events?.map(e => e.description || e.action).join('; ') || 'Unknown';
       return `Turn ${t.turnNumber}: ${eventSummary}`;
     }).join('\n') || 'No previous actions';
 
@@ -102,14 +278,16 @@ FATE CORE MECHANICS:
 - Aspects can be compelled against you for complications (but you get a Fate Point)
 - Current Fate Points: ${player.fatePoints || 0}
 
-GUIDELINES:
+CRITICAL GUIDELINES:
+- VARIETY IS ESSENTIAL: Never repeat the same action twice in a row
+- If an approach fails 2-3 times, ABANDON IT and try something completely different
+- Move to new locations, talk to different people, use different skills
 - Be proactive and curious - explore, interact, investigate
 - Stay in character - use your aspects and personality
-- Don't repeat the same action multiple times
-- Consider your objectives but also react to the current situation
 - If someone is talking to you, respond appropriately
-- You only know what your character has experienced - if something isn't mentioned, you don't know it
-- Use Fate Points to declare new story elements when needed
+- You only know what your character has experienced
+- When stuck, consider: leaving the area, using a different skill, or spending Fate Points
+${player.fatePoints && player.fatePoints > 0 ? `\n💡 You have ${player.fatePoints} Fate Points - USE THEM to invoke aspects for +2 or reroll!` : ''}
 
 OUTPUT FORMAT:
 You must respond with a JSON object containing:
@@ -123,15 +301,32 @@ You must respond with a JSON object containing:
 }`
     );
 
+    // Build action feedback for user prompt
+    let actionFeedbackSection = '';
+    if (analysis.repeatedPatterns.length > 0 && analysis.sceneType !== 'combat') {
+      actionFeedbackSection = `
+⚠️ ACTION ALERT: You've been repeating similar actions - this approach is NOT working!
+Repeated patterns: ${analysis.repeatedPatterns.join(', ')}
+REQUIRED: Choose something COMPLETELY DIFFERENT from your recent actions.
+Consider: ${analysis.suggestedApproaches.slice(0, 2).join('; ')}
+`;
+    } else if (analysis.consecutiveFailures >= 2) {
+      actionFeedbackSection = `
+⚠️ NOTICE: Your last ${analysis.consecutiveFailures} actions failed. Consider trying a different approach.
+${analysis.suggestedApproaches.length > 0 ? `Ideas: ${analysis.suggestedApproaches.slice(0, 2).join('; ')}` : ''}
+`;
+    }
+
     const userPrompt = `CURRENT SITUATION:
 ${lastNarration ? `GM DESCRIPTION:\n"${lastNarration}"\n` : 'You find yourself in a new situation.'}
 
 ${locationAspects.length > 0 ? `Scene Aspects: ${locationAspects.map((a: any) => a.name || a).join(', ')}` : ''}
 ${presentNPCs.length > 0 ? `People Present: ${presentNPCs.map((n: any) => n.name || n).join(', ')}` : 'You are alone.'}
 ${locationFeatures.length > 0 ? `Notable Features: ${locationFeatures.map((f: any) => f.name || f.description || f).join(', ')}` : ''}
+${availableExits ? `Available Exits: ${availableExits}` : ''}
 
 ${objectivesText}
-
+${actionFeedbackSection}
 RECENT HISTORY:
 ${recentHistory}
 
