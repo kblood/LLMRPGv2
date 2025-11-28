@@ -1,7 +1,7 @@
 # Project Status
 
 **Last Updated:** November 29, 2025
-**Current Phase:** Phase 23 Complete ✅ (All Phases 23.1-23.5)
+**Current Phase:** Phase 24 Complete ✅ (Combat Enhancements)
 **Full History:** See `PROJECT_STATUS_ARCHIVE.md`
 
 ---
@@ -14,7 +14,7 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 - **Runtime**: Node.js 20+ / TypeScript 5.x (strict mode)
 - **Monorepo**: pnpm workspaces with 6 packages
 - **LLM**: Ollama (local) with OpenAI/OpenRouter adapters available
-- **Testing**: Vitest with 64 tests across 25 test files
+- **Testing**: Vitest with 262 tests across 34 test files
 
 ---
 
@@ -46,7 +46,8 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 | 20-21 | Session exports (story format, analytics) | ✅ Complete |
 | 22 | Gameplay quality (travel, dialogue routing, anti-repetition) | ✅ Complete |
 | 23.1-23.5 | Extended world persistence (locations, NPC memory, quest links, reward tracking) | ✅ Complete |
-| 24 | Combat enhancements (zone movement, team tactics) | 🔄 Next |
+| 24 | Combat enhancements (zone movement, team tactics) | ✅ Complete |
+| 25 | Export enhancements (HTML/PDF) | 🔄 Next |
 
 ---
 
@@ -67,7 +68,18 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 - Faction system with reputation effects
 - Multi-stage quest system
 - Economy and crafting systems
-- Zone-based combat movement
+- Zone-based combat movement with barriers and Overcome actions
+- Team-based combat tactics with coordination tracking
+- Tight formation detection and morale bonuses
+
+### Combat & Teamwork (Phase 24)
+- Enhanced zone movement with shift costs during combat
+- TeamTacticsManager for coordinated actions and team bonuses
+- Coordination tracking with up to +3 bonus per Fate Core
+- Combined attack assessment and formation analysis
+- Tactical positioning evaluation with recommendations
+- Zone-aware combat narration showing spatial context
+- Team morale calculation based on size and coordination
 
 ### AI Systems
 - AI Player with scene-aware decision making
@@ -141,13 +153,17 @@ All identified bugs have been fixed! ✅
 - [x] XP to Fate Core milestone conversion
 - [x] Pending reward detection on session load
 
-**Next: Phase 24** (Combat enhancements)
+**Next: Phase 25** (Export enhancements)
 
-### Phase 24: Combat Enhancements
+### Phase 24: Combat Enhancements (Complete ✅)
 - [x] Full target validation before combat actions (FIXED in BUG-008)
-- [ ] Zone movement in active combat
-- [ ] Team tactics and coordinated attacks
-- [ ] Combat narrative improvements
+- [x] Zone movement in active combat with Overcome action costs
+- [x] Team tactics and coordinated attacks with TeamTacticsManager
+- [x] Combat narrative improvements with zone-aware descriptions
+- [x] Tactical positioning analysis and recommendations
+- [x] Coordination tracking and morale bonuses
+- [x] Tight formation detection
+- [x] Combined attack assessment
 
 ### Phase 25: Export & Reporting
 - [ ] HTML export with styling
@@ -167,11 +183,12 @@ All identified bugs have been fixed! ✅
 ## 🧪 Test Status
 
 ```
-✅ 181 tests passing (154 core + 64 CLI + 3 storage/debug/llm)
+✅ 262 tests passing (181 core + 83 CLI)
 ✅ 34 test files
 ✅ All 6 packages compile
 ✅ 97-turn AI gameplay verified
 ✅ Phase 23.5: 27 QuestRewardManager tests
+✅ Phase 24: 18 TeamTacticsManager tests
 ```
 
 ### Test Categories
