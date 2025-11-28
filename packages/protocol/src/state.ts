@@ -67,7 +67,16 @@ export const LocationSchema = z.object({
   
   // Is this location discovered by player?
   discovered: z.boolean().default(false),
-  
+
+  // Location discovery tracking (Phase 23)
+  firstDiscoveredTurn: z.number().int().optional(),
+  discoveryMethod: z.enum(['exploration', 'rumor', 'quest', 'teleport']).optional(),
+  visitHistory: z.array(z.object({
+    turn: z.number().int(),
+    sessionId: z.string(),
+    action: z.string().optional(),
+  })).optional(),
+
   // Tier in world hierarchy
   tier: z.enum(['world', 'region', 'locale']),
   parentId: z.string().optional(),
