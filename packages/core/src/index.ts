@@ -20,5 +20,6 @@ export * from './engine/KnowledgeManager';
 export * from './engine/QuestManager';
 export * from './engine/FactionManager';
 export * from './engine/NPCMemoryManager';
+export * from './engine/QuestGiverManager';
 export * from './economy/EconomyManager';
 export * from './engine/CraftingManager';

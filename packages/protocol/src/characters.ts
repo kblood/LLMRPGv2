@@ -107,6 +107,21 @@ export const InteractionHistorySchema = z.object({
 
 export type InteractionHistory = z.infer<typeof InteractionHistorySchema>;
 
+// Quest Given by NPC - tracks quests offered by NPCs (Phase 23.4)
+export const QuestGivenSchema = z.object({
+  questId: z.string(),
+  givenTurn: z.number().int(),
+  givenSessionId: z.string(),
+  currentStatus: z.enum(['active', 'completed', 'failed', 'abandoned']),
+  playerLastAction: z.object({
+    turn: z.number().int(),
+    sessionId: z.string(),
+    description: z.string(),
+  }).optional(),
+});
+
+export type QuestGiven = z.infer<typeof QuestGivenSchema>;
+
 // Base Character (shared by Player and NPC)
 export const BaseCharacterSchema = z.object({
   id: z.string().uuid(),
@@ -196,6 +211,9 @@ export const NPCSchema = BaseCharacterSchema.extend({
 
   // Interaction history with player across sessions (Phase 23)
   interactionHistory: z.array(InteractionHistorySchema).default([]),
+
+  // Quests given by this NPC (Phase 23.4)
+  questsGiven: z.array(QuestGivenSchema).default([]),
 
   // For simpler NPCs, condensed stats
   isNameless: z.boolean().default(false), // "Nameless NPCs" in Fate
