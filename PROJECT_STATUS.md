@@ -1,7 +1,7 @@
 # Project Status
 
 **Last Updated:** November 29, 2025
-**Current Phase:** Phase 25 Complete ✅ (Export Enhancements) - Project Foundation Complete!
+**Current Phase:** Phase 26 Planning 🔴 (Gameplay Quality Improvements) - Critical Issues Identified
 **Full History:** See `PROJECT_STATUS_ARCHIVE.md`
 
 ---
@@ -48,6 +48,7 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 | 23.1-23.5 | Extended world persistence (locations, NPC memory, quest links, reward tracking) | ✅ Complete |
 | 24 | Combat enhancements (zone movement, team tactics) | ✅ Complete |
 | 25 | Export enhancements (HTML/PDF) | ✅ Complete |
+| 26 | Gameplay quality improvements (AI repetition, export fix, difficulty balance) | 🔴 Planning |
 
 ---
 
@@ -131,7 +132,18 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 
 ## 🐛 Known Issues
 
-All identified bugs have been fixed! ✅
+### Critical Issues Identified (Phase 26)
+From real 10-minute Granite4:3b test (Nov 29):
+
+| Issue | Severity | Description | Status |
+|-------|----------|-------------|--------|
+| **AI-001** | 🔴 CRITICAL | AI gets stuck repeating same action 60+ turns in loop | Planning fix |
+| **EXPORT-001** | 🔴 CRITICAL | Markdown export missing 80+ turns (19% completeness) | Planning fix |
+| **DIFF-001** | 🟡 HIGH | Difficulty favors compels (75% rate) over successes (5%) | Planning fix |
+
+**Note:** LLM narration quality is excellent throughout. All issues are system-level, not LLM-related.
+
+See `PHASE_26_IMPROVEMENTS.md` for detailed analysis and fix plans.
 
 ### Recently Fixed
 | Bug ID | Description | Fixed | Fix Type |
@@ -254,10 +266,33 @@ npx tsx src/exportSessionAnalytics.ts <sessionId>
 
 ---
 
-## 📊 Last Verified Test Run
+## 📊 Latest Test Results
 
-**Date:** November 29, 2025  
-**Duration:** 14.52s  
+### Real 10-Minute Test with Granite4:3b (Nov 29, 2025)
+
+**Test Parameters:**
+- **Duration:** 599.3 seconds (10 minutes exactly)
+- **Total Turns:** 106 turns
+- **Average Turn Time:** 5.03s
+- **Turn Range:** 1.67s - 6.49s
+
+**LLM Performance: ✅ Excellent**
+- Narration Quality: Rich, thematic, consistent tone throughout
+- Context Awareness: Properly references locations, aspects, recent events
+- Theme Consistency: Maintains "High Fantasy, Dark" tone
+- Prose Quality: Example - "hushed reverence tinged with ancient sorrow"
+
+**System Issues Identified: 🔴 Critical**
+- AI Repetition: 60+ consecutive turns exploring same location (Turns 20-100)
+- Export Loss: Only 20 of 106 turns in markdown export (19% completeness)
+- Difficulty Imbalance: 75% compel rate vs 5-10% success rate
+
+**Detailed Analysis:** See `TEST_SESSION_ANALYSIS.md` and `PHASE_26_IMPROVEMENTS.md`
+
+### Unit Test Suite
+
+**Date:** November 29, 2025
+**Duration:** 14.52s
 **Result:** 64 passed, 0 failed
 
 ---
