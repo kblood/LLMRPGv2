@@ -1,6 +1,6 @@
 {
-  "35d6d2c9-88e4-4df7-96ee-d12176fa637f": {
-    "id": "35d6d2c9-88e4-4df7-96ee-d12176fa637f",
+  "3a68404d-a5f1-404d-8756-ac51fefc7e98": {
+    "id": "3a68404d-a5f1-404d-8756-ac51fefc7e98",
     "name": "Thug",
     "type": "npc",
     "highConcept": "Syndicate Enforcer",
@@ -42,7 +42,7 @@
     },
     "affiliations": [
       {
-        "factionId": "ca6feb3b-d289-4dea-8449-a7bc3509fca1",
+        "factionId": "9654291d-6825-41e7-bcb0-2ee7f6d93c67",
         "factionName": "The Syndicate",
         "role": "Member",
         "loyalty": 3

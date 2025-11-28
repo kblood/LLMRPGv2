@@ -1439,9 +1439,17 @@ export class GameMaster {
    * Get context for AI player decision making
    */
   getAIPlayerContext() {
+    // Get current location from the current scene
+    const currentLocation = this.currentScene 
+      ? this.worldManager.getLocation(this.currentScene.locationId)
+      : undefined;
+    
     return {
         player: this.getCharacterDefinition(),
-        worldState: this.worldManager.state,
+        worldState: {
+          ...this.worldManager.state,
+          currentLocation // Add current location for easy access
+        },
         history: this.history,
         currentScene: this.currentScene,
         objectives: this.getActiveQuestObjectives()

@@ -4,14 +4,22 @@
  * This test runs a structured game session with defined gameplay phases:
  * 
  * PHASE 1: Setup & World Generation (~1 min)
- * PHASE 2: Exploration & Discovery (~2 min)
- * PHASE 3: NPC Interaction & Social (~2 min)
- * PHASE 4: Quest Acceptance & Progress (~2 min)
- * PHASE 5: Combat & Challenges (~2 min)
- * PHASE 6: Economy & Meta Commands (~1 min)
+ * PHASE 2: Exploration & Discovery (~1.5 min) - Tests location features and discovery
+ * PHASE 3: Travel & Location Change (~1.5 min) - Tests new travel system (Phase 22)
+ * PHASE 4: NPC Interaction & Dialogue (~2 min) - Tests dialogue intent routing (Phase 22)
+ * PHASE 5: Quest Acceptance & Progress (~1.5 min)
+ * PHASE 6: Combat & Challenges (~1.5 min)
+ * PHASE 7: Economy & Meta Commands (~1 min)
  * 
  * Each phase has specific objectives and tracks success/failure.
  * The AI player is guided by phase-appropriate objectives.
+ * 
+ * Features Tested:
+ * - Travel system (processTravelTurn, travelToLocation)
+ * - Dialogue system (processDialogueTurn, dialogue intent)
+ * - Anti-repetition detection (analyzeRecentHistory)
+ * - Proactive compel offers after failures
+ * - Location connections and exits
  */
 
 import { GameMaster } from '../src/GameMaster';
@@ -50,53 +58,66 @@ const TEST_PHASES: TestPhase[] = [
   {
     name: 'Exploration',
     description: 'Discover the starting location and its features',
-    durationMs: 2 * 60 * 1000, // 2 minutes
+    durationMs: 90 * 1000, // 1.5 minutes
     objectives: [
       'Explore the immediate surroundings',
       'Examine interesting features in the location',
-      'Look for clues or hidden details',
-      'Investigate any mysteries'
+      'Look for exits or passages to other areas',
+      'Note any NPCs present in the area'
     ],
-    minActions: 4,
+    minActions: 3,
     successCriteria: ['At least one investigation action', 'Location features discovered']
   },
   {
-    name: 'Social',
-    description: 'Interact with NPCs and build relationships',
+    name: 'Travel',
+    description: 'Move to a new location via available exits',
+    durationMs: 90 * 1000, // 1.5 minutes
+    objectives: [
+      'Find an exit or passage leading elsewhere',
+      'Travel to a new location (e.g., "I head north", "I go through the doorway")',
+      'Explore the new area after arriving',
+      'Note differences between locations'
+    ],
+    minActions: 3,
+    successCriteria: ['Travel intent triggered', 'Location changed or attempted']
+  },
+  {
+    name: 'Dialogue',
+    description: 'Engage NPCs in conversation using dialogue system',
     durationMs: 2 * 60 * 1000, // 2 minutes
     objectives: [
       'Find and approach any NPCs in the area',
-      'Engage in meaningful dialogue',
-      'Ask about rumors, quests, or local knowledge',
-      'Try to learn something useful from conversation'
+      'Ask an NPC about something specific (triggers dialogue system)',
+      'Tell or say something to an NPC',
+      'Try to learn useful information through conversation'
     ],
     minActions: 4,
-    successCriteria: ['NPC dialogue generated', 'Social skill used']
+    successCriteria: ['Dialogue intent triggered', 'NPC response generated']
   },
   {
     name: 'Quest',
     description: 'Accept and progress on a quest or goal',
-    durationMs: 2 * 60 * 1000, // 2 minutes
+    durationMs: 90 * 1000, // 1.5 minutes
     objectives: [
       'Accept a quest or define a personal goal',
       'Take concrete steps toward the objective',
       'Overcome an obstacle related to the quest',
       'Make progress toward completion'
     ],
-    minActions: 4,
+    minActions: 3,
     successCriteria: ['Quest started or objective defined', 'Progress made']
   },
   {
     name: 'Combat',
     description: 'Engage in conflict or challenging encounters',
-    durationMs: 2 * 60 * 1000, // 2 minutes
+    durationMs: 90 * 1000, // 1.5 minutes
     objectives: [
       'Find or provoke a challenging situation',
       'Use combat skills if hostile encounter occurs',
       'Alternatively, engage in social conflict',
       'Resolve the conflict through action'
     ],
-    minActions: 4,
+    minActions: 3,
     successCriteria: ['Attack or defend action attempted', 'Conflict engaged']
   },
   {
@@ -125,6 +146,10 @@ interface TestResult {
   error?: string;
   playerReasoning?: string;
   phase: string;
+  intent?: string; // Track what intent was classified
+  triggeredTravel?: boolean; // Did this action trigger travel system?
+  triggeredDialogue?: boolean; // Did this action trigger dialogue system?
+  locationChanged?: boolean; // Did location change during this action?
 }
 
 interface PhaseResult {
@@ -136,6 +161,19 @@ interface PhaseResult {
   notes: string[];
 }
 
+// Track new feature usage across the test
+interface FeatureTracker {
+  travelIntentCount: number;
+  dialogueIntentCount: number;
+  locationChanges: number;
+  compelOffersReceived: number;
+  fatePointsSpent: number;
+  fatePointsGained: number;
+  uniqueLocationsVisited: Set<string>;
+  npcsInteractedWith: Set<string>;
+  repetitionWarningsTriggered: number;
+}
+
 class TenMinuteTest {
   private results: TestResult[] = [];
   private phaseResults: PhaseResult[] = [];
@@ -145,6 +183,17 @@ class TenMinuteTest {
   private errors: string[] = [];
   private currentPhaseIndex: number = 0;
   private currentPhaseStartTime: number = 0;
+  private featureTracker: FeatureTracker = {
+    travelIntentCount: 0,
+    dialogueIntentCount: 0,
+    locationChanges: 0,
+    compelOffersReceived: 0,
+    fatePointsSpent: 0,
+    fatePointsGained: 0,
+    uniqueLocationsVisited: new Set(),
+    npcsInteractedWith: new Set(),
+    repetitionWarningsTriggered: 0
+  };
   
   async run() {
     console.log('╔══════════════════════════════════════════════════════════════════╗');
@@ -289,6 +338,12 @@ class TenMinuteTest {
       await this.runMetaPhase(phase, phaseResult);
       return;
     }
+
+    // Track starting location for this phase
+    const startingLocationId = this.gameMaster.getAIPlayerContext().worldState?.currentLocation?.id;
+    if (startingLocationId) {
+      this.featureTracker.uniqueLocationsVisited.add(startingLocationId);
+    }
     
     while (Date.now() - phaseStartTime < phase.durationMs && this.getElapsedTime() < TEST_DURATION_MS) {
       const actionStart = Date.now();
@@ -299,6 +354,9 @@ class TenMinuteTest {
         // Get AI player context with phase-specific objectives
         const context = this.gameMaster.getAIPlayerContext();
         context.objectives = phase.objectives;
+        
+        // Track current location before action
+        const locationBefore = context.worldState?.currentLocation?.id;
         
         const actionDecision = await this.aiPlayer.decideAction(context);
         
@@ -315,30 +373,89 @@ class TenMinuteTest {
         
         const duration = (Date.now() - actionStart) / 1000;
         
+        // Analyze events for feature tracking
+        const events = result.turn?.events || [];
+        const hasTravelEvent = events.some(e => e.type === 'move' || e.action === 'location_change');
+        const hasDialogueEvent = events.some(e => e.type === 'dialogue' || e.action === 'dialogue');
+        const hasCompelEvent = events.some(e => e.type === 'fate_compel' || e.action === 'compel_offered');
+        const hasFPSpend = events.some(e => e.type === 'fate_point_spend');
+        const hasFPGain = events.some(e => e.type === 'fate_point_award' || e.type === 'fate_point_refresh');
+        
+        // Check location after action
+        const contextAfter = this.gameMaster.getAIPlayerContext();
+        const locationAfter = contextAfter.worldState?.currentLocation?.id;
+        const locationChanged = locationBefore !== locationAfter && locationAfter !== undefined;
+        
+        // Update feature tracker
+        if (hasTravelEvent || locationChanged) {
+          this.featureTracker.travelIntentCount++;
+          if (locationAfter) {
+            this.featureTracker.uniqueLocationsVisited.add(locationAfter);
+          }
+          if (locationChanged) {
+            this.featureTracker.locationChanges++;
+          }
+        }
+        if (hasDialogueEvent) {
+          this.featureTracker.dialogueIntentCount++;
+        }
+        if (hasCompelEvent) {
+          this.featureTracker.compelOffersReceived++;
+        }
+        if (hasFPSpend) {
+          this.featureTracker.fatePointsSpent++;
+        }
+        if (hasFPGain) {
+          this.featureTracker.fatePointsGained++;
+        }
+        
+        // Check for NPC interactions
+        const npcEvents = events.filter(e => 
+          e.description?.includes('NPC') || 
+          e.type === 'dialogue' || 
+          (e as any).metadata?.npcId
+        );
+        for (const npcEvent of npcEvents) {
+          const npcId = (npcEvent as any).metadata?.npcId || (npcEvent as any).metadata?.targetNPC;
+          if (npcId) {
+            this.featureTracker.npcsInteractedWith.add(npcId);
+          }
+        }
+        
+        // Check success using result.result (string) not result.success
+        const isSuccess = result.result === 'success' || result.result === 'success_with_style' || result.result === 'tie';
+        
         const testResult: TestResult = {
           action: actionDecision.action,
-          success: result.success !== false,
+          success: isSuccess,
           turnNumber: result.turn?.turnNumber ?? actionCount + 1,
           eventCount: result.turn?.events?.length ?? 0,
           narrationLength: result.narration?.length ?? 0,
           narration: result.narration || '',
           duration,
           playerReasoning: actionDecision.reasoning,
-          phase: phase.name
+          phase: phase.name,
+          triggeredTravel: hasTravelEvent || locationChanged,
+          triggeredDialogue: hasDialogueEvent,
+          locationChanged
         };
         
         this.results.push(testResult);
         phaseResult.actions.push(testResult);
         
-        if (result.success !== false) {
-          console.log(`✅ ${duration.toFixed(1)}s | ${result.turn?.events?.length ?? 0} events`);
+        if (isSuccess) {
+          let statusLine = `✅ ${duration.toFixed(1)}s | ${result.turn?.events?.length ?? 0} events`;
+          if (locationChanged) statusLine += ' | 🗺️ LOCATION CHANGED';
+          if (hasDialogueEvent) statusLine += ' | 💬 DIALOGUE';
+          if (hasTravelEvent) statusLine += ' | 🚶 TRAVEL';
+          console.log(statusLine);
           if (result.narration && result.narration.length > 0) {
             const narration = result.narration.substring(0, 150);
             console.log(`   📜 "${narration}..."`);
           }
         } else {
-          console.log(`❌ Error: ${result.error || 'Unknown error'}`);
-          this.errors.push(`${phase.name} Action ${actionCount + 1}: ${result.error || 'Unknown error'}`);
+          // Failure case - result.result will be 'failure'
+          console.log(`❌ Failed: ${result.result || 'failure'} | ${result.narration?.substring(0, 100) || 'No details'}`);
         }
       } catch (loopError: any) {
         console.error(`💥 Error: ${loopError.message}`);
@@ -385,9 +502,12 @@ class TenMinuteTest {
         const result = await this.gameMaster.processPlayerAction(cmd);
         const duration = (Date.now() - actionStart) / 1000;
         
+        // Check success using result.result (string) not result.success
+        const isSuccess = result.result === 'success' || result.result === 'success_with_style' || result.result === 'tie';
+        
         const testResult: TestResult = {
           action: cmd,
-          success: result.success !== false,
+          success: isSuccess,
           turnNumber: result.turn?.turnNumber ?? 0,
           eventCount: result.turn?.events?.length ?? 0,
           narrationLength: result.narration?.length ?? 0,
@@ -525,6 +645,33 @@ class TenMinuteTest {
     });
     console.log('');
     
+    // NEW FEATURES TRACKER (Phase 22)
+    console.log('🆕 PHASE 22 FEATURE USAGE');
+    console.log('─'.repeat(60));
+    console.log(`   🚶 Travel Intent Triggers:    ${this.featureTracker.travelIntentCount}`);
+    console.log(`   🗺️  Location Changes:          ${this.featureTracker.locationChanges}`);
+    console.log(`   🏠 Unique Locations Visited:  ${this.featureTracker.uniqueLocationsVisited.size}`);
+    console.log(`   💬 Dialogue Intent Triggers:  ${this.featureTracker.dialogueIntentCount}`);
+    console.log(`   👤 NPCs Interacted With:      ${this.featureTracker.npcsInteractedWith.size}`);
+    console.log(`   🎲 Compel Offers Received:    ${this.featureTracker.compelOffersReceived}`);
+    console.log(`   ⭐ Fate Points Spent:         ${this.featureTracker.fatePointsSpent}`);
+    console.log(`   ⭐ Fate Points Gained:        ${this.featureTracker.fatePointsGained}`);
+    console.log('');
+    
+    // Feature Coverage Assessment
+    const travelWorking = this.featureTracker.travelIntentCount > 0 || this.featureTracker.locationChanges > 0;
+    const dialogueWorking = this.featureTracker.dialogueIntentCount > 0;
+    const compelWorking = this.featureTracker.compelOffersReceived > 0;
+    const explorationWorking = this.featureTracker.uniqueLocationsVisited.size > 1;
+    
+    console.log('🔍 FEATURE VERIFICATION');
+    console.log('─'.repeat(60));
+    console.log(`   ${travelWorking ? '✅' : '⚠️'} Travel System:     ${travelWorking ? 'TRIGGERED' : 'NOT TESTED'}`);
+    console.log(`   ${dialogueWorking ? '✅' : '⚠️'} Dialogue System:   ${dialogueWorking ? 'TRIGGERED' : 'NOT TESTED'}`);
+    console.log(`   ${compelWorking ? '✅' : 'ℹ️'} Proactive Compels: ${compelWorking ? 'TRIGGERED' : 'Not triggered (may need failures)'}`);
+    console.log(`   ${explorationWorking ? '✅' : '⚠️'} Multi-Location:    ${explorationWorking ? 'VERIFIED' : 'Single location only'}`);
+    console.log('');
+    
     // Errors
     if (this.errors.length > 0) {
       console.log('🐛 ERRORS ENCOUNTERED');
@@ -567,6 +714,17 @@ class TenMinuteTest {
     console.log('');
     console.log(`📁 Session saved at: ${STORAGE_PATH}/sessions/active/${SESSION_ID}`);
     console.log(`💾 Export with: npx tsx src/exportSessionToMarkdown.ts ${SESSION_ID}`);
+    
+    // Explicit final save to ensure everything is persisted
+    try {
+      if (this.gameMaster) {
+        await this.gameMaster.saveState();
+        console.log('💾 Final session save completed');
+      }
+    } catch (saveError: any) {
+      console.error('⚠️  Final save failed:', saveError.message);
+      this.errors.push(`Final save error: ${saveError.message}`);
+    }
   }
 }
 
