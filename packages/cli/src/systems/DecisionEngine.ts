@@ -82,26 +82,34 @@ Return ONLY the exact name of the skill.`
     }
   }
 
-  async classifyIntent(playerInput: string): Promise<'fate_action' | 'travel' | 'trade' | 'craft' | 'inventory' | 'status' | 'self_compel' | 'concede' | 'declaration' | 'advance'> {
+  async classifyIntent(playerInput: string): Promise<'fate_action' | 'dialogue' | 'travel' | 'trade' | 'craft' | 'inventory' | 'status' | 'self_compel' | 'concede' | 'declaration' | 'advance'> {
     const systemPrompt = this.contextBuilder.buildSystemPrompt(
       "Game Master",
       `You are the Game Master. Classify the player's intent into one of the following categories:
 
 CATEGORIES:
 1. Travel: Moving to a new location via an exit. (e.g., "I head north", "Go down the passage", "Travel to...").
-2. Trade: Buying, selling, or browsing goods at a shop.
-3. Craft: Creating items, potions, or gear.
-4. Inventory: Checking carried items or wealth.
-5. Status: Checking health, stress, or character sheet.
-6. Self Compel: The player explicitly proposes a complication for themselves based on one of their aspects to gain a Fate Point.
-7. Concede: Giving up in a conflict to avoid being taken out.
-8. Declaration: Spending a Fate Point to declare a story detail without rolling. (e.g., "I spend a FP to declare there's a ladder", "I declare I know this guy", "Spending a fate point to say...").
-9. Advance: Spending a milestone to improve the character (e.g., "I want to spend my minor milestone", "Swap my skills", "Buy a new stunt").
-10. Teamwork: Helping another character (NPC) with their action. (e.g., "I help Lysandra", "I assist the guard", "Combine efforts with Marcus").
-11. Fate Action: Any other gameplay action (fighting, talking, exploring, moving, using skills).
+2. Dialogue: Talking TO or WITH a specific person/NPC. Asking questions, making conversation, negotiating, persuading. (e.g., "Ask the guard about...", "Talk to the merchant", "Tell the cultist...", "I speak with Marcus", "Question the prisoner", "Inquire about...", "Demand to know...", "Chat with...").
+3. Trade: Buying, selling, or browsing goods at a shop.
+4. Craft: Creating items, potions, or gear.
+5. Inventory: Checking carried items or wealth.
+6. Status: Checking health, stress, or character sheet.
+7. Self Compel: The player explicitly proposes a complication for themselves based on one of their aspects to gain a Fate Point.
+8. Concede: Giving up in a conflict to avoid being taken out.
+9. Declaration: Spending a Fate Point to declare a story detail without rolling. (e.g., "I spend a FP to declare there's a ladder", "I declare I know this guy", "Spending a fate point to say...").
+10. Advance: Spending a milestone to improve the character (e.g., "I want to spend my minor milestone", "Swap my skills", "Buy a new stunt").
+11. Teamwork: Helping another character (NPC) with their action. (e.g., "I help Lysandra", "I assist the guard", "Combine efforts with Marcus").
+12. Fate Action: Any OTHER gameplay action (fighting, exploring, using skills, examining things, physical actions). NOT dialogue with NPCs - that's category 2.
+
+DIALOGUE VS FATE_ACTION:
+- "Ask the cultists about the runes" → DIALOGUE (talking to NPCs)
+- "Demand information from the guard" → DIALOGUE (talking to NPCs)
+- "Study the ancient runes" → FATE_ACTION (examining objects, not talking)
+- "Attack the goblin" → FATE_ACTION (combat)
+- "Search the room" → FATE_ACTION (exploration)
 
 OUTPUT FORMAT:
-Return ONLY the category key: "travel", "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork", or "fate_action".`
+Return ONLY the category key: "dialogue", "travel", "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork", or "fate_action".`
     );
 
     const prompt = this.contextBuilder.assemblePrompt({
@@ -120,7 +128,7 @@ Return ONLY the category key: "travel", "trade", "craft", "inventory", "status",
       );
 
       const intent = response.content.trim().toLowerCase();
-      if (["travel", "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork"].includes(intent)) {
+      if (["dialogue", "travel", "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork"].includes(intent)) {
         return intent as any;
       }
       return "fate_action";
@@ -168,6 +176,82 @@ Return a JSON object:
       return JSON.parse(response.content);
     } catch (error) {
       console.error("Teamwork parsing failed:", error);
+      return null;
+    }
+  }
+
+  async parseDialogue(playerInput: string, presentNPCs: CharacterDefinition[]): Promise<{ targetName: string; topic: string; dialogueType: 'ask' | 'tell' | 'negotiate' | 'intimidate' | 'persuade' | 'chat' } | null> {
+    const npcNames = presentNPCs.map(n => n.name).join(', ');
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Parse the player's dialogue request to determine who they're talking to and what about.
+
+PRESENT NPCS:
+${npcNames || 'No NPCs present'}
+
+INSTRUCTIONS:
+- Identify the NPC the player wants to talk to
+- Identify the topic or purpose of the conversation
+- Determine the type of dialogue:
+  - ask: Seeking information or answers
+  - tell: Sharing information with the NPC
+  - negotiate: Trying to make a deal or bargain
+  - intimidate: Threatening or coercing
+  - persuade: Convincing or appealing
+  - chat: General friendly conversation
+
+OUTPUT FORMAT:
+Return a JSON object:
+{
+  "targetName": "Name of the NPC (as close a match as possible)",
+  "topic": "What they want to discuss",
+  "dialogueType": "ask" | "tell" | "negotiate" | "intimidate" | "persuade" | "chat"
+}
+
+If no matching NPC or unclear intent, return: null
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Player Input: "${playerInput}"\n\nParse the dialogue request.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1,
+        jsonMode: false
+      });
+
+      const content = response.content.trim();
+      
+      // Check if response is "null"
+      if (content === 'null' || content === 'null\n' || content.includes('"null"')) {
+        return null;
+      }
+
+      const parsed = JSON.parse(content);
+      
+      // Validate the NPC exists in presentNPCs (fuzzy match)
+      const matchedNPC = presentNPCs.find(n => 
+        n.name.toLowerCase().includes(parsed.targetName.toLowerCase()) ||
+        parsed.targetName.toLowerCase().includes(n.name.toLowerCase())
+      );
+      
+      if (matchedNPC) {
+        return {
+          targetName: matchedNPC.name, // Use the actual NPC name
+          topic: parsed.topic,
+          dialogueType: parsed.dialogueType || 'ask'
+        };
+      }
+      
+      // Allow dialogue even if NPC not in presentNPCs (maybe talking to a group like "cultists")
+      return parsed;
+    } catch (error) {
+      console.error("Dialogue parsing failed:", error);
       return null;
     }
   }
@@ -885,6 +969,67 @@ Return a JSON object or null:
       return JSON.parse(content);
     } catch (error) {
       console.error("Compel generation failed:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Generate a proactive compel description based on the player's trouble aspect
+   * and their recent failures. This helps break failure spirals by offering
+   * the player a Fate Point in exchange for a complication.
+   */
+  async generateProactiveCompelDescription(
+    troubleAspect: string,
+    recentFailures: string,
+    sceneDescription: string
+  ): Promise<string | null> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. The player has failed multiple times in a row and seems stuck.
+This is an opportunity to offer a COMPEL on their TROUBLE aspect to give them a Fate Point and introduce a complication that changes the situation.
+
+PLAYER'S TROUBLE ASPECT: ${troubleAspect}
+
+RECENT FAILURES:
+${recentFailures}
+
+CURRENT SCENE:
+${sceneDescription}
+
+INSTRUCTIONS:
+Generate a COMPELLING complication that:
+1. Directly relates to the trouble aspect "${troubleAspect}"
+2. Changes the situation in a way that opens new options for the player
+3. Introduces drama and narrative interest
+4. Gives the player a chance to do something different
+
+The complication should feel like a natural consequence of their aspect, not random bad luck.
+It should create NEW opportunities, not just pile on more failures.
+
+OUTPUT FORMAT:
+Return ONLY a single sentence or short paragraph describing the complication.
+Example: "Your Shattered Legacy catches up with you - an old associate appears, demanding repayment of a debt. You'll need to deal with them before you can continue."
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Generate a proactive compel for the trouble aspect "${troubleAspect}".`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.7 // Higher temp for creative complications
+      });
+
+      const content = response.content.trim();
+      if (!content || content === 'null') return null;
+
+      return content;
+    } catch (error) {
+      console.error("Proactive compel generation failed:", error);
       return null;
     }
   }

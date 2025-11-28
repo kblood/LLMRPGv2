@@ -41,6 +41,7 @@ export class GameMaster {
   private npcs: Record<string, CharacterDefinition> = {};
   private history: Turn[] = [];
   private config: GameMasterConfig;
+  private consecutiveFailures: number = 0;
 
   private fateDice: FateDice;
 
@@ -540,6 +541,58 @@ export class GameMaster {
     }
   }
 
+  /**
+   * Generate a proactive compel offer when the player has failed multiple times.
+   * This gives them an opportunity to gain a Fate Point and break out of a failure spiral.
+   */
+  async generateProactiveCompel(): Promise<Compel | null> {
+    if (!this.player || this.consecutiveFailures < 2) {
+      return null;
+    }
+
+    // Find the player's trouble aspect
+    const troubleAspect = this.player.aspects.find(a => a.type === 'trouble');
+    if (!troubleAspect) {
+      return null;
+    }
+
+    // Generate a compelling scenario based on recent failures and the trouble aspect
+    const recentFailures = this.history.slice(-3).map(t => t.narration || 'Unknown action').join('\n');
+    
+    try {
+      const compelDescription = await this.decisionEngine.generateProactiveCompelDescription(
+        troubleAspect.name,
+        recentFailures,
+        this.currentScene?.description || ''
+      );
+
+      if (!compelDescription) {
+        return null;
+      }
+
+      return {
+        id: uuidv4(),
+        aspectId: troubleAspect.id,
+        aspectName: troubleAspect.name,
+        type: 'decision', // Trouble aspects typically force decisions
+        description: compelDescription,
+        status: 'offered',
+        turnId: 'pending',
+        source: 'gm'
+      };
+    } catch (error) {
+      console.error("Failed to generate proactive compel:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Get the current consecutive failure count
+   */
+  getConsecutiveFailures(): number {
+    return this.consecutiveFailures;
+  }
+
   async movePlayer(targetZoneName: string) {
     if (!this.currentScene || !this.player) {
       console.log("No active scene or player.");
@@ -648,6 +701,10 @@ export class GameMaster {
         return this.processDeclaration(playerAction, turn);
     } else if ((intent as string) === 'teamwork' && this.player) {
         return this.processTeamwork(playerAction, turn);
+    } else if (intent === 'travel' && this.player) {
+        return this.processTravelTurn(playerAction, turn);
+    } else if (intent === 'dialogue' && this.player) {
+        return this.processDialogueTurn(playerAction, turn);
     }
 
     return this.processFateAction(playerAction, turn, playerReasoning, skipCompelCheck);
@@ -769,6 +826,174 @@ export class GameMaster {
       });
       
       return this.finalizeTurn(turn, narration, "conceded");
+  }
+
+  /**
+   * Process a player's travel intent - moving to a new location via an exit
+   */
+  private async processTravelTurn(playerAction: string, turn: Turn) {
+    if (!this.player) throw new Error("No player");
+    
+    const currentLocation = this.currentScene 
+      ? this.worldManager.getLocation(this.currentScene.locationId) 
+      : undefined;
+
+    if (!currentLocation) {
+      const narration = "You look around but can't determine where you are.";
+      this.turnManager.addEvent('system', 'travel_failed', { description: narration });
+      return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // Get available exits from current location
+    const availableExits = (currentLocation.connections || [])
+      .filter(c => !c.isBlocked)
+      .map(c => ({
+        direction: c.direction || 'passage',
+        description: c.description || 'an exit',
+        targetId: c.targetId
+      }));
+
+    if (availableExits.length === 0) {
+      const narration = "There are no obvious exits from this location. Perhaps you could search for hidden passages.";
+      this.turnManager.addEvent('system', 'travel_failed', { description: narration });
+      return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // Parse the travel intent to determine direction
+    const travelData = await this.decisionEngine.parseTravel(playerAction, availableExits);
+
+    if (!travelData) {
+      const exitsDesc = availableExits.map(e => `${e.direction} (${e.description})`).join(', ');
+      const narration = `You're not sure where to go. Available exits: ${exitsDesc}`;
+      this.turnManager.addEvent('system', 'travel_clarification', { 
+        description: narration,
+        metadata: { availableExits }
+      });
+      return this.finalizeTurn(turn, narration, "tie");
+    }
+
+    // Execute the travel
+    const result = await this.travelToLocation(travelData.targetId);
+
+    if (result.success && result.newLocation) {
+      this.turnManager.addEvent('move', 'location_change', {
+        description: `Traveled ${travelData.direction} to ${result.newLocation.name}`,
+        metadata: {
+          fromLocation: currentLocation.id,
+          toLocation: result.newLocation.id,
+          direction: travelData.direction
+        }
+      });
+      return this.finalizeTurn(turn, result.narration || "You travel to a new location.", "success");
+    } else {
+      this.turnManager.addEvent('system', 'travel_failed', { 
+        description: result.narration || "You couldn't travel that way."
+      });
+      return this.finalizeTurn(turn, result.narration || "You couldn't travel that way.", "failure");
+    }
+  }
+
+  /**
+   * Process a player's dialogue intent - talking to NPCs
+   */
+  private async processDialogueTurn(playerAction: string, turn: Turn) {
+    if (!this.player) throw new Error("No player");
+
+    // Get NPCs present at current location
+    const presentNPCs = this.currentScene ? 
+      (this.worldManager.getLocation(this.currentScene.locationId)?.presentNPCs || [])
+        .map(id => this.npcs[id])
+        .filter(n => n !== undefined) as CharacterDefinition[]
+      : [];
+
+    // Parse the dialogue intent
+    const dialogueData = await this.decisionEngine.parseDialogue(playerAction, presentNPCs);
+
+    if (!dialogueData) {
+      const narration = presentNPCs.length === 0
+        ? "There's no one here to talk to."
+        : `You look around, but aren't sure who to address. Present: ${presentNPCs.map(n => n.name).join(', ')}`;
+      this.turnManager.addEvent('system', 'dialogue_failed', { description: narration });
+      return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // Find the target NPC
+    const targetNPC = presentNPCs.find(n => 
+      n.name.toLowerCase().includes(dialogueData.targetName.toLowerCase()) ||
+      dialogueData.targetName.toLowerCase().includes(n.name.toLowerCase())
+    );
+
+    if (!targetNPC) {
+      // NPC mentioned but not present - give narrative response
+      const narration = `You try to address ${dialogueData.targetName}, but they're not here right now.`;
+      this.turnManager.addEvent('system', 'dialogue_failed', { 
+        description: narration,
+        metadata: { targetName: dialogueData.targetName }
+      });
+      return this.finalizeTurn(turn, narration, "failure");
+    }
+
+    // Get player's relationship with this NPC (if any)
+    const relationship = this.player.relationships?.find(
+      r => r.targetId === targetNPC.id
+    );
+
+    // Get faction reputation if applicable
+    const playerWithFaction = this.player as any;
+    const factionReputation = playerWithFaction.factionStanding ? 
+      Object.values(playerWithFaction.factionStanding as Record<string, { factionId: string; reputation: number }>).map(fs => ({
+        factionName: fs.factionId, // Would need faction lookup for proper name
+        reputation: fs.reputation,
+        rank: this.getFactionRank(fs.reputation)
+      })) : undefined;
+
+    // Generate NPC dialogue through DialogueSystem
+    try {
+      const npcResponse = await this.dialogueSystem.generateDialogue(
+        playerAction,
+        {
+          npc: targetNPC,
+          player: this.getCharacterDefinition()!,
+          history: this.history.slice(-5), // Recent history for context
+          relationship: relationship,
+          topic: dialogueData.topic,
+          factionReputation
+        }
+      );
+
+      // Log the dialogue event
+      this.turnManager.addEvent('dialogue', dialogueData.dialogueType, {
+        description: `${this.player.name} speaks with ${targetNPC.name} about ${dialogueData.topic}`,
+        metadata: {
+          targetNPC: targetNPC.name,
+          topic: dialogueData.topic,
+          dialogueType: dialogueData.dialogueType,
+          npcResponse: npcResponse
+        }
+      });
+
+      // Build the narration including the NPC response
+      const narration = `${targetNPC.name} responds: "${npcResponse}"`;
+
+      return this.finalizeTurn(turn, narration, "success");
+    } catch (error) {
+      console.error("Dialogue failed:", error);
+      const narration = `${targetNPC.name} seems distracted and doesn't respond meaningfully.`;
+      return this.finalizeTurn(turn, narration, "failure");
+    }
+  }
+
+  /**
+   * Convert reputation number to rank string
+   */
+  private getFactionRank(reputation: number): string {
+    if (reputation >= 50) return 'Exalted';
+    if (reputation >= 30) return 'Honored';
+    if (reputation >= 10) return 'Friendly';
+    if (reputation >= -10) return 'Neutral';
+    if (reputation >= -30) return 'Unfriendly';
+    if (reputation >= -50) return 'Hostile';
+    return 'Hated';
   }
 
   private async processSelfCompel(playerAction: string, turn: Turn) {
@@ -1253,6 +1478,13 @@ export class GameMaster {
     // Store player reasoning if provided
     if (playerReasoning) {
       (turn as any).playerReasoning = playerReasoning;
+    }
+    
+    // Track consecutive failures for proactive compel offers
+    if (result === 'failure') {
+      this.consecutiveFailures++;
+    } else if (result === 'success' || result === 'success_with_style') {
+      this.consecutiveFailures = 0; // Reset on any success
     }
     
     // Update history with configurable windowing
