@@ -318,12 +318,16 @@ ${analysis.suggestedApproaches.length > 0 ? `Ideas: ${analysis.suggestedApproach
     }
 
     const userPrompt = `CURRENT SITUATION:
-${lastNarration ? `GM DESCRIPTION:\n"${lastNarration}"\n` : 'You find yourself in a new situation.'}
+📍 LOCATION: ${locationName}
+${lastNarration ? `\nGM DESCRIPTION:\n"${lastNarration}"\n` : 'You find yourself in a new situation.'}
 
 ${locationAspects.length > 0 ? `Scene Aspects: ${locationAspects.map((a: any) => a.name || a).join(', ')}` : ''}
 ${presentNPCs.length > 0 ? `People Present: ${presentNPCs.map((n: any) => n.name || n).join(', ')}` : 'You are alone.'}
 ${locationFeatures.length > 0 ? `Notable Features: ${locationFeatures.map((f: any) => f.name || f.description || f).join(', ')}` : ''}
-${availableExits ? `Available Exits: ${availableExits}` : ''}
+
+🚪 TRAVEL OPTIONS:
+${availableExits ? `Available Exits: ${availableExits}
+You can move to a new location by traveling via any of these exits (e.g., "I head north down the winding path").` : 'No obvious exits visible. You might search for hidden passages or alternative routes.'}
 
 ${objectivesText}
 ${actionFeedbackSection}
@@ -331,6 +335,8 @@ RECENT HISTORY:
 ${recentHistory}
 
 REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can declare new story details by spending Fate Points if it fits your character's background or makes narrative sense.
+
+EXPLORATION TIP: If you're stuck with a challenge, consider exploring a new location! Different areas may have different opportunities and solutions.
 
 What do you do next? Respond with a JSON object containing your action and reasoning.`;
 

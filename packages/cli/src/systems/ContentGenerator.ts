@@ -66,13 +66,15 @@ GUIDELINES:
 - The location should be a suitable starting point for an adventure (e.g., a tavern, a space station hub, a detective's office).
 - Include 2-3 interesting Aspects.
 - Include 1-2 interactive features.
+- Include 2-3 exits or connections to adjacent locations (these are opportunities for exploration).
 
 OUTPUT FORMAT:
 JSON with fields:
 - name: string
 - description: string
 - aspects: { name: string, type: "situation" | "environment" }[]
-- features: { name: string, description: string }[]`
+- features: { name: string, description: string }[]
+- connections: { direction: string, description: string }[] (e.g., north, south, up, down, etc.)`
     );
 
     const prompt = this.contextBuilder.assemblePrompt({
@@ -89,10 +91,11 @@ JSON with fields:
 
     try {
       const data = JSON.parse(response.content);
+      const locationId = `loc-${Date.now()}`;
       
       // Map to Location type
       return {
-        id: `loc-${Date.now()}`,
+        id: locationId,
         name: data.name,
         description: data.description,
         aspects: data.aspects.map((a: any) => ({
@@ -101,7 +104,12 @@ JSON with fields:
           kind: a.type || 'situation',
           isTemporary: false
         })),
-        connections: [],
+        connections: (data.connections || []).map((c: any) => ({
+          targetId: `loc-${Math.random().toString(36).substr(2, 9)}`,
+          direction: c.direction,
+          description: c.description,
+          discovered: false
+        })),
         presentNPCs: [],
         features: data.features.map((f: any) => ({
           id: `feat-${Math.random().toString(36).substr(2, 9)}`,
@@ -119,7 +127,20 @@ JSON with fields:
         name: "The Beginning",
         description: "A generic starting point.",
         aspects: [],
-        connections: [],
+        connections: [
+          {
+            targetId: `loc-${Math.random().toString(36).substr(2, 9)}`,
+            direction: "north",
+            description: "A winding path leads north",
+            isBlocked: false
+          },
+          {
+            targetId: `loc-${Math.random().toString(36).substr(2, 9)}`,
+            direction: "south",
+            description: "A narrow passage extends south",
+            isBlocked: false
+          }
+        ],
         presentNPCs: [],
         features: [],
         discovered: true,
@@ -467,6 +488,110 @@ JSON array of objects with fields:
     } catch (e) {
       console.error("Failed to parse generated world events:", e);
       return [];
+    }
+  }
+
+  async generateNewLocation(
+    fromLocationName: string,
+    connectionDescription: string,
+    theme: WorldState['theme']
+  ): Promise<Location> {
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "World Builder",
+      `You are an expert World Builder for a Fate Core RPG. Generate an interesting connected location.
+
+CURRENT LOCATION: ${fromLocationName}
+CONNECTION: ${connectionDescription}
+
+THEME CONTEXT:
+Name: ${theme.name}
+Genre: ${theme.genre}
+Tone: ${theme.tone}
+Keywords: ${theme.keywords.join(", ")}
+
+GUIDELINES:
+- Generate a location that is logically connected to the previous location via the given connection.
+- Include 2-3 interesting Aspects that fit the theme.
+- Include 1-2 interactive features or NPCs.
+- Include 2-3 connections to other locations for further exploration.
+- The location should feel distinct but related to the theme.
+
+OUTPUT FORMAT:
+JSON with fields:
+- name: string (Location name)
+- description: string (Vivid description)
+- aspects: { name: string, type: "situation" | "environment" }[]
+- features: { name: string, description: string }[]
+- connections: { direction: string, description: string }[] (exits from this location)`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Generate a new location accessed via: "${connectionDescription}".\nReturn JSON.`
+    });
+
+    const response = await withRetry(
+      () => this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.8,
+        jsonMode: true
+      }),
+      RetryPresets.standard
+    );
+
+    try {
+      const data = JSON.parse(response.content);
+      const locationId = `loc-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+      
+      return {
+        id: locationId,
+        name: data.name,
+        description: data.description,
+        aspects: data.aspects.map((a: any) => ({
+          id: `asp-${Math.random().toString(36).substr(2, 9)}`,
+          name: a.name,
+          kind: a.type || 'situation',
+          isTemporary: false
+        })),
+        connections: (data.connections || []).map((c: any) => ({
+          targetId: `loc-${Math.random().toString(36).substr(2, 9)}`,
+          direction: c.direction,
+          description: c.description,
+          discovered: false
+        })),
+        presentNPCs: [],
+        features: (data.features || []).map((f: any) => ({
+          id: `feat-${Math.random().toString(36).substr(2, 9)}`,
+          name: f.name,
+          description: f.description,
+          interactable: true
+        })),
+        discovered: true,
+        tier: 'locale'
+      };
+    } catch (e) {
+      console.error("Failed to parse generated location:", e);
+      return {
+        id: `loc-${Date.now()}`,
+        name: `The ${connectionDescription}`,
+        description: `You arrive at a new location reached via ${connectionDescription}.`,
+        aspects: [
+          { id: `asp-${Math.random().toString(36).substr(2, 9)}`, name: "Unexplored", type: 'situational', freeInvokes: 0 }
+        ],
+        connections: [
+          {
+            targetId: `loc-${Math.random().toString(36).substr(2, 9)}`,
+            direction: "back",
+            description: "The way you came from",
+            isBlocked: false
+          }
+        ],
+        presentNPCs: [],
+        features: [],
+        discovered: true,
+        tier: 'locale'
+      };
     }
   }
 

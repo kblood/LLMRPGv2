@@ -1,5 +1,6 @@
 import { LLMProvider, ContextBuilder, withRetry, RetryPresets } from '@llmrpg/llm';
 import { CharacterDefinition, Turn } from '@llmrpg/core';
+import { Location } from '@llmrpg/protocol';
 
 export interface NarrativeContext {
   events: any[];
@@ -230,6 +231,32 @@ Describe this scene as the player enters.`;
     } catch (error) {
       console.error("Scene intro narration failed after retries:", error);
       return `You find yourself in ${location.name}.`;
+    }
+  }
+
+  async generateTravelNarration(
+    fromLocation: Location,
+    toLocation: Location,
+    direction: string
+  ): Promise<string> {
+    try {
+      const systemPrompt = `You are a vivid RPG narrator. Generate a brief (1-2 sentences) travel narration describing the journey from ${fromLocation.name} to ${toLocation.name} traveling ${direction}. Keep it atmospheric and brief.`;
+      
+      const userPrompt = `Generate travel narration for moving ${direction} from "${fromLocation.name}" to "${toLocation.name}".`;
+
+      const response = await withRetry(
+        () => this.llm.generate({
+          systemPrompt,
+          userPrompt,
+          temperature: 0.6
+        }),
+        RetryPresets.fast
+      );
+
+      return response.content;
+    } catch (error) {
+      console.error("Travel narration generation failed:", error);
+      return `You head ${direction} and after some time, you arrive at ${toLocation.name}.`;
     }
   }
 

@@ -2109,7 +2109,7 @@ export class GameMaster {
             if (!this.player) return { turn: null, narration: "No character found.", result: "error" };
             const aspects = this.player.aspects.map(a => `- ${a.name} (${a.type})`).join('\n');
             const skills = this.player.skills.map(s => `- ${s.name}: +${s.rank}`).join('\n');
-            const relationships = this.player.relationships.map(r => `- ${r.targetName}: ${r.type} (T:${r.trust}, A:${r.affection}, R:${r.respect}, I:${r.influence})`).join('\n');
+            const relationships = this.player.relationships.map(r => `- ${r.targetName}: ${r.type} (Trust:${r.trust})`).join('\n');
             const fp = this.player.fatePoints.current;
             return {
                 turn: null,
@@ -2198,5 +2198,86 @@ export class GameMaster {
   private estimateHistoryTokens(): number {
     const historyJson = JSON.stringify(this.history);
     return Math.ceil(historyJson.length / 4);
+  }
+
+  /**
+   * Handle player travel to a new location via a connection
+   */
+  async travelToLocation(connectionId: string): Promise<{ success: boolean; newLocation?: any; narration?: string }> {
+    if (!this.currentScene) {
+      return { success: false, narration: "You can't travel right now." };
+    }
+
+    const currentLocation = this.worldManager.getLocation(this.currentScene.locationId);
+    if (!currentLocation) {
+      return { success: false, narration: "Current location not found." };
+    }
+
+    const connection = currentLocation.connections?.find(c => c.targetId === connectionId);
+    if (!connection) {
+      return { success: false, narration: "That exit doesn't exist." };
+    }
+
+    try {
+      // Check if destination location already exists
+      let destinationLocation = this.worldManager.getLocation(connection.targetId);
+
+      if (!destinationLocation) {
+        // Generate new location
+        console.log(`Generating new location: ${connection.description}...`);
+        destinationLocation = await this.contentGenerator.generateNewLocation(
+          currentLocation.name,
+          connection.description || connection.direction || 'unknown passage',
+          this.worldManager.state.theme
+        );
+        
+        // Store the generated location
+        this.worldManager.setLocation(destinationLocation);
+      }
+
+      // Create new scene at the destination
+      const currentTurn = this.turnManager.getCurrentTurn();
+      this.currentScene = {
+        id: `scene-${Date.now()}`,
+        name: destinationLocation.name,
+        description: destinationLocation.description,
+        locationId: destinationLocation.id,
+        aspects: destinationLocation.aspects || [],
+        startTurn: currentTurn?.turnId ?? 0,
+        type: 'exploration'
+      };
+
+      // Collect delta for location change
+      this.deltaCollector.collect({
+        target: 'world',
+        operation: 'set',
+        path: ['currentScene'],
+        previousValue: undefined,
+        newValue: this.currentScene,
+        cause: 'travel',
+        eventId: `travel-${Date.now()}`
+      });
+
+      // Generate travel narration
+      const travelNarration = await this.narrativeEngine.generateTravelNarration(
+        currentLocation,
+        destinationLocation,
+        connection.direction || 'path'
+      );
+
+      console.log(`✨ Traveled to ${destinationLocation.name}`);
+
+      return {
+        success: true,
+        newLocation: destinationLocation,
+        narration: travelNarration
+      };
+    } catch (error) {
+      console.error("Travel failed:", error);
+      return {
+        success: false,
+        narration: "Something prevented you from traveling. Try again."
+      };
+    }
   }
 }

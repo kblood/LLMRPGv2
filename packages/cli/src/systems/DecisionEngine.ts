@@ -82,25 +82,26 @@ Return ONLY the exact name of the skill.`
     }
   }
 
-  async classifyIntent(playerInput: string): Promise<'fate_action' | 'trade' | 'craft' | 'inventory' | 'status' | 'self_compel' | 'concede' | 'declaration' | 'advance'> {
+  async classifyIntent(playerInput: string): Promise<'fate_action' | 'travel' | 'trade' | 'craft' | 'inventory' | 'status' | 'self_compel' | 'concede' | 'declaration' | 'advance'> {
     const systemPrompt = this.contextBuilder.buildSystemPrompt(
       "Game Master",
       `You are the Game Master. Classify the player's intent into one of the following categories:
 
 CATEGORIES:
-1. Trade: Buying, selling, or browsing goods at a shop.
-2. Craft: Creating items, potions, or gear.
-3. Inventory: Checking carried items or wealth.
-4. Status: Checking health, stress, or character sheet.
-5. Self Compel: The player explicitly proposes a complication for themselves based on one of their aspects to gain a Fate Point.
-6. Concede: Giving up in a conflict to avoid being taken out.
-7. Declaration: Spending a Fate Point to declare a story detail without rolling. (e.g., "I spend a FP to declare there's a ladder", "I declare I know this guy", "Spending a fate point to say...").
-8. Advance: Spending a milestone to improve the character (e.g., "I want to spend my minor milestone", "Swap my skills", "Buy a new stunt").
-9. Teamwork: Helping another character (NPC) with their action. (e.g., "I help Lysandra", "I assist the guard", "Combine efforts with Marcus").
-10. Fate Action: Any other gameplay action (fighting, talking, exploring, moving, using skills).
+1. Travel: Moving to a new location via an exit. (e.g., "I head north", "Go down the passage", "Travel to...").
+2. Trade: Buying, selling, or browsing goods at a shop.
+3. Craft: Creating items, potions, or gear.
+4. Inventory: Checking carried items or wealth.
+5. Status: Checking health, stress, or character sheet.
+6. Self Compel: The player explicitly proposes a complication for themselves based on one of their aspects to gain a Fate Point.
+7. Concede: Giving up in a conflict to avoid being taken out.
+8. Declaration: Spending a Fate Point to declare a story detail without rolling. (e.g., "I spend a FP to declare there's a ladder", "I declare I know this guy", "Spending a fate point to say...").
+9. Advance: Spending a milestone to improve the character (e.g., "I want to spend my minor milestone", "Swap my skills", "Buy a new stunt").
+10. Teamwork: Helping another character (NPC) with their action. (e.g., "I help Lysandra", "I assist the guard", "Combine efforts with Marcus").
+11. Fate Action: Any other gameplay action (fighting, talking, exploring, moving, using skills).
 
 OUTPUT FORMAT:
-Return ONLY the category key: "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork", or "fate_action".`
+Return ONLY the category key: "travel", "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork", or "fate_action".`
     );
 
     const prompt = this.contextBuilder.assemblePrompt({
@@ -119,7 +120,7 @@ Return ONLY the category key: "trade", "craft", "inventory", "status", "self_com
       );
 
       const intent = response.content.trim().toLowerCase();
-      if (["trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork"].includes(intent)) {
+      if (["travel", "trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork"].includes(intent)) {
         return intent as any;
       }
       return "fate_action";
@@ -167,6 +168,73 @@ Return a JSON object:
       return JSON.parse(response.content);
     } catch (error) {
       console.error("Teamwork parsing failed:", error);
+      return null;
+    }
+  }
+
+  async parseTravel(playerInput: string, availableExits: Array<{ direction: string; description: string; targetId: string }>): Promise<{ direction: string; targetId: string } | null> {
+    if (availableExits.length === 0) {
+      return null;
+    }
+
+    const exitsDesc = availableExits.map(e => `${e.direction} (${e.description})`).join(', ');
+    const systemPrompt = this.contextBuilder.buildSystemPrompt(
+      "Game Master",
+      `You are the Game Master. Parse the player's travel request to identify which direction they want to go.
+
+AVAILABLE EXITS:
+${exitsDesc}
+
+INSTRUCTIONS:
+- Match the player's input to one of the available exits.
+- The direction must be one of: ${availableExits.map(e => e.direction).join(', ')}.
+- If the player's intent is ambiguous or matches no exit, return null.
+
+OUTPUT FORMAT:
+Return a JSON object:
+{
+  "direction": "Direction they're heading (e.g., 'north', 'down', 'back')",
+  "targetId": "ID of the destination location"
+}
+
+If no match is found, respond with: null
+`
+    );
+
+    const prompt = this.contextBuilder.assemblePrompt({
+      systemPrompt,
+      immediateContext: `Player Input: "${playerInput}"\n\nDetermine travel direction.`
+    });
+
+    try {
+      const response = await this.llm.generate({
+        systemPrompt: prompt.system,
+        userPrompt: prompt.user,
+        temperature: 0.1,
+        jsonMode: false
+      });
+
+      const content = response.content.trim();
+      
+      // Check if response is "null"
+      if (content === 'null' || content === 'null\n') {
+        return null;
+      }
+
+      const parsed = JSON.parse(content);
+      
+      // Validate the direction exists in availableExits
+      const exit = availableExits.find(e => e.direction.toLowerCase() === parsed.direction.toLowerCase());
+      if (exit) {
+        return {
+          direction: exit.direction,
+          targetId: exit.targetId
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Travel parsing failed:", error);
       return null;
     }
   }
