@@ -1,7 +1,7 @@
 # Project Status
 
-**Last Updated:** November 29, 2025  
-**Current Phase:** Phase 22 Complete ✅  
+**Last Updated:** November 29, 2025
+**Current Phase:** Phase 23 In Progress (23.1 & 23.2 Complete ✅)
 **Full History:** See `PROJECT_STATUS_ARCHIVE.md`
 
 ---
@@ -45,6 +45,8 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 | 19 | Production polish (context windowing, retries, CLI colors) | ✅ Complete |
 | 20-21 | Session exports (story format, analytics) | ✅ Complete |
 | 22 | Gameplay quality (travel, dialogue routing, anti-repetition) | ✅ Complete |
+| 23.1-23.2 | Location persistence foundation (LocationRegistry, bidirectional edges) | ✅ Complete |
+| 23.3-23.5 | NPC/Quest persistence (interaction history, giver links, rewards) | 🔄 In Progress |
 
 ---
 
@@ -81,28 +83,42 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 - Session analytics with feature usage tracking
 - Turn-by-turn replay capability
 
+### Phase 23: Location Persistence (In Progress)
+- LocationRegistry for stable location ID management
+- Bidirectional location connections (automatic back-references)
+- Location discovery tracking (firstDiscoveredTurn, visitHistory)
+- Location graph queries (getNearbyLocations, getLocationsWithin)
+- Duplicate location detection to prevent connection corruption
+
 ---
 
 ## 🐛 Known Issues
 
-| Bug ID | Description | Status | Severity |
-|--------|-------------|--------|----------|
-| BUG-008 | Attack without target generates damage event | 📝 Documented | Low |
+All identified bugs have been fixed! ✅
 
-All other previously identified bugs (BUG-001 through BUG-014) have been fixed.
+### Recently Fixed
+| Bug ID | Description | Fixed | Fix Type |
+|--------|-------------|-------|----------|
+| BUG-008 | Attack without target generates damage event | Nov 29 | Full target validation before combat actions |
 
 ---
 
 ## 🔮 Future Phases (Planned)
 
-### Phase 23: Extended World Persistence
-- [ ] Multiple location exploration with procedural generation
-- [ ] NPC memory across sessions
-- [ ] Persistent world state changes
-- [ ] Cross-session quest continuation
+### Phase 23: Extended World Persistence (In Progress)
+
+**Completed:**
+- [x] LocationRegistry system with stable IDs
+- [x] Bidirectional location connections
+- [x] Location discovery tracking
+
+**Remaining:**
+- [ ] NPC interaction history tracking (Phase 23.3)
+- [ ] Quest giver bidirectional links (Phase 23.4)
+- [ ] Persistent quest reward application (Phase 23.5)
 
 ### Phase 24: Combat Enhancements
-- [ ] Full target validation before combat actions
+- [x] Full target validation before combat actions (FIXED in BUG-008)
 - [ ] Zone movement in active combat
 - [ ] Team tactics and coordinated attacks
 - [ ] Combat narrative improvements
