@@ -165,20 +165,24 @@ export type BaseCharacter = z.infer<typeof BaseCharacterSchema>;
 // Player Character - extends base with player-specific fields
 export const PlayerCharacterSchema = BaseCharacterSchema.extend({
   type: z.literal('player'),
-  
+
   // Player's long-term goals
   goals: z.array(z.object({
     description: z.string(),
     priority: z.enum(['primary', 'secondary', 'background']),
     progress: z.string().optional(),
   })).default([]),
-  
+
   // Experience/advancement
   milestones: z.object({
     minor: z.number().int().default(0),
     significant: z.number().int().default(0),
     major: z.number().int().default(0),
   }),
+
+  // Quest completion tracking (Phase 23.5)
+  completedQuestIds: z.array(z.string()).default([]),
+  appliedRewardQuestIds: z.array(z.string()).default([]),
 });
 
 export type PlayerCharacter = z.infer<typeof PlayerCharacterSchema>;
