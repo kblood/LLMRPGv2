@@ -19,5 +19,6 @@ export * from './state/LocationRegistry';
 export * from './engine/KnowledgeManager';
 export * from './engine/QuestManager';
 export * from './engine/FactionManager';
+export * from './engine/NPCMemoryManager';
 export * from './economy/EconomyManager';
 export * from './engine/CraftingManager';

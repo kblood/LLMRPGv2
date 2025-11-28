@@ -91,6 +91,22 @@ export const RelationshipSchema = z.object({
 
 export type Relationship = z.infer<typeof RelationshipSchema>;
 
+// Interaction History - tracks player interactions with NPCs across sessions (Phase 23)
+export const InteractionHistorySchema = z.object({
+  turn: z.number().int(),
+  sessionId: z.string(),
+  action: z.string(), // What the player did (e.g., "insulted merchant", "helped with quest")
+  outcome: z.enum(['success', 'failure', 'neutral']),
+  relationshipDelta: z.object({
+    trust: z.number().int().min(-3).max(3),
+    affection: z.number().int().min(-3).max(3),
+    respect: z.number().int().min(-3).max(3),
+  }),
+  notes: z.string().optional(), // Additional context
+});
+
+export type InteractionHistory = z.infer<typeof InteractionHistorySchema>;
+
 // Base Character (shared by Player and NPC)
 export const BaseCharacterSchema = z.object({
   id: z.string().uuid(),
@@ -177,7 +193,10 @@ export const NPCSchema = BaseCharacterSchema.extend({
   
   // Last time this NPC was active
   lastActiveTurn: z.number().int().optional(),
-  
+
+  // Interaction history with player across sessions (Phase 23)
+  interactionHistory: z.array(InteractionHistorySchema).default([]),
+
   // For simpler NPCs, condensed stats
   isNameless: z.boolean().default(false), // "Nameless NPCs" in Fate
 });
