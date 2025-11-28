@@ -501,9 +501,14 @@ export class GameMaster {
   async checkCompels(playerAction: string): Promise<Compel | null> {
     if (!this.player) return null;
 
-    // We don't want to spam compels, so we could add a random check or cooldown here.
-    // For now, we'll rely on the DecisionEngine to be judicious (or just check every time for testing).
-    
+    // PHASE 26 FIX: Reduce compel frequency to 25% per turn (vs. 75% observed)
+    // This prevents overwhelming the player with compels
+    // Only check for compels 25% of the time, and only if the LLM suggests one
+    const compelRollProbability = 0.25; // 25% chance to even evaluate a compel
+    if (Math.random() > compelRollProbability) {
+      return null;
+    }
+
     const context = {
         action: { description: playerAction },
         player: this.getCharacterDefinition(),
@@ -512,7 +517,7 @@ export class GameMaster {
     };
 
     const compelData = await this.decisionEngine.generateCompel(context);
-    
+
     if (compelData) {
         return {
             id: uuidv4(),
@@ -525,7 +530,7 @@ export class GameMaster {
             source: 'gm'
         };
     }
-    
+
     return null;
   }
 

@@ -278,16 +278,18 @@ FATE CORE MECHANICS:
 - Aspects can be compelled against you for complications (but you get a Fate Point)
 - Current Fate Points: ${player.fatePoints || 0}
 
-CRITICAL GUIDELINES:
+CRITICAL GUIDELINES FOR AVOIDING LOOPS:
 - VARIETY IS ESSENTIAL: Never repeat the same action twice in a row
-- If an approach fails 2-3 times, ABANDON IT and try something completely different
-- Move to new locations, talk to different people, use different skills
-- Be proactive and curious - explore, interact, investigate
+- If an approach fails 2-3 times, IMMEDIATELY ABANDON IT - do not continue
+- If you've tried the same location/action 5+ times: YOU MUST LEAVE IMMEDIATELY
+- TRAVEL to new locations whenever you're not making progress
+- Talk to different people, use different skills, interact with different objects
+- Be proactive and curious - if stuck, explore a new area
 - Stay in character - use your aspects and personality
 - If someone is talking to you, respond appropriately
 - You only know what your character has experienced
-- When stuck, consider: leaving the area, using a different skill, or spending Fate Points
-${player.fatePoints && player.fatePoints > 0 ? `\n💡 You have ${player.fatePoints} Fate Points - USE THEM to invoke aspects for +2 or reroll!` : ''}
+- WHEN STUCK (2+ failures or repeated actions): TRAVELING TO A NEW LOCATION is the solution
+${player.fatePoints && player.fatePoints > 0 ? `\n💡 You have ${player.fatePoints} Fate Points - USE THEM to invoke aspects for +2 or reroll, or to declare story advantages!` : ''}
 
 OUTPUT FORMAT:
 You must respond with a JSON object containing:
@@ -303,12 +305,38 @@ You must respond with a JSON object containing:
 
     // Build action feedback for user prompt
     let actionFeedbackSection = '';
-    if (analysis.repeatedPatterns.length > 0 && analysis.sceneType !== 'combat') {
+
+    // CRITICAL: Detect if stuck in loop and force escape
+    const isStuckInLoop = analysis.repeatedPatterns.length > 0 &&
+                         analysis.consecutiveFailures >= 2 &&
+                         analysis.recentActions.length >= 5;
+
+    if (isStuckInLoop) {
+      actionFeedbackSection = `
+🚨 CRITICAL: You are stuck in a loop! Your last ${analysis.consecutiveFailures} actions have failed, and you keep repeating: ${analysis.repeatedPatterns.join(', ')}
+
+THIS APPROACH WILL NOT WORK. YOU MUST ESCAPE THIS LOOP.
+
+MANDATORY ACTION: You MUST do ONE of the following:
+1. TRAVEL to a DIFFERENT LOCATION (this is the primary recommendation)
+2. Use a completely different skill or approach
+3. Interact with a different object or person
+4. Spend Fate Points to declare a story advantage that changes the situation
+
+If available exits exist, TRAVELING TO A NEW LOCATION is your best option.
+`;
+    } else if (analysis.repeatedPatterns.length > 0 && analysis.sceneType !== 'combat') {
       actionFeedbackSection = `
 ⚠️ ACTION ALERT: You've been repeating similar actions - this approach is NOT working!
 Repeated patterns: ${analysis.repeatedPatterns.join(', ')}
 REQUIRED: Choose something COMPLETELY DIFFERENT from your recent actions.
 Consider: ${analysis.suggestedApproaches.slice(0, 2).join('; ')}
+`;
+    } else if (analysis.consecutiveFailures >= 3) {
+      actionFeedbackSection = `
+⚠️ CRITICAL NOTICE: Your last ${analysis.consecutiveFailures} actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+${analysis.suggestedApproaches.length > 0 ? `Ideas: ${analysis.suggestedApproaches.slice(0, 2).join('; ')}` : ''}
 `;
     } else if (analysis.consecutiveFailures >= 2) {
       actionFeedbackSection = `
