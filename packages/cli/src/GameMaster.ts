@@ -329,11 +329,14 @@ export class GameMaster {
         goals: [],
         wealth: 100,
         inventory: [],
-        milestones: { minor: 0, significant: 0, major: 0 }
+        milestones: { minor: 0, significant: 0, major: 0 },
+        completedQuestIds: [],
+        appliedRewardQuestIds: []
     };
 
-    console.log(`Character created: ${this.player.name}`);
-    console.log(`High Concept: ${this.player.aspects.find(a => a.name === charData.aspects.find((ca: any) => ca.type === 'highConcept')?.name)?.name}`);
+    console.log(`Character created: ${this.player?.name || 'Unknown'}`);
+    const highConcept = this.player?.aspects.find(a => a.name === charData.aspects.find((ca: any) => ca.type === 'highConcept')?.name)?.name;
+    console.log(`High Concept: ${highConcept || 'Unknown'}`);
     
     await this.saveState();
     

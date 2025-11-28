@@ -1,29 +1,29 @@
 {
-  "id": "player-1764368943617",
+  "id": "player-1764369171648",
   "type": "player",
   "name": "Mock Character",
   "appearance": "A mock appearance.",
   "aspects": [
     {
-      "id": "asp-51vv9aax4",
+      "id": "asp-44w3le40h",
       "name": "Mock High Concept",
       "type": "high_concept",
       "freeInvokes": 0
     },
     {
-      "id": "asp-w2af4ssve",
+      "id": "asp-dqkgnx6o2",
       "name": "Mock Trouble",
       "type": "trouble",
       "freeInvokes": 0
     },
     {
-      "id": "asp-eni201sks",
+      "id": "asp-cz8s7j731",
       "name": "Mock Aspect 3",
       "type": "background",
       "freeInvokes": 0
     },
     {
-      "id": "af681961-fa37-48a6-9f97-eabc2702d908",
+      "id": "dd752090-5c59-44c7-bdae-a39a6c348f26",
       "name": "Intimidating Presence",
       "type": "boost",
       "freeInvokes": 1,
@@ -114,10 +114,10 @@
     "topics": {}
   },
   "relationships": [],
-  "currentLocation": "loc-1764368943608",
+  "currentLocation": "loc-1764369171638",
   "isAlive": true,
-  "createdAt": "2025-11-28T22:29:03.617Z",
-  "updatedAt": "2025-11-28T22:29:03.617Z",
+  "createdAt": "2025-11-28T22:32:51.648Z",
+  "updatedAt": "2025-11-28T22:32:51.648Z",
   "goals": [],
   "wealth": 100,
   "inventory": [],
@@ -125,5 +125,7 @@
     "minor": 0,
     "significant": 0,
     "major": 0
-  }
+  },
+  "completedQuestIds": [],
+  "appliedRewardQuestIds": []
 }
