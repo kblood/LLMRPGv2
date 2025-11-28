@@ -2,7 +2,7 @@
 
 **Last Updated:** November 28, 2025
 
-## 📍 Current Phase: Phase 19 - Performance & Production Readiness (COMPLETE)
+## 📍 Current Phase: Phase 20 - Story-Readable Session Exports (PLANNING)
 
 All Phase 8-19 features have been fully implemented. Phase 19 focused on performance optimization and production-ready CLI experience.
 
@@ -276,7 +276,80 @@ Restructured `ten_minute_granite_test.ts` to use defined gameplay phases:
 
 ## 📋 Next Steps (Immediate)
 
-### Phase 20: Extended Content
+### Phase 20: Story-Readable Session Exports (IN PLANNING)
+
+**Current Problem**: The `exportSessionToMarkdown.ts` tool generates technical logs instead of readable adventure stories. Analysis of a 10-minute test session export revealed:
+- Only system-level turns exported (inventory checks, crafting attempts)
+- Missing all narrative content (exploration, compels, discoveries)
+- No player action prompts or context
+- Repetitive system messages without story flow
+- Compel interactions not captured
+
+**Goals**: Transform session exports into engaging adventure play reports that read like actual RPG sessions.
+
+**Planned Improvements**:
+
+1. **Comprehensive Turn Capture** (Priority: High)
+   - Export ALL turns, not just system events
+   - Include turns where players explored, investigated, fought
+   - Capture compel offers and player responses (accept/refuse)
+   - Include NPC combat turns and AI player decision-making
+
+2. **Player Action Context** (Priority: High)
+   - Show the player's actual input/action for each turn
+   - Include AI player reasoning when available (`turn.playerReasoning`)
+   - Display what the player was trying to accomplish
+
+3. **Narrative Flow Formatting** (Priority: High)
+   - **Story Mode**: Chronological narrative with player actions and GM responses
+   - **Play Report Style**: Format like traditional RPG session reports
+   - **Action → Narration → Outcome** structure per turn
+   - Collapsible mechanics sections for dice rolls and technical details
+
+4. **Compel System Integration** (Priority: Medium)
+   - Detect and format compel offers as story moments
+   - Show player choices (accepted for FP gain or refused for FP spend)
+   - Highlight aspect-driven complications in narrative
+
+5. **Combat & Conflict Readability** (Priority: Medium)
+   - Format combat exchanges as dramatic sequences
+   - Show initiative order and participant actions
+   - Narrative descriptions of attacks, defenses, and outcomes
+   - Track stress/consequences taken
+
+6. **Enhanced Metadata** (Priority: Low)
+   - Character development arc (milestones, advancements)
+   - Fate Point economy summary (earned, spent, current)
+   - Quest progression timeline
+   - NPC relationship changes
+   - World state evolution
+
+7. **Export Format Options** (Priority: Low)
+   - **Story Format**: Pure narrative, minimal mechanics
+   - **Play Report Format**: Mix of narrative and key mechanics
+   - **Technical Format**: Current detailed log (keep for debugging)
+   - Command-line flag: `--format story|playreport|technical`
+
+**Implementation Plan**:
+1. ✅ Analyze current exporter and identify filtering logic causing missing turns
+2. 📝 Update `Turn` interface to ensure all required fields are captured (narration, playerReasoning, playerAction)
+3. 📝 Rewrite `generateMarkdown()` with story-first formatting
+4. 📝 Add turn type detection (exploration, combat, social, compel, system)
+5. 📝 Implement format templates (story, playreport, technical)
+6. 📝 Test with 10-minute session export and validate readability
+7. 📝 Add examples to documentation
+
+**Testing Criteria**:
+- Export of 10-minute test session reads like an adventure story
+- All player actions and GM narrations are included
+- Compel interactions are clearly visible
+- Combat flows narratively
+- No repetitive system spam
+- Non-technical readers can follow the story
+
+**Estimated Effort**: 2-3 hours
+
+### Phase 21: Extended Content (Future)
 1. **Multiple Locations**: Allow players to travel between generated locations.
 2. **NPC Memory**: NPCs remember past interactions across sessions.
 3. **Persistent World State**: World changes persist and affect future sessions.
@@ -347,6 +420,22 @@ Restructured `ten_minute_granite_test.ts` to use defined gameplay phases:
   2. Updated `finalizeTurn()` to set `turn.narration = narration` before saving
   3. Updated `processCombatTurn()` to set `turn.narration` before saving combat turns
   4. Updated `exportSessionToMarkdown.ts` to display narration per turn
+
+#### BUG-010: Session Export Only Shows System Turns 📄
+- **Location**: `packages/cli/src/exportSessionToMarkdown.ts:generateMarkdown()`
+- **Identified**: November 28, 2025 - 10-minute test export analysis
+- **Symptoms**:
+  - Exported markdown only contains turns with specific event types (inventory_check, craft_list, system)
+  - Missing all exploration, combat, compel, and narrative turns
+  - Only 12 turns exported from a 75-turn session
+  - Reads as technical log instead of adventure story
+- **Root Cause**: Current implementation exports all turns but narrative content is in `turn.narration` field
+  - Only turns with explicit events show up as "interesting"
+  - Many turns have narration but no formal events logged
+  - Compel offers may be in narration text but not structured events
+- **Impact**: Session exports are unusable for play reports or story documentation
+- **Status**: 📝 PLANNED FOR FIX - See Phase 20 implementation plan
+- **Workaround**: None - export feature currently non-functional for narrative purposes
 
 ### Build Issues (November 28, 2025)
 
