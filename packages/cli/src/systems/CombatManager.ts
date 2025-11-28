@@ -2,14 +2,19 @@ import { TurnManager, FateDice, ActionResolver, CharacterDefinition } from '@llm
 import { ConflictState, SceneState, PlayerCharacter, Faction } from '@llmrpg/protocol';
 import { DecisionEngine } from './DecisionEngine';
 import { NarrativeEngine } from './NarrativeEngine';
+import { TeamTacticsManager } from './TeamTacticsManager';
 
 export class CombatManager {
+  private teamTacticsManager: TeamTacticsManager;
+
   constructor(
     private turnManager: TurnManager,
     private decisionEngine: DecisionEngine,
     private narrativeEngine: NarrativeEngine,
     private fateDice: FateDice
-  ) {}
+  ) {
+    this.teamTacticsManager = new TeamTacticsManager();
+  }
 
   /**
    * Starts a new conflict within the current scene.
@@ -142,8 +147,16 @@ export class CombatManager {
 
   /**
    * Move a character between zones.
+   * In active combat, this requires an Overcome action against the barrier difficulty.
    */
-  moveCharacter(scene: SceneState, characterId: string, targetZoneId: string): { success: boolean, message: string } {
+  moveCharacter(
+    scene: SceneState,
+    characterId: string,
+    targetZoneId: string,
+    skillRating: number = 0,
+    diceRoll: number = 0,
+    inCombat: boolean = false
+  ): { success: boolean; message: string; costShifts?: number; difficulty?: number } {
     if (!scene.zones) {
       return { success: false, message: "No zones defined in this scene." };
     }
@@ -161,7 +174,7 @@ export class CombatManager {
 
     // Check connection
     if (currentZone) {
-      const connection = scene.zones.connections.find(c => 
+      const connection = scene.zones.connections.find(c =>
         (c.fromZoneId === currentZone.id && c.toZoneId === targetZone.id) ||
         (c.fromZoneId === targetZone.id && c.toZoneId === currentZone.id)
       );
@@ -170,18 +183,213 @@ export class CombatManager {
         return { success: false, message: "No direct path to that zone." };
       }
 
-      // Check barrier/cost (TODO: Implement movement rolls if barrier > 0)
-      if (connection.barrier > 0) {
-        // For now, just allow it but note the difficulty
-        // In real game, this would require an Overcome action
+      // In combat: Check barrier/cost requires Overcome action
+      if (inCombat && connection.barrier > 0) {
+        const roll = skillRating + diceRoll;
+        const difficulty = connection.barrier;
+        const shifts = roll - difficulty;
+
+        if (shifts < 0) {
+          return {
+            success: false,
+            message: `Movement blocked! You needed ${difficulty} but got ${roll}. You cannot reach ${targetZone.name} this turn.`,
+            difficulty,
+            costShifts: 0,
+          };
+        }
+
+        // Movement succeeded, but cost shifts (Fate Core: 1 shift to move with barrier)
+        // Move
+        currentZone.characterIds = currentZone.characterIds.filter(id => id !== characterId);
+        targetZone.characterIds.push(characterId);
+
+        return {
+          success: true,
+          message: `Successfully moved to ${targetZone.name} (cost: 1 shift for movement with barrier).`,
+          difficulty,
+          costShifts: 1,
+        };
       }
 
-      // Move
+      // No barrier or not in combat: free movement
       currentZone.characterIds = currentZone.characterIds.filter(id => id !== characterId);
     }
 
     targetZone.characterIds.push(characterId);
     return { success: true, message: `Moved to ${targetZone.name}.` };
+  }
+
+  /**
+   * Get the TeamTacticsManager instance
+   */
+  getTeamTacticsManager(): TeamTacticsManager {
+    return this.teamTacticsManager;
+  }
+
+  /**
+   * Get all characters in a specific zone
+   */
+  getCharactersInZone(scene: SceneState, zoneId: string): string[] {
+    const zone = scene.zones?.zones.find(z => z.id === zoneId);
+    return zone?.characterIds || [];
+  }
+
+  /**
+   * Get zone information including aspects and connections
+   */
+  getZoneInfo(scene: SceneState, zoneId: string): any {
+    if (!scene.zones) return null;
+
+    const zone = scene.zones.zones.find(z => z.id === zoneId);
+    if (!zone) return null;
+
+    const connections = scene.zones.connections.filter(
+      c => c.fromZoneId === zoneId || c.toZoneId === zoneId
+    );
+
+    return {
+      id: zone.id,
+      name: zone.name,
+      description: zone.description,
+      aspects: zone.aspects,
+      characterIds: zone.characterIds,
+      connections: connections.map(c => ({
+        targetZoneId: c.fromZoneId === zoneId ? c.toZoneId : c.fromZoneId,
+        barrier: c.barrier,
+        description: c.description,
+        aspects: c.aspects,
+      })),
+    };
+  }
+
+  /**
+   * Determine advantageous positioning
+   * Returns tactical analysis for combat decision-making
+   */
+  analyzeCombatPositioning(
+    scene: SceneState,
+    conflict: ConflictState,
+    playerSide: 'player' | 'opposition'
+  ): {
+    controlledZones: string[];
+    numericalAdvantage: boolean;
+    tightFormation: boolean;
+    recommendation: string;
+  } {
+    if (!scene.zones) {
+      return {
+        controlledZones: [],
+        numericalAdvantage: false,
+        tightFormation: false,
+        recommendation: 'No zone information available',
+      };
+    }
+
+    // Count participants in each zone by side
+    const zoneControl: Record<string, { player: number; opposition: number }> = {};
+
+    for (const zone of scene.zones.zones) {
+      zoneControl[zone.id] = { player: 0, opposition: 0 };
+
+      for (const characterId of zone.characterIds) {
+        const participant = conflict.participants.find(p => p.characterId === characterId);
+        if (participant) {
+          if (participant.side === 'player') zoneControl[zone.id].player++;
+          else if (participant.side === 'opposition') zoneControl[zone.id].opposition++;
+        }
+      }
+    }
+
+    // Find controlled zones (more allies than enemies)
+    const controlledZones = Object.entries(zoneControl)
+      .filter(([_, counts]) => {
+        if (playerSide === 'player') return counts.player > counts.opposition;
+        else return counts.opposition > counts.player;
+      })
+      .map(([zoneId, _]) => zoneId);
+
+    // Check numerical advantage
+    const sideParticipants = conflict.participants.filter(p => p.side === playerSide && !p.hasConceded);
+    const otherSide = playerSide === 'player' ? 'opposition' : 'player';
+    const otherParticipants = conflict.participants.filter(p => p.side === otherSide && !p.hasConceded);
+    const numericalAdvantage = sideParticipants.length > otherParticipants.length;
+
+    // Check tight formation
+    const playerZoneIds = new Map(
+      conflict.participants
+        .filter(p => p.side === playerSide)
+        .map(p => [p.characterId, this.getCharacterZone(scene, p.characterId)])
+        .filter(([_, zoneId]) => zoneId !== undefined) as [string, string][]
+    );
+
+    const primaryZone = Array.from(playerZoneIds.values())[0];
+    const inPrimaryZone = Array.from(playerZoneIds.values()).filter(z => z === primaryZone).length;
+    const tightFormation = inPrimaryZone >= Math.ceil(sideParticipants.length / 2);
+
+    let recommendation = '';
+    if (controlledZones.length > 0 && numericalAdvantage) {
+      recommendation = 'Strong position - press the advantage with coordinated attacks';
+    } else if (tightFormation) {
+      recommendation = 'Team is well-positioned - maintain formation and support allies';
+    } else if (numericalAdvantage) {
+      recommendation = 'Numerical advantage - spread out to control more zones';
+    } else {
+      recommendation = 'Outnumbered - maintain tight formation and defensive posture';
+    }
+
+    return { controlledZones, numericalAdvantage, tightFormation, recommendation };
+  }
+
+  /**
+   * Get the current zone of a character
+   */
+  private getCharacterZone(scene: SceneState, characterId: string): string | undefined {
+    return scene.zones?.zones.find(z => z.characterIds.includes(characterId))?.id;
+  }
+
+  /**
+   * Generate combat narration based on zone positioning
+   */
+  generateZoneNarration(
+    scene: SceneState,
+    conflict: ConflictState,
+    characterId: string,
+    action: string
+  ): string {
+    if (!scene.zones) {
+      return action;
+    }
+
+    const zone = scene.zones.zones.find(z => z.characterIds.includes(characterId));
+    if (!zone) return action;
+
+    const alliesInZone = conflict.participants.filter(
+      p =>
+        p.side === 'player' &&
+        zone.characterIds.includes(p.characterId) &&
+        p.characterId !== characterId
+    ).length;
+
+    const enemiesInZone = conflict.participants.filter(
+      p =>
+        p.side === 'opposition' &&
+        zone.characterIds.includes(p.characterId)
+    ).length;
+
+    let narrative = action;
+
+    if (alliesInZone > 0) {
+      narrative += ` (With ${alliesInZone} ally(allies) in ${zone.name})`;
+    } else if (enemiesInZone > 0) {
+      narrative += ` (Facing ${enemiesInZone} opponent(s) in ${zone.name})`;
+    }
+
+    // Add zone aspect descriptions
+    if (zone.aspects.length > 0) {
+      narrative += `. The area is ${zone.aspects.map(a => a.name).join(', ')}`;
+    }
+
+    return narrative;
   }
 
   /**
