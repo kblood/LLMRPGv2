@@ -57,9 +57,13 @@ program.command('start')
     }
 
     const gameMaster = new GameMaster(sessionId, llmProvider, sessionWriter, sessionLoader);
-    
+
     if (options.load) {
+        console.log(chalk.cyan('📂 Loading session...'));
+        const loadStart = Date.now();
         await gameMaster.loadState();
+        const loadTime = ((Date.now() - loadStart) / 1000).toFixed(1);
+        console.log(chalk.green(`✓ Session loaded in ${loadTime}s\n`));
     } else {
         // World Generation Phase
         let themeInput = options.theme;
@@ -70,18 +74,27 @@ program.command('start')
             });
         }
 
+        // World Generation Phase with progress indicator
+        console.log(chalk.cyan('🌍 Generating world...'));
+        const worldStart = Date.now();
         await gameMaster.initializeWorld(themeInput);
+        const worldTime = ((Date.now() - worldStart) / 1000).toFixed(1);
+        console.log(chalk.green(`✓ World generated in ${worldTime}s\n`));
 
         // Character Creation Phase
         let characterConcept = "A generic hero";
         if (!options.run) {
             characterConcept = await input({
-                message: 'Describe your character concept (e.g., "A grizzled detective with a cybernetic eye"):',
+                message: chalk.cyan('Describe your character concept (e.g., "A grizzled detective with a cybernetic eye"):'),
                 default: 'A wandering adventurer'
             });
         }
-        
+
+        console.log(chalk.cyan('👤 Creating character...'));
+        const charStart = Date.now();
         await gameMaster.createCharacter(characterConcept);
+        const charTime = ((Date.now() - charStart) / 1000).toFixed(1);
+        console.log(chalk.green(`✓ Character created in ${charTime}s\n`));
     }
 
     const gameLoop = new GameLoop(gameMaster);

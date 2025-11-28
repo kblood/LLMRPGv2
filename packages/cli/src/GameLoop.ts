@@ -1,5 +1,6 @@
 import { GameMaster } from './GameMaster';
 import { input, select, confirm } from '@inquirer/prompts';
+import chalk from 'chalk';
 
 export type GameMode = 'exploration' | 'combat' | 'social' | 'trade' | 'dialogue';
 
@@ -88,26 +89,40 @@ export class GameLoop {
 
   private printWelcome() {
     console.log('');
-    console.log('╔══════════════════════════════════════════════════════════════╗');
-    console.log('║                        LLMRPGv2                              ║');
-    console.log('║          A Fate Core RPG powered by AI                       ║');
-    console.log('╚══════════════════════════════════════════════════════════════╝');
+    console.log(chalk.cyan.bold('╔══════════════════════════════════════════════════════════════╗'));
+    console.log(chalk.cyan.bold('║') + chalk.white.bold('                        LLMRPGv2                              ') + chalk.cyan.bold('║'));
+    console.log(chalk.cyan.bold('║') + chalk.gray('          A Fate Core RPG powered by AI                       ') + chalk.cyan.bold('║'));
+    console.log(chalk.cyan.bold('╚══════════════════════════════════════════════════════════════╝'));
     console.log('');
-    console.log('Commands: /help | /status | /inventory | /save | /load | exit');
+    console.log(chalk.gray('Commands:'), chalk.yellow('/help | /status | /inventory | /save | /load | exit'));
     console.log('');
   }
 
   private printResult(result: any) {
     console.log('');
-    console.log('─'.repeat(60));
-    console.log(result.narration);
-    console.log('─'.repeat(60));
-    
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log(chalk.white(result.narration));
+    console.log(chalk.gray('─'.repeat(60)));
+
     if (result.result && result.result !== 'meta_command_success') {
       const outcomeEmoji = this.getOutcomeEmoji(result.result);
-      console.log(`${outcomeEmoji} Outcome: ${result.result}`);
+      const outcomeColor = this.getOutcomeColor(result.result);
+      console.log(outcomeColor(`${outcomeEmoji} Outcome: ${result.result}`));
     }
     console.log('');
+  }
+
+  private getOutcomeColor(outcome: string): typeof chalk {
+    switch (outcome) {
+      case 'success_with_style': return chalk.green.bold;
+      case 'success': return chalk.green;
+      case 'tie': return chalk.yellow;
+      case 'failure': return chalk.red;
+      case 'compel_offered': return chalk.magenta;
+      case 'compel_accepted': return chalk.blue;
+      case 'compel_refused': return chalk.cyan;
+      default: return chalk.gray;
+    }
   }
 
   private getOutcomeEmoji(outcome: string): string {
@@ -156,25 +171,25 @@ export class GameLoop {
 
   private displayContext() {
     const worldState = this.gameMaster.getWorldState();
-    
+
     console.log('');
-    console.log('╭─ Context ────────────────────────────────────────────────────╮');
-    
+    console.log(chalk.gray('╭─ Context ────────────────────────────────────────────────────╮'));
+
     // Display time
     if (worldState.time) {
-      const timeDisplay = worldState.time.period 
+      const timeDisplay = worldState.time.period
         ? `${worldState.time.value} (${worldState.time.period})`
         : worldState.time.value;
-      console.log(`│ 🕐 ${timeDisplay}`);
+      console.log(chalk.gray('│'), chalk.cyan('🕐'), chalk.white(timeDisplay));
     }
 
     // Display active quests count
     const activeQuests = worldState.quests?.filter(q => q.status === 'active') || [];
     if (activeQuests.length > 0) {
-      console.log(`│ 📜 Active Quests: ${activeQuests.length}`);
+      console.log(chalk.gray('│'), chalk.yellow('📜'), chalk.white(`Active Quests: ${activeQuests.length}`));
     }
 
-    console.log('╰──────────────────────────────────────────────────────────────╯');
+    console.log(chalk.gray('╰──────────────────────────────────────────────────────────────╯'));
   }
 
   /**

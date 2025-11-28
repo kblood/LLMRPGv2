@@ -61,7 +61,10 @@ export class MockAdapter implements LLMProvider {
                     description: "A powerful criminal organization.",
                     aspects: ["Underworld Connections", "Ruthless Efficiency"],
                     goals: ["Control the black market", "Eliminate rivals"],
-                    resources: ["Safe houses", "Informants"],
+                    resources: [
+                        { type: "Safe houses", level: 3 },
+                        { type: "Informants", level: 4 }
+                    ],
                     isHidden: false
                 },
                 {
@@ -69,7 +72,10 @@ export class MockAdapter implements LLMProvider {
                     description: "A secretive guild of protectors.",
                     aspects: ["Ancient Knowledge", "Hidden Network"],
                     goals: ["Protect the innocent", "Preserve balance"],
-                    resources: ["Hidden temples", "Trained agents"],
+                    resources: [
+                        { type: "Hidden temples", level: 2 },
+                        { type: "Trained agents", level: 3 }
+                    ],
                     isHidden: true
                 }
             ]);
@@ -121,6 +127,9 @@ export class MockAdapter implements LLMProvider {
         content = "fate_action";
     } else if (request.systemPrompt.includes("Classify the player's intended action")) {
         content = "overcome";
+    } else if (request.systemPrompt.includes("Game Master") && (request.systemPrompt.includes("narrat") || request.systemPrompt.includes("Narrat"))) {
+        // Narration responses - prioritize over other checks
+        content = "The Game Master narrates: You successfully performed the action.";
     } else if (request.systemPrompt.includes("Select the most relevant skill")) {
         content = "Fight";
     } else if (request.systemPrompt.includes("NPC") && request.systemPrompt.includes("action")) {
@@ -158,6 +167,7 @@ export class MockAdapter implements LLMProvider {
     } else if (request.systemPrompt.includes("boost")) {
         content = "Momentum";
     } else if (request.systemPrompt.includes("Game Master")) {
+        // Fallback for any other Game Master prompts
         content = "The Game Master narrates: You successfully performed the action.";
     }
 

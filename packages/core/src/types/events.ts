@@ -16,7 +16,8 @@ export type EventType =
   | 'fate_compel'
   | 'fate_point_spend'
   | 'fate_point_award'
-  | 'fate_point_refresh';
+  | 'fate_point_refresh'
+  | 'world_event';
 
 export interface GameEvent {
   eventId: string; // Unique: "{sessionId}-{turnId}-{seq}"

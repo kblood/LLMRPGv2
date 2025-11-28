@@ -11,6 +11,15 @@ import { CombatManager } from './systems/CombatManager';
 import { DialogueSystem } from './systems/DialogueSystem';
 import { WorldEventsManager } from './systems/WorldEventsManager';
 
+export interface GameMasterConfig {
+  /** Maximum number of turns to keep in context history (default: 10) */
+  maxHistoryTurns?: number;
+  /** Enable automatic context pruning based on estimated token count (default: false) */
+  enableSmartPruning?: boolean;
+  /** Maximum estimated tokens for context (default: 4000) */
+  maxContextTokens?: number;
+}
+
 export class GameMaster {
   private turnManager: TurnManager;
   private deltaCollector: DeltaCollector;
@@ -31,6 +40,7 @@ export class GameMaster {
   private player: PlayerCharacter | undefined;
   private npcs: Record<string, CharacterDefinition> = {};
   private history: Turn[] = [];
+  private config: GameMasterConfig;
 
   private fateDice: FateDice;
 
@@ -38,8 +48,14 @@ export class GameMaster {
     private sessionId: string,
     llmProvider: LLMProvider,
     sessionWriter: SessionWriter,
-    sessionLoader?: SessionLoader
+    sessionLoader?: SessionLoader,
+    config?: GameMasterConfig
   ) {
+    this.config = {
+      maxHistoryTurns: config?.maxHistoryTurns ?? 10,
+      enableSmartPruning: config?.enableSmartPruning ?? false,
+      maxContextTokens: config?.maxContextTokens ?? 4000
+    };
     this.turnManager = new TurnManager(sessionId);
     this.deltaCollector = new DeltaCollector(sessionId, 0);
     this.actionResolver = new ActionResolver();
@@ -1239,11 +1255,9 @@ export class GameMaster {
       (turn as any).playerReasoning = playerReasoning;
     }
     
-    // Update history
+    // Update history with configurable windowing
     this.history.push(turn);
-    if (this.history.length > 10) {
-        this.history.shift();
-    }
+    this.pruneHistory();
 
     // Save Turn and Deltas
     await this.sessionWriter.writeTurn(this.sessionId, turn);
@@ -1758,7 +1772,7 @@ export class GameMaster {
       opponents,
       this.player,
       allies,
-      this.worldManager.state.factions
+      Object.values(this.worldManager.state.factions)
     );
     
     console.log(`Combat started! ID: ${conflict.id}`);
@@ -1782,7 +1796,7 @@ export class GameMaster {
       opponents,
       this.player,
       allies,
-      this.worldManager.state.factions
+      Object.values(this.worldManager.state.factions)
     );
     
     console.log(`Social Conflict started! ID: ${conflict.id}`);
@@ -1916,6 +1930,7 @@ export class GameMaster {
             
             await this.sessionWriter.writeTurn(this.sessionId, npcTurn);
             this.history.push(npcTurn);
+            this.pruneHistory();
         }
 
         nextActorId = this.combatManager.nextTurn(conflict);
@@ -2145,11 +2160,43 @@ export class GameMaster {
     this.deltaCollector.collect({
       target: 'player',
       operation: 'set',
-      path: ['relationships', this.player.relationships.indexOf(relationship)],
+      path: ['relationships', String(this.player.relationships.indexOf(relationship))],
       previousValue,
       newValue: relationship,
       cause: 'relationship_update',
       eventId: turn.events[turn.events.length - 1]?.eventId || 'unknown'
     });
+  }
+
+  /**
+   * Prune history based on configuration settings
+   * - Uses maxHistoryTurns for simple count-based pruning
+   * - Optionally uses smart pruning based on estimated token count
+   */
+  private pruneHistory(): void {
+    if (this.config.enableSmartPruning) {
+      // Smart pruning: estimate tokens and remove oldest turns until under limit
+      while (this.history.length > 1) {
+        const estimatedTokens = this.estimateHistoryTokens();
+        if (estimatedTokens <= this.config.maxContextTokens!) {
+          break;
+        }
+        this.history.shift();
+      }
+    } else {
+      // Simple pruning: keep only the last N turns
+      while (this.history.length > this.config.maxHistoryTurns!) {
+        this.history.shift();
+      }
+    }
+  }
+
+  /**
+   * Estimate the number of tokens in the history
+   * Uses a rough approximation: ~1 token per 4 characters
+   */
+  private estimateHistoryTokens(): number {
+    const historyJson = JSON.stringify(this.history);
+    return Math.ceil(historyJson.length / 4);
   }
 }

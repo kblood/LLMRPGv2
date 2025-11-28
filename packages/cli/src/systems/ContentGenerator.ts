@@ -1,4 +1,4 @@
-import { LLMProvider, ContextBuilder } from '@llmrpg/llm';
+import { LLMProvider, ContextBuilder, withRetry, RetryPresets } from '@llmrpg/llm';
 import { WorldState, Location, Aspect } from '@llmrpg/protocol';
 
 export class ContentGenerator {
@@ -470,51 +470,4 @@ JSON array of objects with fields:
     }
   }
 
-  async generateFactions(theme: WorldState['theme']): Promise<any[]> {
-    const systemPrompt = this.contextBuilder.buildSystemPrompt(
-      "World Builder",
-      `You are an expert World Builder for a Fate Core RPG. Generate 2-3 factions that exist in this world.
-
-THEME CONTEXT:
-Name: ${theme.name}
-Genre: ${theme.genre}
-Tone: ${theme.tone}
-Keywords: ${theme.keywords.join(", ")}
-
-GUIDELINES:
-- Factions should be cohesive with the world theme.
-- Each faction should have goals, resources, and aspects.
-- Include both antagonistic and potentially allied factions.
-- Factions should have relationships with each other.
-
-OUTPUT FORMAT:
-JSON array of objects with fields:
-- name: string
-- description: string
-- aspects: string[] (2-3 aspect names)
-- goals: string[] (2-3 goals)
-- resources: string[] (2-3 resources)
-- isHidden: boolean (true if secret faction)`
-    );
-
-    const prompt = this.contextBuilder.assemblePrompt({
-      systemPrompt,
-      immediateContext: `Generate factions for this setting.\nReturn JSON array.`
-    });
-
-    const response = await this.llm.generate({
-      systemPrompt: prompt.system,
-      userPrompt: prompt.user,
-      temperature: 0.8,
-      jsonMode: true
-    });
-
-    try {
-      const data = JSON.parse(response.content);
-      return Array.isArray(data) ? data : [];
-    } catch (e) {
-      console.error("Failed to parse generated factions:", e);
-      return [];
-    }
-  }
 }

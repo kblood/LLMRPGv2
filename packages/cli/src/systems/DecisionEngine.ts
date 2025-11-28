@@ -1,4 +1,4 @@
-import { LLMProvider, ContextBuilder } from '@llmrpg/llm';
+import { LLMProvider, ContextBuilder, withRetry, RetryPresets } from '@llmrpg/llm';
 import { CharacterDefinition, Turn } from '@llmrpg/core';
 
 export interface DecisionContext {
@@ -55,14 +55,17 @@ Return ONLY the exact name of the skill.`
     });
 
     try {
-      const response = await this.llm.generate({
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-        temperature: 0.1
-      });
+      const response = await withRetry(
+        () => this.llm.generate({
+          systemPrompt: prompt.system,
+          userPrompt: prompt.user,
+          temperature: 0.1
+        }),
+        RetryPresets.fast
+      );
 
       const skillName = response.content.trim();
-      
+
       let rating = 0;
       // Handle both Record<string, number> and Array<{name: string, rating/rank: number}>
       if (Array.isArray(context.player.skills)) {
@@ -71,10 +74,10 @@ Return ONLY the exact name of the skill.`
       } else {
           rating = (context.player.skills as any)[skillName] || 0;
       }
-      
+
       return { name: skillName, rating };
     } catch (error) {
-      console.error("Skill selection failed:", error);
+      console.error("Skill selection failed after retries:", error);
       return { name: "Mediocre", rating: 0 };
     }
   }
@@ -106,11 +109,14 @@ Return ONLY the category key: "trade", "craft", "inventory", "status", "self_com
     });
 
     try {
-      const response = await this.llm.generate({
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-        temperature: 0.1
-      });
+      const response = await withRetry(
+        () => this.llm.generate({
+          systemPrompt: prompt.system,
+          userPrompt: prompt.user,
+          temperature: 0.1
+        }),
+        RetryPresets.fast
+      );
 
       const intent = response.content.trim().toLowerCase();
       if (["trade", "craft", "inventory", "status", "self_compel", "concede", "declaration", "advance", "teamwork"].includes(intent)) {
@@ -118,7 +124,7 @@ Return ONLY the category key: "trade", "craft", "inventory", "status", "self_com
       }
       return "fate_action";
     } catch (error) {
-      console.error("Intent classification failed:", error);
+      console.error("Intent classification failed after retries:", error);
       return "fate_action";
     }
   }

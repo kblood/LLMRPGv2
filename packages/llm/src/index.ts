@@ -6,3 +6,4 @@ export * from './adapters/OpenRouterAdapter';
 export * from './adapters/OllamaAdapter';
 export * from './adapters/MockAdapter';
 export * from './ContextBuilder';
+export * from './retryHelper';

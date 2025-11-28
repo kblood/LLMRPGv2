@@ -56,7 +56,7 @@ export class CombatManager {
       id: conflictId,
       type,
       name: `${type} Conflict`,
-      aspects: [...scene.aspects, ...socialAspects], // Scene aspects apply, plus any new ones
+      aspects: [...scene.aspects.filter(a => typeof a === 'object' && a !== null) as any[], ...socialAspects], // Scene aspects apply, plus any new ones
       participants,
       turnOrder,
       currentTurnIndex: 0,

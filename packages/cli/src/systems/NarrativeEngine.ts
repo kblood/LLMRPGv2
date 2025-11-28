@@ -1,4 +1,4 @@
-import { LLMProvider, ContextBuilder } from '@llmrpg/llm';
+import { LLMProvider, ContextBuilder, withRetry, RetryPresets } from '@llmrpg/llm';
 import { CharacterDefinition, Turn } from '@llmrpg/core';
 
 export interface NarrativeContext {
@@ -116,15 +116,18 @@ ${events.map(e => `- ${e.description || e.action}`).join('\n')}
 Narrate what happens as a result. Describe the ${outcomeDescriptions[outcome] || outcome} in a dramatic, immersive way.`;
 
     try {
-      const response = await this.llm.generate({
-        systemPrompt,
-        userPrompt,
-        temperature: 0.8
-      });
+      const response = await withRetry(
+        () => this.llm.generate({
+          systemPrompt,
+          userPrompt,
+          temperature: 0.8
+        }),
+        RetryPresets.standard
+      );
 
       return response.content;
     } catch (error) {
-      console.error("Action resolution narration failed:", error);
+      console.error("Action resolution narration failed after retries:", error);
       return this.getFallbackNarration(outcome, playerAction);
     }
   }
@@ -168,15 +171,18 @@ CONSTRAINTS:
     });
 
     try {
-      const response = await this.llm.generate({
-        systemPrompt: prompt.system,
-        userPrompt: prompt.user,
-        temperature: 0.7
-      });
+      const response = await withRetry(
+        () => this.llm.generate({
+          systemPrompt: prompt.system,
+          userPrompt: prompt.user,
+          temperature: 0.7
+        }),
+        RetryPresets.standard
+      );
 
       return response.content;
     } catch (error) {
-      console.error("Narrative generation failed:", error);
+      console.error("Narrative generation failed after retries:", error);
       return "The Game Master is silent. (Error generating narrative)";
     }
   }
@@ -211,15 +217,18 @@ ${presentNPCs.length > 0 ? `PEOPLE PRESENT: ${presentNPCs.join(', ')}` : 'The ar
 Describe this scene as the player enters.`;
 
     try {
-      const response = await this.llm.generate({
-        systemPrompt,
-        userPrompt,
-        temperature: 0.7
-      });
+      const response = await withRetry(
+        () => this.llm.generate({
+          systemPrompt,
+          userPrompt,
+          temperature: 0.7
+        }),
+        RetryPresets.standard
+      );
 
       return response.content;
     } catch (error) {
-      console.error("Scene intro narration failed:", error);
+      console.error("Scene intro narration failed after retries:", error);
       return `You find yourself in ${location.name}.`;
     }
   }
