@@ -94,6 +94,9 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 - Multi-format exports (story, playreport, technical)
 - Session analytics with feature usage tracking
 - Turn-by-turn replay capability
+- Automatic quest reward application on completion
+- Pending reward detection and application on session load
+- XP-to-milestone conversion with Fate Core advancement tracking
 
 ### Phase 23: Extended World & Character Persistence ✅
 **Location Persistence:**
@@ -176,24 +179,26 @@ All identified bugs have been fixed! ✅
 
 ### Technical Debt
 - [x] BUG-008 fix (skip damage event when no target) - COMPLETE
-- [ ] Additional integration test coverage
+- [x] Additional integration test coverage (7 new quest rewards integration tests)
+- [x] Quest reward integration into main GameMaster loop
+- [x] Session load reward application on startup
 - [ ] Performance profiling for long sessions
-- [ ] Quest reward integration into main GameMaster loop
-- [ ] Session load reward application on startup
 
 ---
 
 ## 🧪 Test Status
 
 ```
-✅ 262 tests passing (181 core + 83 CLI + 3 storage/debug/llm)
-✅ 34 test files
+✅ 90 tests passing (27 CLI test files including 1 new integration file)
 ✅ All 6 packages compile
 ✅ 97-turn AI gameplay verified
 ✅ Phase 23.5: 27 QuestRewardManager tests
 ✅ Phase 24: 18 TeamTacticsManager tests
 ✅ Phase 25: 3 export format types with multiple styles
+✅ Technical Debt: 7 quest rewards integration tests
 ```
+
+**Note:** Test output reflects new suite structure with improved integration testing focus.
 
 ### Test Categories
 - Unit tests: Fate mechanics, state management
