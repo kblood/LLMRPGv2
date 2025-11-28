@@ -10,19 +10,19 @@
     ]
   },
   "locations": {
-    "loc-1764369171638": {
-      "id": "loc-1764369171638",
+    "loc-1764369946674": {
+      "id": "loc-1764369946674",
       "name": "Mock Location",
       "description": "A mock location description.",
       "aspects": [
         {
-          "id": "asp-wiwpfweni",
+          "id": "asp-mv2lejvop",
           "name": "Mock Aspect 1",
           "kind": "situation",
           "isTemporary": false
         },
         {
-          "id": "asp-5lqhbscv7",
+          "id": "asp-024c1klem",
           "name": "Mock Aspect 2",
           "kind": "environment",
           "isTemporary": false
@@ -30,11 +30,11 @@
       ],
       "connections": [],
       "presentNPCs": [
-        "ff0b9ad4-e21b-429f-a457-cd61ae63b1b8"
+        "57a619f2-12b0-437e-9eac-c0de38d50b42"
       ],
       "features": [
         {
-          "id": "feat-nmq6m3qwl",
+          "id": "feat-uqualg0s2",
           "name": "Mock Feature 1",
           "description": "A mock feature.",
           "interactable": true
@@ -52,19 +52,19 @@
   "plotThreads": [],
   "quests": [],
   "factions": {
-    "4d898f1a-b8f8-48c4-a774-5a4c68a07a76": {
-      "id": "4d898f1a-b8f8-48c4-a774-5a4c68a07a76",
+    "741b60a1-963a-4628-ad5e-b74228ed1814": {
+      "id": "741b60a1-963a-4628-ad5e-b74228ed1814",
       "name": "The Syndicate",
       "description": "A powerful criminal organization.",
       "aspects": [
         {
-          "id": "edac1a9d-3f14-4731-970b-4ccedf09b67e",
+          "id": "ff48f7ef-eb0e-4290-9a0c-40755fcbc77f",
           "name": "Underworld Connections",
           "type": "situational",
           "freeInvokes": 0
         },
         {
-          "id": "e2841e56-5719-4872-843d-349057b9a52e",
+          "id": "39a1480b-7b39-42e7-8bb7-e23232b893c4",
           "name": "Ruthless Efficiency",
           "type": "situational",
           "freeInvokes": 0
@@ -89,19 +89,19 @@
       ],
       "isHidden": false
     },
-    "72026274-fc20-43af-9830-869c4c4ea8ed": {
-      "id": "72026274-fc20-43af-9830-869c4c4ea8ed",
+    "357d4663-5665-4e15-9bc1-57e4694c374a": {
+      "id": "357d4663-5665-4e15-9bc1-57e4694c374a",
       "name": "The Order",
       "description": "A secretive guild of protectors.",
       "aspects": [
         {
-          "id": "9cc40dc5-7bc2-4ab6-83e5-089ffa80aad3",
+          "id": "1e124dbe-1eec-4167-b0dc-7707bed37a15",
           "name": "Ancient Knowledge",
           "type": "situational",
           "freeInvokes": 0
         },
         {
-          "id": "82fc131f-a95d-455c-91ad-e3ee6d54cd84",
+          "id": "23c587fc-9568-41c1-bac0-3d761ac54b62",
           "name": "Hidden Network",
           "type": "situational",
           "freeInvokes": 0
@@ -126,15 +126,15 @@
       ],
       "isHidden": true
     },
-    "513a372f-a248-4b63-b208-aa079afd5e4e": {
-      "id": "513a372f-a248-4b63-b208-aa079afd5e4e",
+    "5ad122d6-672a-4bae-9644-93a7d803272b": {
+      "id": "5ad122d6-672a-4bae-9644-93a7d803272b",
       "name": "The Syndicate",
       "description": "Criminal organization",
       "aspects": [],
       "goals": [],
       "members": [],
       "relationships": {
-        "player-1764369171648": -50
+        "player-1764369946684": -50
       },
       "territory": [],
       "resources": [],
@@ -143,7 +143,7 @@
   },
   "events": [
     {
-      "id": "941d8d6a-4bd0-43c8-a202-9c75569f5b36",
+      "id": "bd279138-d242-4c0a-8778-bc680caa5e3c",
       "name": "Storm Approaching",
       "description": "Dark clouds gather on the horizon.",
       "trigger": {
@@ -166,10 +166,10 @@
   ],
   "establishedFacts": {},
   "currentScene": {
-    "id": "scene-1764369171639",
+    "id": "scene-1764369946675",
     "name": "Mock Scenario",
     "description": "A mock scenario description.",
-    "locationId": "loc-1764369171638",
+    "locationId": "loc-1764369946674",
     "aspects": [],
     "startTurn": 1,
     "type": "exploration"

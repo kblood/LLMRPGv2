@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager, FactionManager, EconomyManager, CraftingManager, AdvancementManager } from '@llmrpg/core';
+import { TurnManager, DeltaCollector, ActionResolver, FateDice, GameTime, CharacterDefinition, Turn, FateOutcome, KnowledgeManager, QuestManager, FactionManager, EconomyManager, CraftingManager, AdvancementManager, QuestRewardManager } from '@llmrpg/core';
 import { LLMProvider } from '@llmrpg/llm';
 import { SessionWriter, SessionLoader } from '@llmrpg/storage';
 import { SceneState, PlayerCharacter, KnowledgeProfile, Compel } from '@llmrpg/protocol';
@@ -34,6 +34,7 @@ export class GameMaster {
   private combatManager: CombatManager;
   private dialogueSystem: DialogueSystem;
   private worldEventsManager: WorldEventsManager;
+  private questRewardManager: QuestRewardManager | undefined;
   private sessionWriter: SessionWriter;
   private sessionLoader: SessionLoader | undefined;
   private currentScene: SceneState | undefined;
@@ -66,6 +67,7 @@ export class GameMaster {
 
     this.worldManager = new WorldManager();
     this.factionManager = new FactionManager(this.worldManager.state);
+    this.questRewardManager = new QuestRewardManager(this.worldManager.state);
     this.economyManager = new EconomyManager();
     this.craftingManager = new CraftingManager(this.actionResolver, this.fateDice);
     this.narrativeEngine = new NarrativeEngine(llmProvider);
@@ -100,11 +102,12 @@ export class GameMaster {
     }
     console.log(`Loading session ${this.sessionId}...`);
     const state = await this.sessionLoader.loadCurrentState(this.sessionId);
-    
+
     // Restore World State
     this.worldManager.state = state.world;
     this.factionManager = new FactionManager(this.worldManager.state);
-    
+    this.questRewardManager = new QuestRewardManager(this.worldManager.state);
+
     // Restore Player
     this.player = state.player;
 
@@ -114,6 +117,32 @@ export class GameMaster {
     // Restore Current Scene (if saved in world state)
     if ((state.world as any).currentScene) {
         this.currentScene = (state.world as any).currentScene;
+    }
+
+    // Apply pending quest rewards (from previous session)
+    if (this.player && this.questRewardManager) {
+      const pendingRewards = this.questRewardManager.applyPendingQuestRewards(
+        this.player,
+        this.worldManager.state,
+        this.npcs
+      );
+
+      if (pendingRewards.length > 0) {
+        const successCount = pendingRewards.filter(r => r.success).length;
+        console.log(`✓ Applied rewards from ${successCount} completed quest(s)`);
+
+        // Log pending rewards for player awareness
+        const completedQuests = this.worldManager.state.quests.filter(
+          q => q.status === 'completed' && this.player?.appliedRewardQuestIds?.includes(q.id)
+        );
+
+        if (completedQuests.length > 0) {
+          console.log('Previously completed quests with rewards applied:');
+          completedQuests.forEach(q => {
+            console.log(`  • ${q.title}`);
+          });
+        }
+      }
     }
 
     // TODO: Load history from session logs if needed for context
@@ -2306,6 +2335,26 @@ export class GameMaster {
             description: `Quest Completed: ${update.questId}`,
             metadata: { questId: update.questId }
         });
+
+        // Apply quest rewards immediately
+        if (this.player && this.questRewardManager) {
+          const quest = QuestManager.getQuest(worldState, update.questId);
+          if (quest) {
+            const questGiver = quest.giverId ? this.npcs[quest.giverId] : undefined;
+            const rewardResult = this.questRewardManager.applyQuestRewards(this.player, quest, questGiver, worldState);
+
+            if (rewardResult.success) {
+              const rewardSummary = this.generateRewardSummary(rewardResult.appliedRewards);
+              this.turnManager.addEvent('quest_update', 'quest_rewards_applied', {
+                description: `Quest Rewards Applied: ${rewardSummary}`,
+                metadata: {
+                  questId: update.questId,
+                  rewards: rewardResult.appliedRewards
+                }
+              });
+            }
+          }
+        }
     } else if (update.type === 'fail_quest') {
         QuestManager.setQuestStatus(worldState, update.questId, 'failed');
         this.turnManager.addEvent('quest_update', 'quest_failed', {
@@ -2370,6 +2419,45 @@ export class GameMaster {
         cause: 'knowledge_gain',
         eventId: turn.events[turn.events.length - 1].eventId
     });
+  }
+
+  private generateRewardSummary(rewards: { reputation?: Record<string, number>; xp?: number; items?: string[] }): string {
+    const parts: string[] = [];
+
+    if (rewards.xp && rewards.xp > 0) {
+      parts.push(`${rewards.xp} XP`);
+    }
+
+    if (rewards.reputation) {
+      const repChanges = Object.entries(rewards.reputation)
+        .filter(([_, change]) => (change as number) !== 0)
+        .map(([factionId, change]) => {
+          const changeValue = change as number;
+          let factionName = factionId;
+
+          // Find faction name from world state (factions is a Record)
+          const factions = this.worldManager.state.factions as Record<string, any>;
+          if (factions && factionId in factions) {
+            const faction = factions[factionId];
+            if (faction && faction.name) {
+              factionName = faction.name;
+            }
+          }
+
+          const sign = changeValue > 0 ? '+' : '';
+          return `${factionName} ${sign}${changeValue}`;
+        });
+
+      if (repChanges.length > 0) {
+        parts.push(`Reputation: ${repChanges.join(', ')}`);
+      }
+    }
+
+    if (rewards.items && rewards.items.length > 0) {
+      parts.push(`Items: ${rewards.items.join(', ')}`);
+    }
+
+    return parts.length > 0 ? parts.join(' | ') : 'Rewards applied';
   }
 
   private async handleMetaCommand(command: string) {
