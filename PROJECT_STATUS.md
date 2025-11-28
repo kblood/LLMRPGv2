@@ -1,7 +1,7 @@
 # Project Status
 
 **Last Updated:** November 29, 2025
-**Current Phase:** Phase 23 Complete ✅ (All Phases 23.1-23.4)
+**Current Phase:** Phase 23 Complete ✅ (All Phases 23.1-23.5)
 **Full History:** See `PROJECT_STATUS_ARCHIVE.md`
 
 ---
@@ -45,8 +45,8 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 | 19 | Production polish (context windowing, retries, CLI colors) | ✅ Complete |
 | 20-21 | Session exports (story format, analytics) | ✅ Complete |
 | 22 | Gameplay quality (travel, dialogue routing, anti-repetition) | ✅ Complete |
-| 23.1-23.4 | Extended world persistence (locations, NPC memory, quest links) | ✅ Complete |
-| 23.5 | Quest reward persistence (remaining Phase 23) | 🔄 Next |
+| 23.1-23.5 | Extended world persistence (locations, NPC memory, quest links, reward tracking) | ✅ Complete |
+| 24 | Combat enhancements (zone movement, team tactics) | 🔄 Next |
 
 ---
 
@@ -104,6 +104,14 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 - Quest giver dialogue context generation
 - Static utilities for multi-NPC quest queries
 
+**Quest Reward Persistence (23.5):**
+- QuestRewardManager for applying and tracking quest rewards
+- Persistent completion tracking (completedQuestIds, appliedRewardQuestIds)
+- XP to Fate Core milestone conversion (minor/significant/major)
+- Faction reputation updates on quest completion
+- Pending reward detection on session load
+- Reward context generation for dialogue/narrative
+
 ---
 
 ## 🐛 Known Issues
@@ -129,8 +137,11 @@ All identified bugs have been fixed! ✅
 - [x] Interaction history with relationship delta tracking
 - [x] QuestGiverManager for bidirectional quest relationships
 - [x] Quest status tracking from both player and NPC perspective
+- [x] QuestRewardManager for reward application and persistence (23.5)
+- [x] XP to Fate Core milestone conversion
+- [x] Pending reward detection on session load
 
-**Next: Phase 23.5** (Quest reward persistence - final Phase 23 task)
+**Next: Phase 24** (Combat enhancements)
 
 ### Phase 24: Combat Enhancements
 - [x] Full target validation before combat actions (FIXED in BUG-008)
@@ -145,19 +156,22 @@ All identified bugs have been fixed! ✅
 - [ ] Campaign-level analytics
 
 ### Technical Debt
-- [ ] Full BUG-008 fix (skip damage event when no target)
+- [x] BUG-008 fix (skip damage event when no target) - COMPLETE
 - [ ] Additional integration test coverage
 - [ ] Performance profiling for long sessions
+- [ ] Quest reward integration into main GameMaster loop
+- [ ] Session load reward application on startup
 
 ---
 
 ## 🧪 Test Status
 
 ```
-✅ 64 tests passing
-✅ 25 test files  
+✅ 181 tests passing (154 core + 64 CLI + 3 storage/debug/llm)
+✅ 34 test files
 ✅ All 6 packages compile
 ✅ 97-turn AI gameplay verified
+✅ Phase 23.5: 27 QuestRewardManager tests
 ```
 
 ### Test Categories
