@@ -1319,7 +1319,7 @@ export class GameMaster {
         eventId: turn.events[0]?.eventId || 'unknown'
     });
 
-    await this.applyActionConsequences(fateAction, resolution, turn);
+    await this.applyActionConsequences(fateAction, resolution, turn, undefined);
 
     // Check for Knowledge Gain
     if (resolution.outcome === 'success' || resolution.outcome === 'success_with_style') {
@@ -1925,7 +1925,40 @@ export class GameMaster {
     }
   }
 
-  private async applyActionConsequences(action: string, resolution: any, turn: Turn) {
+  /**
+   * Extracts and validates attack target from player input
+   */
+  private extractAttackTarget(playerInput: string, conflict: any): string | undefined {
+    if (!conflict || !conflict.participants) return undefined;
+
+    const inputLower = playerInput.toLowerCase();
+
+    // Get list of valid targets (opposition side)
+    const validTargets = conflict.participants
+        .filter((p: any) => p.side === 'opposition')
+        .map((p: any) => this.npcs[p.characterId])
+        .filter((npc: any) => npc !== undefined) as CharacterDefinition[];
+
+    if (validTargets.length === 0) return undefined;
+
+    // Try to match target name in player input
+    for (const target of validTargets) {
+        const targetNameLower = target.name.toLowerCase();
+        if (inputLower.includes(targetNameLower)) {
+            return target.id;
+        }
+    }
+
+    // If only one target exists, use it
+    if (validTargets.length === 1) {
+        return validTargets[0].id;
+    }
+
+    // Multiple targets but none explicitly named - fail
+    return undefined;
+  }
+
+  private async applyActionConsequences(action: string, resolution: any, turn: Turn, attackTarget?: string) {
     if (!this.player) return;
 
     const lastEventId = turn.events[turn.events.length - 1].eventId;
@@ -1983,13 +2016,15 @@ export class GameMaster {
         }
     }
 
-    // Handle Attack
-    if (action === 'attack') {
+    // Handle Attack (only if valid target exists)
+    if (action === 'attack' && attackTarget) {
         if (resolution.outcome === 'success' || resolution.outcome === 'success_with_style') {
             // Deal stress
             const damage = resolution.shifts;
+            const target = this.npcs[attackTarget];
+            const targetName = target?.name || 'unknown target';
             this.turnManager.addEvent('state_change', 'attack', {
-                description: `Dealt ${damage} shifts of damage (Placeholder for target application)`,
+                description: `Dealt ${damage} shifts of damage to ${targetName}`,
             });
         }
     }
@@ -2068,6 +2103,26 @@ export class GameMaster {
         history: this.history
     });
 
+    // For attacks, extract and validate the target
+    let attackTarget: string | undefined;
+    if (fateAction === 'attack') {
+        attackTarget = this.extractAttackTarget(playerAction, conflict);
+        if (!attackTarget) {
+            // Invalid attack - no target found
+            const turn = this.turnManager.startTurn("player", this.currentScene.id, { day: 1, timeOfDay: 'morning', timestamp: Date.now() });
+            this.turnManager.addEvent('skill_check', 'attack', {
+                description: `Player attempted to ${playerAction} but no valid target was found.`,
+                roll: { dice: [0, 0, 0, 0], total: 0 },
+                difficulty: 0,
+                shifts: 0
+            });
+            turn.narration = "You tried to attack, but there's no valid target to attack here.";
+            await this.sessionWriter.writeTurn(this.sessionId, turn);
+            this.history.push(turn);
+            return { turn, narration: turn.narration, result: 'failure' };
+        }
+    }
+
     // Select Skill
     const skillSelection = await this.decisionEngine.selectSkill({
         action: { type: fateAction, description: playerAction },
@@ -2100,7 +2155,7 @@ export class GameMaster {
     });
 
     // Apply Consequences
-    await this.applyActionConsequences(fateAction, resolution, turn);
+    await this.applyActionConsequences(fateAction, resolution, turn, attackTarget);
 
     // Narrate Player Action
     let narration = await this.narrativeEngine.narrate({
