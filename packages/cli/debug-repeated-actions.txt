@@ -20460,3 +20460,94 @@ PARSED ACTION:
   strategy: "By traveling to the uncharted southern path, I aim to discover unknown locations that might hold clues about the Cursed Hollow's mysteries or provide a different perspective on how to resolve the situation here. This approach leverages my Arcane Curiosity and desire for new knowledge."
 
 ================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T17:17:12.654Z]
+================================================================================
+LOCATION: The Cursed Hollow
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 2
+RECENT ACTIONS (last 8):
+  1. Traveled north to Cinderspear Ruins
+  2. Approach the Crumbling Tower cautiously and peer through any cracks or openings to see if I can spot anything unusual or hidden within the ruins.
+  3. Traveled south to The Shattered Keep
+  4. Traveled north to Cinderspear Ruins
+  5. Traveled south to The Shattered Keep
+  6. Traveled northeast to The Whispering Ravine
+  7. Traveled northwest to The Cursed Hollow
+  8. I approach the Obsidian Well cautiously, studying its dark surface for any clues or magical energy that might reveal its secrets.
+
+ATTEMPTED TARGETS:
+
+
+MARKED FEATURES:
+  1. The Obsidian Well
+  2. Cursed Guardians
+
+AVAILABLE EXITS:
+southeast: The way back to The Shattered Keep, southeast: A path leads southeast, northeast: A path leads northeast
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: The Cursed Hollow
+
+You find yourself in a new situation.
+
+Scene Aspects: Abyssal Shadow, Tainted Echoes, Whispers of Forgotten Magic, Opportunities for Investigation
+
+Notable Features:
+  1. The Obsidian Well
+  2. Cursed Guardians
+
+🚪 TRAVEL OPTIONS:
+Available Exits:
+✨ southeast → The way back to The Shattered Keep [NEW]
+✨ southeast → A path leads southeast [NEW]
+✨ northeast → A path leads northeast [NEW]
+
+You can travel to any of these locations. Exits marked with ✨ [NEW] are unexplored. Prioritize new exits to discover fresh opportunities!
+
+
+
+📜 QUESTS:
+🎯 Main Goal: Solve the Mystery of This Place
+📋 Optional Quests: Gather Local Lore, Explore Hidden Paths
+
+CURRENT OBJECTIVES:
+1. Find or provoke a challenging situation
+2. Use combat skills if hostile encounter occurs
+3. Alternatively, engage in social conflict
+4. Resolve the conflict through action
+
+⚠️ NOTICE: Your last 2 actions failed. Consider trying a different approach.
+
+
+RECENT HISTORY:
+Turn 39: As you set forth on your journey, the path narrows through a dense forest of twisted, ancient trees that seem to whisper secrets in the wind. The air ...
+Turn 40: As you trek northwest through the Whispering Ravine, the wind carries haunting echoes of ancient secrets, whispering tales of the cursed spirits that ...
+Turn 41: You reach out your fingertips toward the obsidian waters of the well, your senses drawn to their mysterious depths. The surface is utterly smooth and ...
+
+REMEMBER: You only ...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I cautiously approach the Obsidian Well, studying its surface for any clues or hidden markings.",
+  "reasoning": "The well's mysterious nature and whispers of forgotten magic suggest it holds ancient secrets that could be key to understanding this place's curse.",
+  "strategy": "By examining the well closely, I hope to uncover any arcane symbols or residual energy patterns that might provide insight into solving the mystery here.",
+  "expectedOutcome": "I anticipate discovering an ancient inscription or magical sigil on the well that could point me toward the source of the curse or reveal a way to break it.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Ancient Knowledge Seeker",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I cautiously approach the Obsidian Well, studying its surface for any clues or hidden markings."
+  reasoning: "The well's mysterious nature and whispers of forgotten magic suggest it holds ancient secrets that could be key to understanding this place's curse."
+  strategy: "By examining the well closely, I hope to uncover any arcane symbols or residual energy patterns that might provide insight into solving the mystery here."
+
+================================================================================
