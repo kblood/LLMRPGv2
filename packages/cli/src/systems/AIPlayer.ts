@@ -32,6 +32,7 @@ interface ActionAnalysis {
   sceneType: 'combat' | 'social' | 'exploration' | 'unknown';
   feedbackMessage: string;
   suggestedApproaches: string[];
+  attemptedTargets: Record<string, number>; // Track how many times each target was attempted
 }
 
 function normalizeActionText(text: string): string {
@@ -42,23 +43,35 @@ function normalizeActionText(text: string): string {
     .trim();
 }
 
-function extractPlayerAction(turn: Turn): string | null {
+interface ExtractedAction {
+  action: string;
+  target: string | null;
+}
+
+function extractPlayerAction(turn: Turn): ExtractedAction | null {
   if (!turn.events || turn.events.length === 0) return null;
-  
+
   // Look for skill_check events which contain the action description
   const skillCheck = turn.events.find(e => e.type === 'skill_check');
   if (skillCheck?.description) {
     const match = skillCheck.description.match(/Player attempted to (.+?) using/);
-    if (match) return match[1].trim();
+    if (match) {
+      const actionText = match[1].trim();
+      // Try to extract target from common patterns
+      // e.g., "examine the ancient rune tablet" -> target is "ancient rune tablet"
+      const targetMatch = actionText.match(/(?:examine|search|interact with|talk to|attack|defend|overcome|create advantage|open|close|take|push|pull|investigate|study|look at|listen to)\s+(?:the\s+)?(.+?)(?:\s+(?:in|with|for|from|to))?$/i);
+      const target = targetMatch ? targetMatch[1].toLowerCase() : null;
+      return { action: actionText, target };
+    }
   }
-  
+
   // Try other event types
   for (const event of turn.events) {
     if (event.description && event.actor === 'player') {
-      return event.description;
+      return { action: event.description, target: null };
     }
   }
-  
+
   return null;
 }
 
@@ -89,24 +102,29 @@ function analyzeRecentHistory(history: Turn[] | undefined, currentScene: any): A
     consecutiveFailures: 0,
     sceneType: 'unknown',
     feedbackMessage: '',
-    suggestedApproaches: []
+    suggestedApproaches: [],
+    attemptedTargets: {}
   };
-  
+
   if (!history || history.length === 0) {
     return result;
   }
-  
+
   const recentTurns = history.slice(-10);
   const allEvents = recentTurns.flatMap(t => t.events || []);
-  
+
   // Detect scene type
   result.sceneType = detectSceneType(currentScene, allEvents);
-  
-  // Extract recent player actions
+
+  // Extract recent player actions and track targets
   for (const turn of recentTurns) {
-    const action = extractPlayerAction(turn);
-    if (action) {
-      result.recentActions.push(action);
+    const extracted = extractPlayerAction(turn);
+    if (extracted) {
+      result.recentActions.push(extracted.action);
+      // Track how many times each target was attempted
+      if (extracted.target) {
+        result.attemptedTargets[extracted.target] = (result.attemptedTargets[extracted.target] || 0) + 1;
+      }
     }
   }
   
@@ -219,12 +237,38 @@ export class AIPlayer {
     const presentNPCs = knownNPCs;
     const locationFeatures = knownLocation?.features || [];
     const locationAspects = sceneAspects;
-    
-    // Get available exits/connections if any
-    const availableExits = knownLocation?.connections
+
+    // Mark features with attempt counts to guide LLM away from repetition
+    const markedFeatures = locationFeatures.map((f: any) => {
+      const featureName = f.name || f.description || String(f);
+      const normalizedName = featureName.toLowerCase().replace(/^the\s+/, '');
+      const attemptCount = analysis.attemptedTargets[normalizedName] || 0;
+
+      if (attemptCount === 0) {
+        return featureName; // Fresh option, no marker
+      } else if (attemptCount === 1) {
+        return `${featureName} [tried once]`;
+      } else if (attemptCount === 2) {
+        return `${featureName} [tried ${attemptCount} times - consider alternatives]`;
+      } else {
+        return `${featureName} [tried ${attemptCount} times - this is NOT working, pick something else]`;
+      }
+    });
+
+    // Get available exits/connections if any, ordered by freshness
+    const exitConnections = knownLocation?.connections
       ?.filter((c: any) => c.discovered !== false)
-      ?.map((c: any) => `${c.direction || 'exit'}: ${c.description || c.name || 'passage'}`)
-      ?.join(', ') || '';
+      ?.map((c: any) => {
+        const direction = c.direction || 'exit';
+        const description = c.description || c.name || 'passage';
+        const normalizedDir = direction.toLowerCase();
+        const attemptCount = analysis.attemptedTargets[normalizedDir] || 0;
+        return { direction, description, attemptCount, text: `${direction}: ${description}` };
+      }) || [];
+
+    // Sort exits: untried first, then by attempt count
+    exitConnections.sort((a: any, b: any) => a.attemptCount - b.attemptCount);
+    const availableExits = exitConnections.map((e: any) => e.text).join(', ');
 
     // Build objectives string
     const objectivesText = objectives && objectives.length > 0
@@ -351,7 +395,7 @@ ${lastNarration ? `\nGM DESCRIPTION:\n"${lastNarration}"\n` : 'You find yourself
 
 ${locationAspects.length > 0 ? `Scene Aspects: ${locationAspects.map((a: any) => a.name || a).join(', ')}` : ''}
 ${presentNPCs.length > 0 ? `People Present: ${presentNPCs.map((n: any) => n.name || n).join(', ')}` : 'You are alone.'}
-${locationFeatures.length > 0 ? `Notable Features: ${locationFeatures.map((f: any) => f.name || f.description || f).join(', ')}` : ''}
+${markedFeatures.length > 0 ? `Notable Features:\n${markedFeatures.map((f: string, i: number) => `  ${i + 1}. ${f}`).join('\n')}` : ''}
 
 🚪 TRAVEL OPTIONS:
 ${availableExits ? `Available Exits: ${availableExits}
