@@ -306,7 +306,12 @@ If no match is found, respond with: null
       }
 
       const parsed = JSON.parse(content);
-      
+
+      // Validate parsed direction is not null
+      if (!parsed.direction) {
+        return null;
+      }
+
       // Validate the direction exists in availableExits
       const exit = availableExits.find(e => e.direction.toLowerCase() === parsed.direction.toLowerCase());
       if (exit) {
@@ -315,7 +320,7 @@ If no match is found, respond with: null
           targetId: exit.targetId
         };
       }
-      
+
       return null;
     } catch (error) {
       console.error("Travel parsing failed:", error);

@@ -518,12 +518,12 @@ export class GameMaster {
 
     const compelData = await this.decisionEngine.generateCompel(context);
 
-    if (compelData) {
+    if (compelData && compelData.aspectName) {
         return {
             id: uuidv4(),
             aspectId: this.player.aspects.find(a => a.name === compelData.aspectName)?.id || 'unknown',
             aspectName: compelData.aspectName,
-            type: compelData.type,
+            type: compelData.type || 'decision',
             description: compelData.description,
             status: 'offered',
             turnId: 'pending',

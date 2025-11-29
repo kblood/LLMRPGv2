@@ -1,41 +1,41 @@
 // Fate Core types
-export * from './fate.js';
+export * from './fate';
 
 // Character types
-export * from './characters.js';
+export * from './characters';
 
 // State types
-export * from './state.js';
+export * from './state';
 
 // Faction types
-export * from './factions.js';
+export * from './factions';
 
 // Economy types
-export * from './economy.js';
+export * from './economy';
 
 // Combat types
-export * from './combat.js';
+export * from './combat';
 
 // Crafting types
-export * from './crafting.js';
+export * from './crafting';
 
 // Delta types
-export * from './delta.js';
+export * from './delta';
 
 // Commands and events
-export * from './commands.js';
-export * from './events.js';
+export * from './commands';
+export * from './events';
 
 // WebSocket messages
-export * from './messages.js';
+export * from './messages';
 
 // Session types
-export * from './session.js';
+export * from './session';
 
 // Re-export Zod for convenience
 export { z } from 'zod';
 
-export * from './knowledge.js';
-export * from './quests.js';
-export * from './advancement.js';
+export * from './knowledge';
+export * from './quests';
+export * from './advancement';
 

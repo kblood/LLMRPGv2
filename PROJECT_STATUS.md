@@ -162,6 +162,34 @@ See `PHASE_26_IMPLEMENTATION.md` for detailed implementation notes.
 
 ## 🔮 Future Phases (Planned)
 
+### Phase 27: Export & AI Quality Fixes (In Progress 🔵)
+**Status:** Validation & Bug Fixes
+
+**Test Results (Nov 29, 2025 - Run 2):**
+- **Duration:** 6.37 minutes
+- **Total Actions:** 46 actions
+- **Success Rate:** 26.1% (12 successful, 34 failed)
+- **Critical Issues Fixed:**
+  - ✅ Travel parsing null pointer crash - FIXED
+  - ✅ Undefined aspect in compel offers - FIXED (validation added)
+
+**Remaining Issues:**
+- 🔴 **AI Repetition Loop**: AI gets stuck examining same objects (e.g., "ancient magic reservoir", "obsidian throne")
+  - Symptom: 5+ consecutive identical action attempts with same reasoning
+  - Impact: Quest success rate 0%, Combat 17%
+- 🟡 **Decision Diversity**: Lacking fallback strategies when action fails
+  - AI doesn't explore alternatives; repeats same approach
+- 🟡 **Context Window Size**: May be pruning important failure context
+
+**Fixes Applied:**
+1. `DecisionEngine.ts:311` - Added null check for `parsed.direction` before calling toLowerCase()
+2. `GameMaster.ts:521` - Added validation for `compelData.aspectName` before creating compel
+
+**Next Steps:**
+1. Enhance AI loop detection with confidence thresholds
+2. Implement decision diversity mechanism (suggest alternative actions when failing)
+3. Profile decision engine context window pruning
+
 ### Phase 23: Extended World Persistence (Complete ✅)
 
 **Completed:**

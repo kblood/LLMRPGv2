@@ -223,7 +223,7 @@ class TenMinuteTest {
       console.error('FATAL ERROR:', error.message);
       this.errors.push(`Fatal: ${error.message}`);
     } finally {
-      this.printReport();
+      await this.printReport();
     }
   }
   
@@ -573,7 +573,7 @@ class TenMinuteTest {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
   
-  private printReport() {
+  private async printReport() {
     const totalTime = this.getElapsedTime();
     const successfulActions = this.results.filter(r => r.success);
     const failedActions = this.results.filter(r => !r.success);
