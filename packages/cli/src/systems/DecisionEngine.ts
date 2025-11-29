@@ -243,13 +243,24 @@ If no matching NPC or unclear intent, return: null
       if (matchedNPC) {
         return {
           targetName: matchedNPC.name, // Use the actual NPC name
-          topic: parsed.topic,
+          topic: parsed.topic || 'general',
           dialogueType: parsed.dialogueType || 'ask'
         };
       }
       
+      // ISSUE #2 FIX: Validate targetName is not empty before returning parsed result
+      // This prevents "You try to address , but they're not here right now" messages
+      if (!parsed.targetName || parsed.targetName.trim().length === 0) {
+        console.warn("parseDialogue: Empty targetName returned, rejecting as invalid dialogue");
+        return null;
+      }
+      
       // Allow dialogue even if NPC not in presentNPCs (maybe talking to a group like "cultists")
-      return parsed;
+      return {
+        targetName: parsed.targetName.trim(),
+        topic: parsed.topic || 'general',
+        dialogueType: parsed.dialogueType || 'ask'
+      };
     } catch (error) {
       console.error("Dialogue parsing failed:", error);
       return null;
@@ -971,7 +982,17 @@ Return a JSON object or null:
       const content = response.content.trim();
       if (content === 'null' || content.toLowerCase() === 'no') return null;
 
-      return JSON.parse(content);
+      try {
+        return JSON.parse(content);
+      } catch (parseError) {
+        // Log the JSON parse error with context
+        const preview = content.length > 400
+          ? `${content.substring(0, 200)}...[truncated]...${content.substring(content.length - 200)}`
+          : content;
+        console.warn(`⚠️ Compel JSON parse error (length: ${content.length}): ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+        console.warn(`Content preview: ${preview}`);
+        return null;
+      }
     } catch (error) {
       console.error("Compel generation failed:", error);
       return null;
