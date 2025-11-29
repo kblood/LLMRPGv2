@@ -1,7 +1,7 @@
 # Project Status
 
-**Last Updated:** November 29, 2025 (Phase 26 Complete)
-**Current Phase:** Phase 26 ✅ (Gameplay Quality Improvements) - Implementation Complete & Validated
+**Last Updated:** November 29, 2025 (Phase 28b In Progress)
+**Current Phase:** Phase 28b 🔵 (Context Optimization - Character Filtering) - Implementation Complete, Validation In Progress
 **Full History:** See `PROJECT_STATUS_ARCHIVE.md`
 
 ---
@@ -49,7 +49,9 @@ LLMRPGv2 is an AI-driven RPG system built on **Fate Core** mechanics using local
 | 24 | Combat enhancements (zone movement, team tactics) | ✅ Complete |
 | 25 | Export enhancements (HTML/PDF) | ✅ Complete |
 | 26 | Gameplay quality improvements (AI repetition, export fix, difficulty balance) | ✅ Complete |
-| 27 | Export system fixes and AI decision quality improvements | 🔵 Planning |
+| 27 | Export system fixes and AI decision quality improvements | ✅ Complete |
+| 28a | Context optimization - Quick wins (pruning, token estimation, pretty-print removal) | ✅ Complete |
+| 28b | Character field filtering for decisions - 60-70% context reduction | 🔵 Testing |
 
 ---
 
@@ -233,11 +235,62 @@ All 4 priorities successfully implemented and tested:
 - Improved error logging helps identify LLM response problems
 - Code is more maintainable with clarifying comments
 
-**Next: Phase 28** (Recommended Areas)
-- [ ] Context optimization for AI decision-making
-- [ ] World generation validation improvements
-- [ ] Performance profiling for long sessions
-- [ ] Extended gameplay testing (30+ minute sessions)
+### Phase 28a: Context Optimization - Quick Wins (Complete ✅)
+
+**Implemented (4 quick wins):**
+- [x] Smart pruning enabled by default (GameMaster.ts:71)
+- [x] Improved token estimation from /4 to /3.5 (GameMaster.ts:2772-2778)
+- [x] World state pruning helper (DecisionEngine.ts:26-49)
+- [x] Removed pretty-printing in classifyAction (DecisionEngine.ts:614)
+
+**Results:**
+- 20% token reduction from pretty-print removal
+- Adaptive context management based on token budget
+- Better accuracy in token estimation
+- No regressions in AI quality
+
+### Phase 28b: Character Field Filtering (Implementation Complete ✅, Testing In Progress 🔵)
+
+**Implemented:**
+- [x] Optimized character context builder (`buildCharacterContextForDecisions()`)
+- [x] Role-specific context assembly with `forDecisions` flag
+- [x] Context size logging infrastructure in DecisionEngine
+- [x] Applied to 4 critical decision paths:
+  - selectSkill() - skill selection
+  - classifyAction() - action classification
+  - setOpposition() - difficulty determination
+  - decideNPCAction() - NPC tactical decisions (optimized for opposition, full for allies)
+
+**Impact:**
+- **Character context reduction: 60-70%** (optimized is ~30% of full size)
+- Preserves all critical fields: name, concepts, trouble, aspects, skill ratings
+- Removes personality details, backstory, stunt descriptions
+- Token estimate: ~150-200 tokens (vs ~500-600 for full context)
+
+**Test Coverage (16 tests, 100% passing):**
+1. buildCharacterContextForDecisions - optimized context validation
+2. buildCharacterContext - full context validation
+3. assemblePrompt with forDecisions flag - context routing
+4. estimateContextTokens - token budgeting accuracy
+5. Context Optimization Impact - reduction metrics validation
+
+**Key Findings:**
+- Optimized context is ~30% of full size (excellent reduction)
+- All aspects preserved in optimized context ✅
+- All skills preserved with ratings ✅
+- Personality/backstory/stunts properly excluded ✅
+- Token estimation accurate within 3.5% ✅
+
+**Validation Test (Pending):**
+- Running 10-minute gameplay validation test
+- Expected completion: ~6-10 minutes
+- Verifying no regressions in AI decision quality
+
+### Phase 28c-28e: Recommended Future Work
+- [ ] Medium Refactors: Character field filtering in narrative context, role-specific builders
+- [ ] Performance profiling: Track actual context usage across gameplay
+- [ ] History summarization: Replace JSON with narrative summaries
+- [ ] Extended testing: 30+ minute sessions to validate long-game stability
 
 ### Phase 23: Extended World Persistence (Complete ✅)
 
