@@ -68,7 +68,7 @@ export class GameMaster {
   ) {
     this.config = {
       maxHistoryTurns: config?.maxHistoryTurns ?? 10,
-      enableSmartPruning: config?.enableSmartPruning ?? false,
+      enableSmartPruning: config?.enableSmartPruning ?? true,  // Phase 28: Enable adaptive history pruning
       maxContextTokens: config?.maxContextTokens ?? 4000
     };
     this.turnManager = new TurnManager(sessionId);
@@ -2767,11 +2767,15 @@ export class GameMaster {
 
   /**
    * Estimate the number of tokens in the history
-   * Uses a rough approximation: ~1 token per 4 characters
+   * Phase 28: Improved estimation accounting for JSON structure overhead
+   * Uses: ~1 token per 3.5 characters (better than crude /4)
+   * Accounts for JSON formatting, structure overhead, and average tokenization
    */
   private estimateHistoryTokens(): number {
     const historyJson = JSON.stringify(this.history);
-    return Math.ceil(historyJson.length / 4);
+    // More accurate tokenization estimate: accounts for JSON overhead and typical model tokenization
+    // This is closer to GPT-3/4 tokenization than a simple character count
+    return Math.ceil(historyJson.length / 3.5);
   }
 
   /**
