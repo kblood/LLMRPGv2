@@ -43,6 +43,18 @@ function normalizeActionText(text: string): string {
     .trim();
 }
 
+function normalizeFeatureName(name: string): string {
+  // Normalize a feature name for matching against attempted targets
+  // "the ancient temple of the abyssal eye" -> "temple abyssal eye"
+  return name
+    .toLowerCase()
+    .replace(/^the\s+/, '') // Remove leading "the"
+    .replace(/\s+(of|in|the)\s+/g, ' ') // Remove prepositions
+    .replace(/[^\w\s]/g, '') // Remove punctuation
+    .replace(/\s+/g, ' ') // Collapse spaces
+    .trim();
+}
+
 interface ExtractedAction {
   action: string;
   target: string | null;
@@ -57,10 +69,20 @@ function extractPlayerAction(turn: Turn): ExtractedAction | null {
     const match = skillCheck.description.match(/Player attempted to (.+?) using/);
     if (match) {
       const actionText = match[1].trim();
-      // Try to extract target from common patterns
-      // e.g., "examine the ancient rune tablet" -> target is "ancient rune tablet"
-      const targetMatch = actionText.match(/(?:examine|search|interact with|talk to|attack|defend|overcome|create advantage|open|close|take|push|pull|investigate|study|look at|listen to)\s+(?:the\s+)?(.+?)(?:\s+(?:in|with|for|from|to))?$/i);
-      const target = targetMatch ? targetMatch[1].toLowerCase() : null;
+      // Extract target more conservatively - just the immediate noun phrase
+      // e.g., "examine the ancient rune tablet for hidden passages" -> target is "ancient rune tablet"
+      const targetMatch = actionText.match(/(?:examine|search|interact with|talk to|attack|defend|overcome|create advantage|open|close|take|push|pull|investigate|study|look at|listen to)\s+(?:the\s+)?([^,]+?)(?:\s*,|\s+for|\s+looking|\s+in\s|$)/i);
+
+      // If we found a target, clean it up (remove trailing prepositions and extra words)
+      let target: string | null = null;
+      if (targetMatch) {
+        target = targetMatch[1]
+          .trim()
+          .toLowerCase()
+          .replace(/^(of|in|from)\s+/, '') // Remove leading prepositions
+          .replace(/\s+(of|in|from|at|for|to).*$/, ''); // Remove trailing prepositions and clauses
+      }
+
       return { action: actionText, target };
     }
   }
@@ -241,8 +263,17 @@ export class AIPlayer {
     // Mark features with attempt counts to guide LLM away from repetition
     const markedFeatures = locationFeatures.map((f: any) => {
       const featureName = f.name || f.description || String(f);
-      const normalizedName = featureName.toLowerCase().replace(/^the\s+/, '');
-      const attemptCount = analysis.attemptedTargets[normalizedName] || 0;
+      const normalizedName = normalizeFeatureName(featureName);
+
+      // Check for this feature in attempted targets (including partial matches)
+      let attemptCount = 0;
+      for (const [attemptedTarget, count] of Object.entries(analysis.attemptedTargets)) {
+        // Check if the attempted target mentions this feature name
+        if (attemptedTarget.includes(normalizedName) || normalizedName.includes(attemptedTarget)) {
+          attemptCount += count as number;
+        }
+      }
+      attemptCount = attemptCount > 0 ? attemptCount : (analysis.attemptedTargets[normalizedName] || 0);
 
       if (attemptCount === 0) {
         return featureName; // Fresh option, no marker
@@ -413,6 +444,41 @@ EXPLORATION TIP: If you're stuck with a challenge, consider exploring a new loca
 What do you do next? Respond with a JSON object containing your action and reasoning.`;
 
     try {
+      // DEBUG: Check for repetition and log context
+      const isRepeating = analysis.repeatedPatterns.length > 0 || analysis.consecutiveFailures >= 2;
+      let debugLogPath = '';
+
+      if (isRepeating) {
+        const fs = require('fs');
+        const path = require('path');
+        debugLogPath = path.join(process.cwd(), 'debug-repeated-actions.txt');
+        const timestamp = new Date().toISOString();
+        const debugLog = `
+================================================================================
+REPEATED ACTION DEBUG LOG [${timestamp}]
+================================================================================
+LOCATION: ${locationName}
+REPEATED PATTERNS: ${analysis.repeatedPatterns.join(', ')}
+CONSECUTIVE FAILURES: ${analysis.consecutiveFailures}
+RECENT ACTIONS (last 8):
+${analysis.recentActions.slice(-8).map((a, i) => `  ${i + 1}. ${a}`).join('\n')}
+
+ATTEMPTED TARGETS:
+${Object.entries(analysis.attemptedTargets).map(([t, c]) => `  - "${t}": ${c} attempts`).join('\n')}
+
+MARKED FEATURES:
+${markedFeatures.map((f: any, i: any) => `  ${i + 1}. ${f}`).join('\n')}
+
+AVAILABLE EXITS:
+${availableExits}
+
+USER PROMPT (recent situation section):
+${userPrompt.substring(0, 1500)}...
+--------------------------------------------------------------------------------
+`;
+        fs.appendFileSync(debugLogPath, debugLog);
+      }
+
       const response = await this.llm.generate({
         systemPrompt,
         userPrompt,
@@ -421,7 +487,24 @@ What do you do next? Respond with a JSON object containing your action and reaso
       });
 
       const parsed = JSON.parse(response.content);
-      
+
+      // DEBUG: Log LLM response for repeated actions
+      if (isRepeating && debugLogPath) {
+        const fs = require('fs');
+        const responseLog = `
+LLM RESPONSE (full):
+${response.content}
+
+PARSED ACTION:
+  action: "${parsed.action}"
+  reasoning: "${parsed.reasoning}"
+  strategy: "${parsed.strategy || 'none'}"
+
+================================================================================
+`;
+        fs.appendFileSync(debugLogPath, responseLog);
+      }
+
       return {
         action: parsed.action || "I look around carefully.",
         reasoning: parsed.reasoning || "Assessing the situation before acting.",
@@ -432,6 +515,23 @@ What do you do next? Respond with a JSON object containing your action and reaso
       };
     } catch (error) {
       console.error("AI Player decision failed:", error);
+
+      // DEBUG: Log fallback usage
+      const isRepeating = analysis.repeatedPatterns.length > 0 || analysis.consecutiveFailures >= 2;
+      if (isRepeating) {
+        const fs = require('fs');
+        const path = require('path');
+        const debugLogPath = path.join(process.cwd(), 'debug-repeated-actions.txt');
+        const fallbackLog = `
+ERROR - FALLBACK TRIGGERED:
+  Error: ${(error as any).message}
+  Stack: ${(error as any).stack?.substring(0, 200)}
+
+================================================================================
+`;
+        fs.appendFileSync(debugLogPath, fallbackLog);
+      }
+
       // Fallback action
       return {
         action: "I observe my surroundings carefully.",

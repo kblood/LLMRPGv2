@@ -1,0 +1,1146 @@
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:14:07.088Z]
+================================================================================
+LOCATION: The Ruins of Eldoria
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 2
+RECENT ACTIONS (last 8):
+  1. You're not sure where to go. Available exits: north (Pathway leading into the dense Whispering Woods, rumored to contain ancient secrets and creatures that guard them fiercely.), south (A narrow gorge carved by an ancient river that flows with a silvery mist, where ruins of old bridges suggest past civilization.)
+  2. I carefully examine the Temple of the Abyssal Eye, looking for any hidden doors or passages that might lead to other parts of Eldoria.
+  3. I carefully examine the Temple of the Abyssal Eye for any hidden doors or passages that might lead to other parts of the ruins.
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye, looking for any hidden doors or passages that might lead to other parts of eldoria.": 1 attempts
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+
+MARKED FEATURES:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: The Ruins of Eldoria
+You find yourself in a new situation.
+
+
+You are alone.
+Notable Features:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Explore the immediate surroundings
+2. Examine interesting features in the location
+3. Look for exits or passages to other areas
+4. Note any NPCs present in the area
+
+⚠️ NOTICE: Your last 2 actions failed. Consider trying a different approach.
+
+
+RECENT HISTORY:
+Turn 3: You're not sure where to go. Available exits: north (Pathway leading into the dense Whispering Woods, rumored to contain ancient secrets and creatures...
+Turn 4: You methodically scan the temple's ancient walls and stone floors, searching for any hidden clues that might reveal other passages or secret doors. Yo...
+Turn 8: You focus intently on the ancient stone walls of the Temple of the Abyssal Eye, your mind racing with questions about its purpose and secrets. As you ...
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can declare new story details by spending Fate Points if it fits your character's background or makes narrative sense.
+
+EXPLORATION TIP: If you're stuck with a challenge, consider exploring a new location! Different areas may have different opportunities and solutions.
+
+What d...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I carefully examine the Temple of the Abyssal Eye, focusing on any cracks, hidden hinges, or unusual markings that might indicate secret passages or doors.",
+  "reasoning": "As The Scholar-Mage, I am driven by an insatiable curiosity to uncover lost knowledge. Examining ancient structures is my specialty, and even a single clue could lead me to further answers about this temple's purpose and hidden past.",
+  "strategy": "By methodically scanning the stone walls and floors for any anomalies or clues that might reveal secret entrances, I can potentially unlock new pathways or discover passages that others have overlooked.",
+  "expectedOutcome": "I hope to find a hidden passage or mechanism within the Temple of the Abyssal Eye that could lead me deeper into Eldoria's ruins or even outside this area, allowing me to continue my quest for knowledge.",
+  "fatePointsSpent": 0,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    },
+    {
+      "aspectName": "Mysterious Past",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I carefully examine the Temple of the Abyssal Eye, focusing on any cracks, hidden hinges, or unusual markings that might indicate secret passages or doors."
+  reasoning: "As The Scholar-Mage, I am driven by an insatiable curiosity to uncover lost knowledge. Examining ancient structures is my specialty, and even a single clue could lead me to further answers about this temple's purpose and hidden past."
+  strategy: "By methodically scanning the stone walls and floors for any anomalies or clues that might reveal secret entrances, I can potentially unlock new pathways or discover passages that others have overlooked."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:14:10.086Z]
+================================================================================
+LOCATION: The Ruins of Eldoria
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 2
+RECENT ACTIONS (last 8):
+  1. You're not sure where to go. Available exits: north (Pathway leading into the dense Whispering Woods, rumored to contain ancient secrets and creatures that guard them fiercely.), south (A narrow gorge carved by an ancient river that flows with a silvery mist, where ruins of old bridges suggest past civilization.)
+  2. I carefully examine the Temple of the Abyssal Eye, looking for any hidden doors or passages that might lead to other parts of Eldoria.
+  3. I carefully examine the Temple of the Abyssal Eye for any hidden doors or passages that might lead to other parts of the ruins.
+  4. Inventory: Nothing. Wealth: 100 coins.
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye, looking for any hidden doors or passages that might lead to other parts of eldoria.": 1 attempts
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+
+MARKED FEATURES:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: The Ruins of Eldoria
+You find yourself in a new situation.
+
+
+You are alone.
+Notable Features:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Explore the immediate surroundings
+2. Examine interesting features in the location
+3. Look for exits or passages to other areas
+4. Note any NPCs present in the area
+
+⚠️ NOTICE: Your last 2 actions failed. Consider trying a different approach.
+
+
+RECENT HISTORY:
+Turn 4: You methodically scan the temple's ancient walls and stone floors, searching for any hidden clues that might reveal other passages or secret doors. Yo...
+Turn 8: You focus intently on the ancient stone walls of the Temple of the Abyssal Eye, your mind racing with questions about its purpose and secrets. As you ...
+Turn 9: You check your belongings. You have 100 coins. In your pack, you find: Nothing....
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can declare new story details by spending Fate Points if it fits your character's background or makes narrative sense.
+
+EXPLORATION TIP: If you're stuck with a challenge, consider exploring a new location! Different areas may have different opportunities and solutions.
+
+What do you do next? Respond with a JSON object containing your action and re...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.",
+  "reasoning": "As The Scholar-Mage, I am driven by a relentless curiosity to uncover lost knowledge and secrets. Examining the temple's architecture could reveal clues about how to access other areas within the ruins.",
+  "strategy": "I will methodically inspect every inch of the stone walls, noting any patterns or anomalies that might suggest secret entrances or hidden chambers.",
+  "expectedOutcome": "By identifying potential weak points in the wall's structure, I hope to discover a concealed passage leading to other parts of Eldoria or even beyond.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages."
+  reasoning: "As The Scholar-Mage, I am driven by a relentless curiosity to uncover lost knowledge and secrets. Examining the temple's architecture could reveal clues about how to access other areas within the ruins."
+  strategy: "I will methodically inspect every inch of the stone walls, noting any patterns or anomalies that might suggest secret entrances or hidden chambers."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:14:19.223Z]
+================================================================================
+LOCATION: The Ruins of Eldoria
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 3
+RECENT ACTIONS (last 8):
+  1. You're not sure where to go. Available exits: north (Pathway leading into the dense Whispering Woods, rumored to contain ancient secrets and creatures that guard them fiercely.), south (A narrow gorge carved by an ancient river that flows with a silvery mist, where ruins of old bridges suggest past civilization.)
+  2. I carefully examine the Temple of the Abyssal Eye, looking for any hidden doors or passages that might lead to other parts of Eldoria.
+  3. I carefully examine the Temple of the Abyssal Eye for any hidden doors or passages that might lead to other parts of the ruins.
+  4. Inventory: Nothing. Wealth: 100 coins.
+  5. I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye, looking for any hidden doors or passages that might lead to other parts of eldoria.": 1 attempts
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+
+MARKED FEATURES:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: The Ruins of Eldoria
+You find yourself in a new situation.
+
+
+You are alone.
+Notable Features:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Explore the immediate surroundings
+2. Examine interesting features in the location
+3. Look for exits or passages to other areas
+4. Note any NPCs present in the area
+
+⚠️ CRITICAL NOTICE: Your last 3 actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+Ideas: Invoke one of your aspects for +2 or a reroll; Create an advantage first to get free invokes
+
+RECENT HISTORY:
+Turn 8: You focus intently on the ancient stone walls of the Temple of the Abyssal Eye, your mind racing with questions about its purpose and secrets. As you ...
+Turn 9: You check your belongings. You have 100 coins. In your pack, you find: Nothing....
+Turn 10: You meticulously trace your fingers along the weathered stone surfaces of the Temple of the Abyssal Eye, breathing life into each crevice and joint wi...
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can declare new story details by spending Fate Points if it fits your character's background or makes narrative sense.
+
+EXPLORATION TIP: If you're stuck w...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "You begin to carefully examine the Temple of the Abyssal Eye, tracing patterns etched into its stone walls with your finger, searching for any hidden symbols or markings that might reveal secrets about how to open hidden doors.",
+  "reasoning": "As The Scholar-Mage, you're driven by curiosity and a deep desire to uncover lost knowledge. Examining ancient ruins is where your expertise lies.",
+  "strategy": "Your keen observational skills will allow you to notice any arcane symbols or signs that could lead to hidden passages or further clues about the temple's purpose.",
+  "expectedOutcome": "You hope to find an overlooked inscription, glyph, or artifact within the temple walls that can be invoked to open a hidden door and provide passage elsewhere in Eldoria.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "You begin to carefully examine the Temple of the Abyssal Eye, tracing patterns etched into its stone walls with your finger, searching for any hidden symbols or markings that might reveal secrets about how to open hidden doors."
+  reasoning: "As The Scholar-Mage, you're driven by curiosity and a deep desire to uncover lost knowledge. Examining ancient ruins is where your expertise lies."
+  strategy: "Your keen observational skills will allow you to notice any arcane symbols or signs that could lead to hidden passages or further clues about the temple's purpose."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:14:21.950Z]
+================================================================================
+LOCATION: The Ruins of Eldoria
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 3
+RECENT ACTIONS (last 8):
+  1. You're not sure where to go. Available exits: north (Pathway leading into the dense Whispering Woods, rumored to contain ancient secrets and creatures that guard them fiercely.), south (A narrow gorge carved by an ancient river that flows with a silvery mist, where ruins of old bridges suggest past civilization.)
+  2. I carefully examine the Temple of the Abyssal Eye, looking for any hidden doors or passages that might lead to other parts of Eldoria.
+  3. I carefully examine the Temple of the Abyssal Eye for any hidden doors or passages that might lead to other parts of the ruins.
+  4. Inventory: Nothing. Wealth: 100 coins.
+  5. I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.
+  6. Inventory: Nothing. Wealth: 100 coins.
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye, looking for any hidden doors or passages that might lead to other parts of eldoria.": 1 attempts
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+
+MARKED FEATURES:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: The Ruins of Eldoria
+You find yourself in a new situation.
+
+
+You are alone.
+Notable Features:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Explore the immediate surroundings
+2. Examine interesting features in the location
+3. Look for exits or passages to other areas
+4. Note any NPCs present in the area
+
+⚠️ CRITICAL NOTICE: Your last 3 actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+Ideas: Invoke one of your aspects for +2 or a reroll; Create an advantage first to get free invokes
+
+RECENT HISTORY:
+Turn 9: You check your belongings. You have 100 coins. In your pack, you find: Nothing....
+Turn 10: You meticulously trace your fingers along the weathered stone surfaces of the Temple of the Abyssal Eye, breathing life into each crevice and joint wi...
+Turn 11: You check your belongings. You have 100 coins. In your pack, you find: Nothing....
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can declare new story details by spending Fate Points if it fits your character's background or makes narrative sense.
+
+EXPLORATION TIP: If you're stuck with a challenge, consider exploring a new location! Different areas ma...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas.",
+  "reasoning": "Given my recent failures and the mysterious nature of this location, I need to be thorough in my investigation. The Scholar-Mage aspect compels me to seek out lost knowledge, which could reveal hidden paths here.",
+  "strategy": "I will carefully search every stone surface for cracks or symbols that might hint at secret doors. If I find nothing obvious, I'll look for ledges or walls that appear different from the main structure.",
+  "expectedOutcome": "I hope to either discover a hidden passage that leads outside this temple or uncover clues about how to open any locked doors without resorting to brute force.",
+  "fatePointsSpent": 2,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    },
+    {
+      "aspectName": "The Scholar-Mage",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas."
+  reasoning: "Given my recent failures and the mysterious nature of this location, I need to be thorough in my investigation. The Scholar-Mage aspect compels me to seek out lost knowledge, which could reveal hidden paths here."
+  strategy: "I will carefully search every stone surface for cracks or symbols that might hint at secret doors. If I find nothing obvious, I'll look for ledges or walls that appear different from the main structure."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:14:30.431Z]
+================================================================================
+LOCATION: The Ruins of Eldoria
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 4
+RECENT ACTIONS (last 8):
+  1. You're not sure where to go. Available exits: north (Pathway leading into the dense Whispering Woods, rumored to contain ancient secrets and creatures that guard them fiercely.), south (A narrow gorge carved by an ancient river that flows with a silvery mist, where ruins of old bridges suggest past civilization.)
+  2. I carefully examine the Temple of the Abyssal Eye, looking for any hidden doors or passages that might lead to other parts of Eldoria.
+  3. I carefully examine the Temple of the Abyssal Eye for any hidden doors or passages that might lead to other parts of the ruins.
+  4. Inventory: Nothing. Wealth: 100 coins.
+  5. I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.
+  6. Inventory: Nothing. Wealth: 100 coins.
+  7. I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas.
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye, looking for any hidden doors or passages that might lead to other parts of eldoria.": 1 attempts
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+
+MARKED FEATURES:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: The Ruins of Eldoria
+You find yourself in a new situation.
+
+
+You are alone.
+Notable Features:
+  1. Temple of the Abyssal Eye
+  2. Glimmering Pool of Forgotten Tears
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find an exit or passage leading elsewhere
+2. Travel to a new location (e.g., "I head north", "I go through the doorway")
+3. Explore the new area after arriving
+4. Note differences between locations
+
+⚠️ CRITICAL NOTICE: Your last 4 actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+Ideas: Invoke one of your aspects for +2 or a reroll; Create an advantage first to get free invokes
+
+RECENT HISTORY:
+Turn 10: You meticulously trace your fingers along the weathered stone surfaces of the Temple of the Abyssal Eye, breathing life into each crevice and joint wi...
+Turn 11: You check your belongings. You have 100 coins. In your pack, you find: Nothing....
+Turn 12: As you methodically scan the ancient walls and crumbling arches of the Temple of the Abyssal Eye with your keen eyes, barely a single crack or crevice...
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can declare new story details by spending Fate Points if it fits your character's background or makes narrative sense.
+...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I head north towards the Glimmering Pool of Forgotten Tears, hoping it might lead to an exit or reveal hidden pathways.",
+  "reasoning": "Given my mysterious past and desire for lost knowledge, I feel drawn to the pools that seem ancient and possibly connected to powerful magic. Traveling north offers a new direction after exploring the Temple of the Abyssal Eye without finding anything.",
+  "strategy": "By heading towards the pool, I aim to either find an exit or discover clues about hidden passages through exploration and investigation.",
+  "expectedOutcome": "I hope moving north will lead me to a new area with more opportunities for uncovering secrets or finding my way out of these ruins.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I head north towards the Glimmering Pool of Forgotten Tears, hoping it might lead to an exit or reveal hidden pathways."
+  reasoning: "Given my mysterious past and desire for lost knowledge, I feel drawn to the pools that seem ancient and possibly connected to powerful magic. Traveling north offers a new direction after exploring the Temple of the Abyssal Eye without finding anything."
+  strategy: "By heading towards the pool, I aim to either find an exit or discover clues about hidden passages through exploration and investigation."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:14:36.237Z]
+================================================================================
+LOCATION: Echo Hollow
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 4
+RECENT ACTIONS (last 8):
+  1. You're not sure where to go. Available exits: north (Pathway leading into the dense Whispering Woods, rumored to contain ancient secrets and creatures that guard them fiercely.), south (A narrow gorge carved by an ancient river that flows with a silvery mist, where ruins of old bridges suggest past civilization.)
+  2. I carefully examine the Temple of the Abyssal Eye, looking for any hidden doors or passages that might lead to other parts of Eldoria.
+  3. I carefully examine the Temple of the Abyssal Eye for any hidden doors or passages that might lead to other parts of the ruins.
+  4. Inventory: Nothing. Wealth: 100 coins.
+  5. I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.
+  6. Inventory: Nothing. Wealth: 100 coins.
+  7. I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas.
+  8. Traveled north to Echo Hollow
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye, looking for any hidden doors or passages that might lead to other parts of eldoria.": 1 attempts
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+
+MARKED FEATURES:
+  1. The Crumbling Archway
+  2. Echoes of the Past
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: Echo Hollow
+You find yourself in a new situation.
+
+Scene Aspects: Whispered Memories, Ancient Guardians, Forbidden Knowledge
+You are alone.
+Notable Features:
+  1. The Crumbling Archway
+  2. Echoes of the Past
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find an exit or passage leading elsewhere
+2. Travel to a new location (e.g., "I head north", "I go through the doorway")
+3. Explore the new area after arriving
+4. Note differences between locations
+
+⚠️ CRITICAL NOTICE: Your last 4 actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+Ideas: Invoke one of your aspects for +2 or a reroll; Create an advantage first to get free invokes
+
+RECENT HISTORY:
+Turn 11: You check your belongings. You have 100 coins. In your pack, you find: Nothing....
+Turn 12: As you methodically scan the ancient walls and crumbling arches of the Temple of the Abyssal Eye with your keen eyes, barely a single crack or crevice...
+Turn 13: As you leave the crumbling ruins of Eldoria behind, the sun's golden rays pierce through the misty air, casting an eerie glow on the ancient stones th...
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can declare new story details by spending Fate Points if it fits your chara...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I begin systematically searching the walls of this place for hidden passages or alternative routes to leave.",
+  "reasoning": "Given my mysterious past and need to find an exit, I'll focus on exploring every nook and cranny until something reveals itself",
+  "strategy": "Carefully scan all surfaces, looking for cracks, gaps, symbols, or anything unusual that might hint at a hidden passage",
+  "expectedOutcome": "I hope this systematic search uncovers an overlooked entrance to a new location I can travel to",
+  "fatePointsSpent": 2,
+  "aspectInvokes": [
+    {
+      "aspectName": "The Scholar-Mage",
+      "bonus": "+2"
+    },
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I begin systematically searching the walls of this place for hidden passages or alternative routes to leave."
+  reasoning: "Given my mysterious past and need to find an exit, I'll focus on exploring every nook and cranny until something reveals itself"
+  strategy: "Carefully scan all surfaces, looking for cracks, gaps, symbols, or anything unusual that might hint at a hidden passage"
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:14:45.419Z]
+================================================================================
+LOCATION: Echo Hollow
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 5
+RECENT ACTIONS (last 8):
+  1. I carefully examine the Temple of the Abyssal Eye, looking for any hidden doors or passages that might lead to other parts of Eldoria.
+  2. I carefully examine the Temple of the Abyssal Eye for any hidden doors or passages that might lead to other parts of the ruins.
+  3. Inventory: Nothing. Wealth: 100 coins.
+  4. I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.
+  5. Inventory: Nothing. Wealth: 100 coins.
+  6. I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas.
+  7. Traveled north to Echo Hollow
+  8. I begin systematically searching the walls of this place for hidden passages or alternative routes to leave.
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye, looking for any hidden doors or passages that might lead to other parts of eldoria.": 1 attempts
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+
+MARKED FEATURES:
+  1. The Crumbling Archway
+  2. Echoes of the Past
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: Echo Hollow
+You find yourself in a new situation.
+
+Scene Aspects: Whispered Memories, Ancient Guardians, Forbidden Knowledge
+You are alone.
+Notable Features:
+  1. The Crumbling Archway
+  2. Echoes of the Past
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find an exit or passage leading elsewhere
+2. Travel to a new location (e.g., "I head north", "I go through the doorway")
+3. Explore the new area after arriving
+4. Note differences between locations
+
+⚠️ CRITICAL NOTICE: Your last 5 actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+Ideas: Invoke one of your aspects for +2 or a reroll; Create an advantage first to get free invokes
+
+RECENT HISTORY:
+Turn 12: As you methodically scan the ancient walls and crumbling arches of the Temple of the Abyssal Eye with your keen eyes, barely a single crack or crevice...
+Turn 13: As you leave the crumbling ruins of Eldoria behind, the sun's golden rays pierce through the misty air, casting an eerie glow on the ancient stones th...
+Turn 14: As you methodically scan the stone walls with your keen eyes, you notice an intricate series of ancient symbols etched into the surface. The glyphs se...
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can ...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I cautiously approach the crumbling archway, examining its structure for hidden hinges or secret panels.",
+  "reasoning": "As The Scholar-Mage seeking lost knowledge, I must investigate every detail of my surroundings to uncover potential exits or pathways not immediately obvious.",
+  "strategy": "By carefully inspecting the archway and any surrounding architecture, I hope to find a concealed door or passage that leads elsewhere in Echo Hollow.",
+  "expectedOutcome": "I anticipate discovering an overlooked mechanism or route that allows me to escape this location and continue my search for knowledge.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I cautiously approach the crumbling archway, examining its structure for hidden hinges or secret panels."
+  reasoning: "As The Scholar-Mage seeking lost knowledge, I must investigate every detail of my surroundings to uncover potential exits or pathways not immediately obvious."
+  strategy: "By carefully inspecting the archway and any surrounding architecture, I hope to find a concealed door or passage that leads elsewhere in Echo Hollow."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:14:48.051Z]
+================================================================================
+LOCATION: Echo Hollow
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 5
+RECENT ACTIONS (last 8):
+  1. I carefully examine the Temple of the Abyssal Eye for any hidden doors or passages that might lead to other parts of the ruins.
+  2. Inventory: Nothing. Wealth: 100 coins.
+  3. I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.
+  4. Inventory: Nothing. Wealth: 100 coins.
+  5. I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas.
+  6. Traveled north to Echo Hollow
+  7. I begin systematically searching the walls of this place for hidden passages or alternative routes to leave.
+  8. You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is said to be home to powerful and dangerous creatures.), North (A more straightforward route north follows an old riverbed that runs dry but occasionally reveals remnants of forgotten settlements along its banks.)
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye, looking for any hidden doors or passages that might lead to other parts of eldoria.": 1 attempts
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+
+MARKED FEATURES:
+  1. The Crumbling Archway
+  2. Echoes of the Past
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: Echo Hollow
+You find yourself in a new situation.
+
+Scene Aspects: Whispered Memories, Ancient Guardians, Forbidden Knowledge
+You are alone.
+Notable Features:
+  1. The Crumbling Archway
+  2. Echoes of the Past
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find an exit or passage leading elsewhere
+2. Travel to a new location (e.g., "I head north", "I go through the doorway")
+3. Explore the new area after arriving
+4. Note differences between locations
+
+⚠️ CRITICAL NOTICE: Your last 5 actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+Ideas: Invoke one of your aspects for +2 or a reroll; Create an advantage first to get free invokes
+
+RECENT HISTORY:
+Turn 13: As you leave the crumbling ruins of Eldoria behind, the sun's golden rays pierce through the misty air, casting an eerie glow on the ancient stones th...
+Turn 14: As you methodically scan the stone walls with your keen eyes, you notice an intricate series of ancient symbols etched into the surface. The glyphs se...
+Turn 15: You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is s...
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character doesn't know about it. You can ...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I head east through the narrow path into the Whispering Woods.",
+  "reasoning": "Given my recent failed attempts to find an exit, I decide to explore the new area by heading east into the Whispering Woods. The trees seem alive with ancient secrets, and this could be where I uncover more of my mysterious past.",
+  "strategy": "By traveling east into the Whispering Woods, I hope to find a hidden path or passage that leads beyond the current area, potentially offering new opportunities for research and discovery.",
+  "expectedOutcome": "I expect to discover new trails or hidden entrances that could lead me further from here, away from the immediate dangers of the Crumbling Archway and towards my ultimate goal of uncovering lost knowledge.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I head east through the narrow path into the Whispering Woods."
+  reasoning: "Given my recent failed attempts to find an exit, I decide to explore the new area by heading east into the Whispering Woods. The trees seem alive with ancient secrets, and this could be where I uncover more of my mysterious past."
+  strategy: "By traveling east into the Whispering Woods, I hope to find a hidden path or passage that leads beyond the current area, potentially offering new opportunities for research and discovery."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:14:53.886Z]
+================================================================================
+LOCATION: Ruins of Eldritch Throne
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 5
+RECENT ACTIONS (last 8):
+  1. Inventory: Nothing. Wealth: 100 coins.
+  2. I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.
+  3. Inventory: Nothing. Wealth: 100 coins.
+  4. I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas.
+  5. Traveled north to Echo Hollow
+  6. I begin systematically searching the walls of this place for hidden passages or alternative routes to leave.
+  7. You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is said to be home to powerful and dangerous creatures.), North (A more straightforward route north follows an old riverbed that runs dry but occasionally reveals remnants of forgotten settlements along its banks.)
+  8. Traveled East to Ruins of Eldritch Throne
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye, looking for any hidden doors or passages that might lead to other parts of eldoria.": 1 attempts
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+
+MARKED FEATURES:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: Ruins of Eldritch Throne
+You find yourself in a new situation.
+
+Scene Aspects: Echoes of Ancient Sorcery, Forbidden Knowledge, Guarded by Dark Spirits
+You are alone.
+Notable Features:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find an exit or passage leading elsewhere
+2. Travel to a new location (e.g., "I head north", "I go through the doorway")
+3. Explore the new area after arriving
+4. Note differences between locations
+
+⚠️ CRITICAL NOTICE: Your last 5 actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+Ideas: Invoke one of your aspects for +2 or a reroll; Create an advantage first to get free invokes
+
+RECENT HISTORY:
+Turn 14: As you methodically scan the stone walls with your keen eyes, you notice an intricate series of ancient symbols etched into the surface. The glyphs se...
+Turn 15: You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is s...
+Turn 16: As you set forth from Echo Hollow, a sense of ancient mystery hovers over the verdant landscape as you journey eastward towards the crumbling Ruins of...
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character do...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I begin to carefully examine the glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.",
+  "reasoning": "As The Scholar-Mage with a deep interest in ancient knowledge and arcane symbols, I feel compelled to study these runes that seem charged with an otherworldly energy. Understanding them could unlock new insights or even safe passage through the ruins.",
+  "strategy": "By focusing on interpreting the glyphs and their possible significance, I hope to gain a clue about navigating this location safely. The knowledge gained may also aid in overcoming any dark spirits guarding the area.",
+  "expectedOutcome": "I aim to uncover hidden meanings within the runes that could reveal an unguarded passage or provide insight into how to bypass the guarded by dark spirits aspect of the ruins.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "The Scholar-Mage",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I begin to carefully examine the glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets."
+  reasoning: "As The Scholar-Mage with a deep interest in ancient knowledge and arcane symbols, I feel compelled to study these runes that seem charged with an otherworldly energy. Understanding them could unlock new insights or even safe passage through the ruins."
+  strategy: "By focusing on interpreting the glyphs and their possible significance, I hope to gain a clue about navigating this location safely. The knowledge gained may also aid in overcoming any dark spirits guarding the area."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:15:04.614Z]
+================================================================================
+LOCATION: Ruins of Eldritch Throne
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 5
+RECENT ACTIONS (last 8):
+  1. I carefully examine the ancient stone walls of the Temple of the Abyssal Eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.
+  2. Inventory: Nothing. Wealth: 100 coins.
+  3. I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas.
+  4. Traveled north to Echo Hollow
+  5. I begin systematically searching the walls of this place for hidden passages or alternative routes to leave.
+  6. You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is said to be home to powerful and dangerous creatures.), North (A more straightforward route north follows an old riverbed that runs dry but occasionally reveals remnants of forgotten settlements along its banks.)
+  7. Traveled East to Ruins of Eldritch Throne
+  8. I begin to carefully examine the glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.
+
+ATTEMPTED TARGETS:
+  - "temple of the abyssal eye for any hidden doors or passages that might lead to other parts of the ruins.": 1 attempts
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+  - "glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.": 1 attempts
+
+MARKED FEATURES:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: Ruins of Eldritch Throne
+You find yourself in a new situation.
+
+Scene Aspects: Echoes of Ancient Sorcery, Forbidden Knowledge, Guarded by Dark Spirits
+You are alone.
+Notable Features:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find an exit or passage leading elsewhere
+2. Travel to a new location (e.g., "I head north", "I go through the doorway")
+3. Explore the new area after arriving
+4. Note differences between locations
+
+⚠️ CRITICAL NOTICE: Your last 5 actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+Ideas: Invoke one of your aspects for +2 or a reroll; Create an advantage first to get free invokes
+
+RECENT HISTORY:
+Turn 15: You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is s...
+Turn 16: As you set forth from Echo Hollow, a sense of ancient mystery hovers over the verdant landscape as you journey eastward towards the crumbling Ruins of...
+Turn 17: You focus your keen eyesight on the swirling glyphs etched into the stone walls around you. The symbols glow with an eerie, otherworldly light that se...
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character do...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I head north through the doorway to see if it leads elsewhere.",
+  "reasoning": "With my last five actions failing, I need to try something new. The northern door is an unexplored option that could lead me out of these ruins or provide a different vantage point for further investigation.",
+  "strategy": "By heading north through the doorway, I aim to discover hidden passages, secret rooms, or other exits that might take me away from this mysterious location and towards my next objective of finding more information about my past and exploring new knowledge.",
+  "expectedOutcome": "I hope traveling north will reveal an unexplored area within the ruins with potential for ancient artifacts, magical wards, or further clues to my mysterious past.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I head north through the doorway to see if it leads elsewhere."
+  reasoning: "With my last five actions failing, I need to try something new. The northern door is an unexplored option that could lead me out of these ruins or provide a different vantage point for further investigation."
+  strategy: "By heading north through the doorway, I aim to discover hidden passages, secret rooms, or other exits that might take me away from this mysterious location and towards my next objective of finding more information about my past and exploring new knowledge."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:15:07.481Z]
+================================================================================
+LOCATION: Ruins of Eldritch Throne
+REPEATED PATTERNS: 
+CONSECUTIVE FAILURES: 4
+RECENT ACTIONS (last 8):
+  1. Inventory: Nothing. Wealth: 100 coins.
+  2. I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas.
+  3. Traveled north to Echo Hollow
+  4. I begin systematically searching the walls of this place for hidden passages or alternative routes to leave.
+  5. You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is said to be home to powerful and dangerous creatures.), North (A more straightforward route north follows an old riverbed that runs dry but occasionally reveals remnants of forgotten settlements along its banks.)
+  6. Traveled East to Ruins of Eldritch Throne
+  7. I begin to carefully examine the glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.
+  8. You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are rumored to be more active.), northeast (A faint tunnel opens up beneath the ruins, descending towards an old mine shaft rumored to hold treasures guarded by ancient spirits.)
+
+ATTEMPTED TARGETS:
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+  - "glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.": 1 attempts
+
+MARKED FEATURES:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: Ruins of Eldritch Throne
+You find yourself in a new situation.
+
+Scene Aspects: Echoes of Ancient Sorcery, Forbidden Knowledge, Guarded by Dark Spirits
+You are alone.
+Notable Features:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find an exit or passage leading elsewhere
+2. Travel to a new location (e.g., "I head north", "I go through the doorway")
+3. Explore the new area after arriving
+4. Note differences between locations
+
+⚠️ CRITICAL NOTICE: Your last 4 actions FAILED. This approach is broken.
+MANDATORY: Try a fundamentally different action - prefer TRAVELING to a new location if possible.
+Ideas: Invoke one of your aspects for +2 or a reroll; Create an advantage first to get free invokes
+
+RECENT HISTORY:
+Turn 16: As you set forth from Echo Hollow, a sense of ancient mystery hovers over the verdant landscape as you journey eastward towards the crumbling Ruins of...
+Turn 17: You focus your keen eyesight on the swirling glyphs etched into the stone walls around you. The symbols glow with an eerie, otherworldly light that se...
+Turn 18: You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are ...
+
+REMEMBER: You only know what has been described or what you've experienced. If something isn't mentioned, your character do...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I head north through the northern wall of the ruins, hoping to find an unguarded path leading out of this area.",
+  "reasoning": "Given my mysterious past and haunted by shadows aspect, I feel compelled to explore areas that might reveal more about what happened to me. The north seems like the safest direction to try first.",
+  "strategy": "By heading north through the northern wall, I aim to find a hidden passage or alternative route out of the ruins without triggering any traps or dark spirits that could pose danger.",
+  "expectedOutcome": "I hope this will lead me to an exit or at least a new area within the ruins where I can gather more information about my past and uncover lost knowledge.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I head north through the northern wall of the ruins, hoping to find an unguarded path leading out of this area."
+  reasoning: "Given my mysterious past and haunted by shadows aspect, I feel compelled to explore areas that might reveal more about what happened to me. The north seems like the safest direction to try first."
+  strategy: "By heading north through the northern wall, I aim to find a hidden passage or alternative route out of the ruins without triggering any traps or dark spirits that could pose danger."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:15:10.431Z]
+================================================================================
+LOCATION: Ruins of Eldritch Throne
+REPEATED PATTERNS: "youre not sure where to go available exi" (3 times)
+CONSECUTIVE FAILURES: 4
+RECENT ACTIONS (last 8):
+  1. I begin systematically examining the Temple of the Abyssal Eye, looking for any hidden mechanisms or secret doors that might lead to other areas.
+  2. Traveled north to Echo Hollow
+  3. I begin systematically searching the walls of this place for hidden passages or alternative routes to leave.
+  4. You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is said to be home to powerful and dangerous creatures.), North (A more straightforward route north follows an old riverbed that runs dry but occasionally reveals remnants of forgotten settlements along its banks.)
+  5. Traveled East to Ruins of Eldritch Throne
+  6. I begin to carefully examine the glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.
+  7. You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are rumored to be more active.), northeast (A faint tunnel opens up beneath the ruins, descending towards an old mine shaft rumored to hold treasures guarded by ancient spirits.)
+  8. You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are rumored to be more active.), northeast (A faint tunnel opens up beneath the ruins, descending towards an old mine shaft rumored to hold treasures guarded by ancient spirits.)
+
+ATTEMPTED TARGETS:
+  - "ancient stone walls of the temple of the abyssal eye, looking for any cracks, symbols, or irregularities that might indicate hidden passages.": 1 attempts
+  - "glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.": 1 attempts
+
+MARKED FEATURES:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: Ruins of Eldritch Throne
+You find yourself in a new situation.
+
+Scene Aspects: Echoes of Ancient Sorcery, Forbidden Knowledge, Guarded by Dark Spirits
+You are alone.
+Notable Features:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find an exit or passage leading elsewhere
+2. Travel to a new location (e.g., "I head north", "I go through the doorway")
+3. Explore the new area after arriving
+4. Note differences between locations
+
+🚨 CRITICAL: You are stuck in a loop! Your last 4 actions have failed, and you keep repeating: "youre not sure where to go available exi" (3 times)
+
+THIS APPROACH WILL NOT WORK. YOU MUST ESCAPE THIS LOOP.
+
+MANDATORY ACTION: You MUST do ONE of the following:
+1. TRAVEL to a DIFFERENT LOCATION (this is the primary recommendation)
+2. Use a completely different skill or approach
+3. Interact with a different object or person
+4. Spend Fate Points to declare a story advantage that changes the situation
+
+If available exits exist, TRAVELING TO A NEW LOCATION is your best option.
+
+RECENT HISTORY:
+Turn 17: You focus your keen eyesight on the swirling glyphs etched into the stone walls around you. The symbols glow with an eerie, otherworldly light that se...
+Turn 18: You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where ...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I focus my meditation on the glowing runes etched into the walls around me, seeking to understand their meaning and potential hidden pathways.",
+  "reasoning": "Given my expertise in Arcana and my desire for lost knowledge, I believe that deciphering these ancient symbols could reveal a secret passage or exit from this location.",
+  "strategy": "By meditating on the runes, I aim to gain insight into their purpose and any mystical connections they might have to other areas of the ruins.",
+  "expectedOutcome": "I hope to uncover clues about hidden passageways that could lead me out of the Ruins of Eldritch Throne or to a new location with more opportunities for exploration.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I focus my meditation on the glowing runes etched into the walls around me, seeking to understand their meaning and potential hidden pathways."
+  reasoning: "Given my expertise in Arcana and my desire for lost knowledge, I believe that deciphering these ancient symbols could reveal a secret passage or exit from this location."
+  strategy: "By meditating on the runes, I aim to gain insight into their purpose and any mystical connections they might have to other areas of the ruins."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:15:24.946Z]
+================================================================================
+LOCATION: Ruins of Eldritch Throne
+REPEATED PATTERNS: "youre not sure where to go available exi" (3 times)
+CONSECUTIVE FAILURES: 0
+RECENT ACTIONS (last 8):
+  1. Traveled north to Echo Hollow
+  2. I begin systematically searching the walls of this place for hidden passages or alternative routes to leave.
+  3. You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is said to be home to powerful and dangerous creatures.), North (A more straightforward route north follows an old riverbed that runs dry but occasionally reveals remnants of forgotten settlements along its banks.)
+  4. Traveled East to Ruins of Eldritch Throne
+  5. I begin to carefully examine the glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.
+  6. You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are rumored to be more active.), northeast (A faint tunnel opens up beneath the ruins, descending towards an old mine shaft rumored to hold treasures guarded by ancient spirits.)
+  7. You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are rumored to be more active.), northeast (A faint tunnel opens up beneath the ruins, descending towards an old mine shaft rumored to hold treasures guarded by ancient spirits.)
+  8. I focus my meditation on the glowing runes etched into the walls around me, seeking to understand their meaning and potential hidden pathways.
+
+ATTEMPTED TARGETS:
+  - "glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.": 1 attempts
+
+MARKED FEATURES:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: Ruins of Eldritch Throne
+You find yourself in a new situation.
+
+Scene Aspects: Echoes of Ancient Sorcery, Forbidden Knowledge, Guarded by Dark Spirits
+You are alone.
+Notable Features:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find an exit or passage leading elsewhere
+2. Travel to a new location (e.g., "I head north", "I go through the doorway")
+3. Explore the new area after arriving
+4. Note differences between locations
+
+⚠️ ACTION ALERT: You've been repeating similar actions - this approach is NOT working!
+Repeated patterns: "youre not sure where to go available exi" (3 times)
+REQUIRED: Choose something COMPLETELY DIFFERENT from your recent actions.
+Consider: Move to a different area or room; Interact with a different object or feature
+
+RECENT HISTORY:
+Turn 18: You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are ...
+Turn 19: You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are ...
+Turn 20: As you close your eyes and center yourself, your mind begins to delve into the ancient knowledge encoded within the glowing runes that seem to pulse w...
+
+REMEMBER: You only know what has been described or what you've experience...
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I approach the cursed waterfall cautiously, studying its source to see if it might reveal an unseen passage or lead to another area.",
+  "reasoning": "The presence of glowing runes on the walls suggests there may be hidden pathways here, but I also need to be aware of the dark spirits guarding this place. Understanding how the water flows could unlock a secret route out of these ruins.",
+  "strategy": "I will attempt to trace the flow of the cursed water upstream to see if it leads to another entrance or reveals an unseen passage. If not, I'll search for clues around the waterfall that might indicate a hidden way forward.",
+  "expectedOutcome": "By understanding how this waterfall functions and its connection to the surrounding area, I hope to find an alternative path out of these ruins or discover key information about what lies beyond them.",
+  "fatePointsSpent": 1,
+  "aspectInvokes": [
+    {
+      "aspectName": "Seeker of Lost Knowledge",
+      "bonus": "+2"
+    }
+  ]
+}
+
+PARSED ACTION:
+  action: "I approach the cursed waterfall cautiously, studying its source to see if it might reveal an unseen passage or lead to another area."
+  reasoning: "The presence of glowing runes on the walls suggests there may be hidden pathways here, but I also need to be aware of the dark spirits guarding this place. Understanding how the water flows could unlock a secret route out of these ruins."
+  strategy: "I will attempt to trace the flow of the cursed water upstream to see if it leads to another entrance or reveals an unseen passage. If not, I'll search for clues around the waterfall that might indicate a hidden way forward."
+
+================================================================================
+
+================================================================================
+REPEATED ACTION DEBUG LOG [2025-11-29T09:15:39.931Z]
+================================================================================
+LOCATION: Ruins of Eldritch Throne
+REPEATED PATTERNS: "youre not sure where to go available exi" (3 times)
+CONSECUTIVE FAILURES: 1
+RECENT ACTIONS (last 8):
+  1. I begin systematically searching the walls of this place for hidden passages or alternative routes to leave.
+  2. You're not sure where to go. Available exits: East (A narrow path leads eastward into the heart of the Whispering Woods, where the ancient forest is said to be home to powerful and dangerous creatures.), North (A more straightforward route north follows an old riverbed that runs dry but occasionally reveals remnants of forgotten settlements along its banks.)
+  3. Traveled East to Ruins of Eldritch Throne
+  4. I begin to carefully examine the glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.
+  5. You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are rumored to be more active.), northeast (A faint tunnel opens up beneath the ruins, descending towards an old mine shaft rumored to hold treasures guarded by ancient spirits.)
+  6. You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are rumored to be more active.), northeast (A faint tunnel opens up beneath the ruins, descending towards an old mine shaft rumored to hold treasures guarded by ancient spirits.)
+  7. I focus my meditation on the glowing runes etched into the walls around me, seeking to understand their meaning and potential hidden pathways.
+  8. I approach the cursed waterfall cautiously, studying its source to see if it might reveal an unseen passage or lead to another area.
+
+ATTEMPTED TARGETS:
+  - "glowing runes on the walls, trying to decipher their meaning and see if they reveal any hidden paths or secrets.": 1 attempts
+
+MARKED FEATURES:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+AVAILABLE EXITS:
+
+
+USER PROMPT (recent situation section):
+CURRENT SITUATION:
+📍 LOCATION: Ruins of Eldritch Throne
+You find yourself in a new situation.
+
+Scene Aspects: Echoes of Ancient Sorcery, Forbidden Knowledge, Guarded by Dark Spirits
+You are alone.
+Notable Features:
+  1. Glowing Runes on the Walls
+  2. Cursed Waterfall
+
+🚪 TRAVEL OPTIONS:
+No obvious exits visible. You might search for hidden passages or alternative routes.
+
+CURRENT OBJECTIVES:
+1. Find and approach any NPCs in the area
+2. Ask an NPC about something specific (triggers dialogue system)
+3. Tell or say something to an NPC
+4. Try to learn useful information through conversation
+
+⚠️ ACTION ALERT: You've been repeating similar actions - this approach is NOT working!
+Repeated patterns: "youre not sure where to go available exi" (3 times)
+REQUIRED: Choose something COMPLETELY DIFFERENT from your recent actions.
+Consider: Move to a different area or room; Interact with a different object or feature
+
+RECENT HISTORY:
+Turn 19: You're not sure where to go. Available exits: southwest (Through a narrow, shadowy pass leading deeper into the Whispering Woods, where creatures are ...
+Turn 20: As you close your eyes and center yourself, your mind begins to delve into the ancient knowledge encoded within the glowing runes that seem to pulse w...
+Turn 21: As you edge closer to the cursed waterfall, your senses are heightened, straining to grasp any hint of hidden paths or unseen energies that might eman...
+
+REMEMBER: You only know what has been described or what you've experienced....
+--------------------------------------------------------------------------------
+
+LLM RESPONSE (full):
+{
+  "action": "I focus on the glowing runes on the walls, studying their patterns intently.",
+  "reasoning": "As a scholar-mage seeking lost knowledge, deciphering ancient symbols is my best path forward."
+}
+
+PARSED ACTION:
+  action: "I focus on the glowing runes on the walls, studying their patterns intently."
+  reasoning: "As a scholar-mage seeking lost knowledge, deciphering ancient symbols is my best path forward."
+  strategy: "none"
+
+================================================================================

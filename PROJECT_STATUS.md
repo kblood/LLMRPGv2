@@ -163,32 +163,43 @@ See `PHASE_26_IMPLEMENTATION.md` for detailed implementation notes.
 ## 🔮 Future Phases (Planned)
 
 ### Phase 27: Export & AI Quality Fixes (In Progress 🔵)
-**Status:** Validation & Bug Fixes
+**Status:** Bug Fixes Complete, Context Optimization Complete, AI Diversity Issue Needs Deeper Work
 
-**Test Results (Nov 29, 2025 - Run 2):**
-- **Duration:** 6.37 minutes
-- **Total Actions:** 46 actions
-- **Success Rate:** 26.1% (12 successful, 34 failed)
-- **Critical Issues Fixed:**
-  - ✅ Travel parsing null pointer crash - FIXED
-  - ✅ Undefined aspect in compel offers - FIXED (validation added)
+**Test Results Summary:**
+| Run | Duration | Actions | Success Rate | Key Issues |
+|-----|----------|---------|--------------|-----------|
+| 1   | 7.13 min | 34      | 41.2%        | Travel parsing crash |
+| 2   | 6.37 min | 46      | 26.1%        | Undefined compel aspect |
+| 3   | 7.49 min | 35      | 34.3%        | AI repetition loop persists |
 
-**Remaining Issues:**
-- 🔴 **AI Repetition Loop**: AI gets stuck examining same objects (e.g., "ancient magic reservoir", "obsidian throne")
-  - Symptom: 5+ consecutive identical action attempts with same reasoning
-  - Impact: Quest success rate 0%, Combat 17%
-- 🟡 **Decision Diversity**: Lacking fallback strategies when action fails
-  - AI doesn't explore alternatives; repeats same approach
-- 🟡 **Context Window Size**: May be pruning important failure context
+**Critical Issues Fixed (✅):**
+1. `DecisionEngine.ts:311` - Null pointer in travel direction parsing
+2. `GameMaster.ts:521` - Undefined aspect in compel offers
+3. `AIPlayer.ts` - Context optimization for decision guidance
 
-**Fixes Applied:**
-1. `DecisionEngine.ts:311` - Added null check for `parsed.direction` before calling toLowerCase()
-2. `GameMaster.ts:521` - Added validation for `compelData.aspectName` before creating compel
+**Context Optimizations Implemented (✅):**
+- ✅ Target tracking: Extract what object/NPC AI is attempting
+- ✅ Attempt counting: Mark features with "[tried X times]" in location context
+- ✅ Freshness ordering: Sort exits by attempt count (untried first)
+- ✅ Explicit guidance: Show "[tried 3 times - this is NOT working, pick something else]"
 
-**Next Steps:**
-1. Enhance AI loop detection with confidence thresholds
-2. Implement decision diversity mechanism (suggest alternative actions when failing)
-3. Profile decision engine context window pruning
+**Remaining Critical Issue (🔴):**
+- **AI Still Gets Stuck Despite Context Cues**: Success rate slightly improved (26.1% → 34.3%) but AI continues repetitive patterns
+  - Example: Tries "examine ancient tome" 4 consecutive times despite feedback
+  - Root cause: LLM interprets context but doesn't follow "pick something else" directive
+  - Temperature: Currently 0.8 (might need experiment with different values)
+  - Pattern: Even with explicit warnings, LLM sticks to comfort zone
+
+**Analysis:**
+The context optimizations show marginal improvement (8.2% increase in success rate). However, the core issue is that the LLM generates actions that ignore the context about what's been tried. Two possible solutions:
+1. **Stronger prompt constraints**: Require action to NOT be in recent history (constrain output space)
+2. **Temperature tuning**: Lower temp to make LLM more deterministic, higher to increase randomness
+3. **Mandatory action restrictions**: Force specific action types based on attempt history
+
+**Next Steps for Phase 27:**
+1. Add constraint: "Your action must NOT attempt the same target as your last 3 actions"
+2. Test with temperature variations (0.3 for deterministic, 1.0+ for variety)
+3. Profile context window to ensure recent history is preserved
 
 ### Phase 23: Extended World Persistence (Complete ✅)
 
