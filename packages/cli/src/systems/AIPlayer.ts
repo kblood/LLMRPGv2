@@ -1,5 +1,6 @@
 import { LLMProvider, ContextBuilder } from '@llmrpg/llm';
 import { CharacterDefinition, Turn } from '@llmrpg/core';
+import { getQuestSummary } from './QuestGenerator';
 
 export interface AIPlayerContext {
   player: CharacterDefinition;
@@ -331,8 +332,9 @@ export class AIPlayer {
     });
 
     // Get available exits/connections if any, ordered by freshness
+    // Note: connections don't have a 'discovered' field; they have 'isBlocked'
+    // Locations themselves have the 'discovered' field
     const exitConnections = knownLocation?.connections
-      ?.filter((c: any) => c.discovered !== false)
       ?.map((c: any) => {
         const direction = c.direction || 'exit';
         const description = c.description || c.name || 'passage';
@@ -411,6 +413,12 @@ export class AIPlayer {
     const objectivesText = objectives && objectives.length > 0
       ? `CURRENT OBJECTIVES:\n${objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}`
       : 'OBJECTIVE: Explore and discover opportunities';
+
+    // Build quest context from game state
+    const questState = (worldState as any)?.questState;
+    const questContext = questState
+      ? `\n📜 QUESTS:\n${getQuestSummary(questState)}`
+      : '';
 
     // Build recent actions list (more specific than event summaries)
     const recentActionsText = analysis.recentActions.length > 0
@@ -526,13 +534,35 @@ ${analysis.suggestedApproaches.length > 0 ? `Ideas: ${analysis.suggestedApproach
 `;
     }
 
+    // ISSUE #1 FIX: Provide rich location intro on first turn
+    // Detect if this is the first turn (no history)
+    const isFirstTurn = !history || history.length === 0;
+    let locationIntroSection = '';
+    
+    if (isFirstTurn && knownLocation && knownLocation.description) {
+      locationIntroSection = `
+🏛️ LOCATION INTRODUCTION:
+${knownLocation.description}
+
+THINGS YOU CAN INTERACT WITH HERE:
+${markedFeatures.length > 0 
+  ? markedFeatures.map((f: string, i: number) => `  • ${f}`).join('\n')
+  : '  • (None obviously visible - search or explore)'}
+
+${knownLocation.presentNPCs && knownLocation.presentNPCs.length > 0 
+  ? `PEOPLE HERE:\n${knownLocation.presentNPCs.map((npc: string, i: number) => `  • ${npc}`).join('\n')}` 
+  : ''}
+`;
+    }
+
     const userPrompt = `CURRENT SITUATION:
 📍 LOCATION: ${locationName}
+${locationIntroSection}
 ${lastNarration ? `\nGM DESCRIPTION:\n"${lastNarration}"\n` : 'You find yourself in a new situation.'}
 
 ${locationAspects.length > 0 ? `Scene Aspects: ${locationAspects.map((a: any) => a.name || a).join(', ')}` : ''}
-${presentNPCs.length > 0 ? `People Present: ${presentNPCs.map((n: any) => n.name || n).join(', ')}` : 'You are alone.'}
-${markedFeatures.length > 0 ? `Notable Features:\n${markedFeatures.map((f: string, i: number) => `  ${i + 1}. ${f}`).join('\n')}` : ''}
+${presentNPCs.length > 0 && !isFirstTurn ? `People Present: ${presentNPCs.map((n: any) => n.name || n).join(', ')}` : ''}
+${markedFeatures.length > 0 && !isFirstTurn ? `Notable Features:\n${markedFeatures.map((f: string, i: number) => `  ${i + 1}. ${f}`).join('\n')}` : ''}
 
 🚪 TRAVEL OPTIONS:
 ${detailedExits ? `Available Exits:
@@ -541,6 +571,7 @@ ${detailedExits}
 You can travel to any of these locations. Exits marked with ✨ [NEW] are unexplored. Prioritize new exits to discover fresh opportunities!` : 'No obvious exits visible. You might search for hidden passages or alternative routes.'}
 ${deadEndWarning}
 ${locationMemorySection}${saturationSection}
+${questContext}
 
 ${objectivesText}
 ${actionFeedbackSection}
@@ -625,29 +656,7 @@ PARSED ACTION:
       };
     } catch (error) {
       console.error("AI Player decision failed:", error);
-
-      // DEBUG: Log fallback usage
-      const isRepeating = analysis.repeatedPatterns.length > 0 || analysis.consecutiveFailures >= 2;
-      if (isRepeating) {
-        const fs = require('fs');
-        const path = require('path');
-        const debugLogPath = path.join(process.cwd(), 'debug-repeated-actions.txt');
-        const fallbackLog = `
-ERROR - FALLBACK TRIGGERED:
-  Error: ${(error as any).message}
-  Stack: ${(error as any).stack?.substring(0, 200)}
-
-================================================================================
-`;
-        fs.appendFileSync(debugLogPath, fallbackLog);
-      }
-
-      // Fallback action
-      return {
-        action: "I observe my surroundings carefully.",
-        reasoning: "When uncertain, it's best to gather more information.",
-        strategy: "Assessment before action"
-      };
+      throw new Error(`Failed to generate AI player action: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -690,10 +699,7 @@ OUTPUT FORMAT:
       };
     } catch (error) {
       console.error("AI Player reaction failed:", error);
-      return {
-        action: "I consider the situation carefully.",
-        reasoning: "Taking a moment to think."
-      };
+      throw new Error(`Failed to generate AI player reaction: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -743,10 +749,7 @@ OUTPUT FORMAT:
       };
     } catch (error) {
       console.error("AI Player dialogue response failed:", error);
-      return {
-        action: `I acknowledge ${npcName}'s words with a thoughtful nod.`,
-        reasoning: "Taking time to consider before responding."
-      };
+      throw new Error(`Failed to generate AI player dialogue response: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

@@ -10,6 +10,8 @@ import { WorldManager } from './systems/WorldManager';
 import { CombatManager } from './systems/CombatManager';
 import { DialogueSystem } from './systems/DialogueSystem';
 import { WorldEventsManager } from './systems/WorldEventsManager';
+import { initializeQuestState, getQuestSummary, QuestState } from './systems/QuestGenerator';
+import { validateWorldConnectivity } from './systems/WorldConnectivityValidator';
 
 export interface GameMasterConfig {
   /** Maximum number of turns to keep in context history (default: 10) */
@@ -51,6 +53,7 @@ export class GameMaster {
     firstExamineTurn: number;
     lastExamineTurn: number;
   }> = [];
+  private questState: QuestState | undefined;
   private config: GameMasterConfig;
   private consecutiveFailures: number = 0;
 
@@ -296,7 +299,40 @@ export class GameMaster {
         });
     }
     console.log(`Generated ${factionsData.length} factions.`);
-    
+
+    // Validate world connectivity and generate quests
+    console.log('Validating world connectivity...');
+    const connectivity = validateWorldConnectivity(
+      this.worldManager.state.locations,
+      startingLocation.id
+    );
+
+    if (!connectivity.isValid) {
+      console.warn('⚠️  World has connectivity issues:');
+      connectivity.issues.forEach(issue => {
+        console.warn(`   [${issue.severity.toUpperCase()}] ${issue.description}`);
+      });
+    } else {
+      console.log(`✅ World is fully connected: ${connectivity.graph.stats.totalLocations} locations, all reachable`);
+    }
+
+    // Initialize quests for bounded gameplay
+    console.log('Initializing quests...');
+    this.questState = initializeQuestState(
+      theme,
+      this.worldManager.state.locations,
+      1  // Starting turn
+    );
+
+    if (this.questState.mainQuest) {
+      console.log(`🎯 Main Quest: ${this.questState.mainQuest.title}`);
+      console.log(`   Deadline: Turn ${this.questState.mainQuest.turnDeadline}`);
+    }
+
+    if (this.questState.sideQuests.length > 0) {
+      console.log(`📋 Side Quests: ${this.questState.sideQuests.length} available`);
+    }
+
     await this.saveState();
 
     return {
@@ -921,9 +957,17 @@ export class GameMaster {
     const travelData = await this.decisionEngine.parseTravel(playerAction, availableExits);
 
     if (!travelData) {
+      // The AI chose an action that couldn't be parsed as travel
+      // Add error logging to help debug world generation or action parsing issues
+      console.warn(`⚠️ Travel parse failed for action: "${playerAction.substring(0, 100)}"`);
+      console.warn(`   Available exits: ${availableExits.map(e => e.direction).join(', ') || '(NONE - world generation issue?)'}`);
+
       const exitsDesc = availableExits.map(e => `${e.direction} (${e.description})`).join(', ');
-      const narration = `You're not sure where to go. Available exits: ${exitsDesc}`;
-      this.turnManager.addEvent('system', 'travel_clarification', { 
+      const narration = availableExits.length > 0
+        ? `You look at the available paths but aren't sure which direction to take. Available exits: ${exitsDesc}`
+        : `ERROR: You're in a location with no exits! This shouldn't happen. Available exits: ${exitsDesc || '(none)'}`;
+
+      this.turnManager.addEvent('system', 'travel_clarification', {
         description: narration,
         metadata: { availableExits }
       });
@@ -983,10 +1027,16 @@ export class GameMaster {
 
     if (!targetNPC) {
       // NPC mentioned but not present - give narrative response
-      const narration = `You try to address ${dialogueData.targetName}, but they're not here right now.`;
+      // ISSUE #2 FIX: Validate targetName is not empty to prevent blank narrative
+      const trimmedName = dialogueData.targetName?.trim() || '';
+      if (!trimmedName) {
+        console.warn(`⚠️ parseDialogue returned empty targetName: "${dialogueData.targetName}"`);
+      }
+      const targetName = trimmedName.length > 0 ? trimmedName : 'someone';
+      const narration = `You try to address ${targetName}, but they're not here right now.`;
       this.turnManager.addEvent('system', 'dialogue_failed', { 
         description: narration,
-        metadata: { targetName: dialogueData.targetName }
+        metadata: { targetName }
       });
       return this.finalizeTurn(turn, narration, "failure");
     }
@@ -1035,9 +1085,8 @@ export class GameMaster {
 
       return this.finalizeTurn(turn, narration, "success");
     } catch (error) {
-      console.error("Dialogue failed:", error);
-      const narration = `${targetNPC.name} seems distracted and doesn't respond meaningfully.`;
-      return this.finalizeTurn(turn, narration, "failure");
+      console.error("Dialogue generation failed:", error);
+      throw new Error(`Failed to generate NPC dialogue: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -1580,11 +1629,46 @@ export class GameMaster {
       ? this.worldManager.getLocation(this.currentScene.locationId)
       : undefined;
     
+    // ISSUE #1 FIX: Enrich location context with full details for Turn 1
+    // This ensures the AI gets complete information about the location including
+    // features, NPCs, exits, and interactive elements on the first turn
+    let enrichedLocation = currentLocation;
+    if (enrichedLocation) {
+      // Ensure features are properly initialized with names and descriptions
+      const enrichedFeatures = (enrichedLocation.features || []).map((f: any) => ({
+        id: f.id || `feature-${Math.random().toString(36).substr(2, 9)}`,
+        name: f.name || f.description || 'Unknown feature',
+        description: f.description || f.name || 'An unnamed feature',
+        type: f.type || 'generic' as const,
+        interactable: f.interactable !== false,
+        aspectId: f.aspectId
+      }));
+      
+      // Ensure connections (exits) are properly formatted with required fields
+      const enrichedConnections = (enrichedLocation.connections || []).map((c: any) => ({
+        targetId: c.targetId || c.target || '',
+        isBlocked: c.isBlocked || false,
+        direction: c.direction,
+        description: c.description,
+        blockReason: c.blockReason
+      }));
+      
+      enrichedLocation = {
+        ...enrichedLocation,
+        features: enrichedFeatures,
+        connections: enrichedConnections,
+        // presentNPCs remains as string array per LocationSchema
+        discovered: enrichedLocation.discovered !== false
+      };
+    }
+    
     return {
         player: this.getCharacterDefinition(),
         worldState: {
           ...this.worldManager.state,
-          currentLocation // Add current location for easy access
+          currentLocation: enrichedLocation, // Add enriched current location for easy access
+          questState: this.questState, // Add quest information
+          examinationHistory: this.examinationHistory // Provide exam tracking to AI
         },
         history: this.history,
         currentScene: this.currentScene,
