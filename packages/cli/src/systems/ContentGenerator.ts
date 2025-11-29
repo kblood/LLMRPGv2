@@ -118,7 +118,8 @@ JSON with fields:
           interactable: true
         })),
         discovered: true,
-        tier: 'locale'
+        tier: 'locale',
+        isDeadEnd: false
       };
     } catch (e) {
       console.error("Failed to parse generated location:", e);
@@ -144,7 +145,8 @@ JSON with fields:
         presentNPCs: [],
         features: [],
         discovered: true,
-        tier: 'locale'
+        tier: 'locale',
+        isDeadEnd: false
       };
     }
   }
@@ -558,7 +560,7 @@ JSON with fields:
           targetId: `loc-${Math.random().toString(36).substr(2, 9)}`,
           direction: c.direction,
           description: c.description,
-          discovered: false
+          isBlocked: false
         })),
         presentNPCs: [],
         features: (data.features || []).map((f: any) => ({
@@ -568,7 +570,8 @@ JSON with fields:
           interactable: true
         })),
         discovered: true,
-        tier: 'locale'
+        tier: 'locale',
+        isDeadEnd: false
       };
     } catch (e) {
       console.error("Failed to parse generated location:", e);
@@ -590,9 +593,148 @@ JSON with fields:
         presentNPCs: [],
         features: [],
         discovered: true,
-        tier: 'locale'
+        tier: 'locale',
+        isDeadEnd: true
       };
     }
+  }
+
+  /**
+   * Check if a location is a dead-end (only one non-blocked exit)
+   */
+  private isLocationDeadEnd(location: Location): boolean {
+    const nonBlockedConnections = location.connections.filter(c => !c.isBlocked);
+    return nonBlockedConnections.length <= 1;
+  }
+
+  /**
+   * Update dead-end status for all locations in a world state
+   */
+  calculateDeadEndStatus(world: WorldState): void {
+    Object.values(world.locations).forEach(location => {
+      location.isDeadEnd = this.isLocationDeadEnd(location);
+    });
+  }
+
+  /**
+   * Generate a broader initial world with multiple connected locations.
+   * Follows Fate Core philosophy: all exits are represented as aspects
+   * that can be invoked or used with Create Advantage actions.
+   *
+   * Creates a web where secondary locations also connect to each other,
+   * avoiding isolated dead-ends. Target: 8-10 total locations for bounded gameplay.
+   */
+  async generateInitialWorldRegion(theme: WorldState['theme'], startingLocation: Location): Promise<Location[]> {
+    const additionalLocations: Location[] = [];
+    const directions = ['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest'];
+    const explorationAspects = [
+      'Paths Yet Unexplored',
+      'Whispers of Hidden Passages',
+      'Signs of Ancient Pathways',
+      'Opportunities for Investigation',
+      'Secrets Waiting to be Discovered',
+      'Mysteries in the Air'
+    ];
+
+    // Generate 7-9 additional locations for a total of 8-10 locations in the world
+    // This gives enough exploration without being overwhelming
+    const numAdditionalLocations = 7 + Math.floor(Math.random() * 3); // 7-9 locations
+
+    for (let i = 0; i < numAdditionalLocations; i++) {
+      const direction = directions[i % directions.length];
+      const newLocation = await this.generateNewLocation(
+        startingLocation.name,
+        `A path that leads ${direction}`,
+        theme
+      );
+
+      // Add exploration-themed aspects to encourage investigation and discovery
+      // These aspects can be invoked or used with Create Advantage
+      newLocation.aspects.push({
+        id: `asp-${Math.random().toString(36).substr(2, 9)}`,
+        name: explorationAspects[Math.floor(Math.random() * explorationAspects.length)],
+        type: 'situational',
+        freeInvokes: 0
+      });
+
+      additionalLocations.push(newLocation);
+    }
+
+    // Create a web of connections: back to starting location + to adjacent secondary locations
+    // This prevents isolated dead-ends
+    for (let i = 0; i < additionalLocations.length; i++) {
+      const location = additionalLocations[i];
+      const connections = [];
+
+      // Connection back to starting location
+      connections.push({
+        targetId: startingLocation.id,
+        direction: this.getOppositeDirection(directions[i % directions.length]),
+        description: `The way back to ${startingLocation.name}`,
+        isBlocked: false
+      });
+
+      // Add connections to adjacent secondary locations (left and right in circular arrangement)
+      const nextIndex = (i + 1) % additionalLocations.length;
+      const prevIndex = (i - 1 + additionalLocations.length) % additionalLocations.length;
+
+      // Connect to next location clockwise
+      connections.push({
+        targetId: additionalLocations[nextIndex].id,
+        direction: directions[(i + 1) % directions.length],
+        description: `A path leads ${directions[(i + 1) % directions.length]}`,
+        isBlocked: false
+      });
+
+      // Connect to previous location counter-clockwise (only if more than 2 locations)
+      if (additionalLocations.length > 2) {
+        connections.push({
+          targetId: additionalLocations[prevIndex].id,
+          direction: directions[(i - 1 + directions.length) % directions.length],
+          description: `A path leads ${directions[(i - 1 + directions.length) % directions.length]}`,
+          isBlocked: false
+        });
+      }
+
+      location.connections = connections;
+    }
+
+    // Update starting location to connect to all new locations
+    startingLocation.connections = additionalLocations.map((loc, i) => ({
+      targetId: loc.id,
+      direction: directions[i % directions.length],
+      description: `A path leads ${directions[i % directions.length]}`,
+      isBlocked: false
+    }));
+
+    // Add an exploration-themed aspect to starting location
+    startingLocation.aspects.push({
+      id: `asp-${Math.random().toString(36).substr(2, 9)}`,
+      name: 'Multiple Paths Converge Here',
+      type: 'situational',
+      freeInvokes: 0
+    });
+
+    return additionalLocations;
+  }
+
+  /**
+   * Get the opposite direction for bidirectional connections
+   */
+  private getOppositeDirection(direction: string): string {
+    const opposites: Record<string, string> = {
+      'north': 'south',
+      'south': 'north',
+      'east': 'west',
+      'west': 'east',
+      'up': 'down',
+      'down': 'up',
+      'northeast': 'southwest',
+      'northwest': 'southeast',
+      'southeast': 'northwest',
+      'southwest': 'northeast'
+    };
+    return opposites[direction.toLowerCase()] || 'back';
   }
 
 }

@@ -43,7 +43,7 @@ export const LocationSchema = z.object({
   // Location aspects
   aspects: z.array(AspectSchema).default([]),
   
-  // Connected locations
+  // Connected locations (visible exits)
   connections: z.array(z.object({
     targetId: z.string(),
     direction: z.string().optional(),
@@ -51,7 +51,7 @@ export const LocationSchema = z.object({
     isBlocked: z.boolean().default(false),
     blockReason: z.string().optional(),
   })).default([]),
-  
+
   // NPCs currently here
   presentNPCs: z.array(z.string()).default([]),
   
@@ -80,6 +80,9 @@ export const LocationSchema = z.object({
   // Tier in world hierarchy
   tier: z.enum(['world', 'region', 'locale']),
   parentId: z.string().optional(),
+
+  // Dead-end detection: location has only one non-blocked exit
+  isDeadEnd: z.boolean().default(false),
 });
 
 export type Location = z.infer<typeof LocationSchema>;
@@ -212,7 +215,19 @@ export const GameStateSchema = z.object({
   
   // Session-level aspects (temporary)
   sessionAspects: z.array(AspectSchema).default([]),
-  
+
+  // Examination history tracking to prevent repetitive interactions
+  examinationHistory: z.array(z.object({
+    locationId: z.string(),
+    objectId: z.string(),
+    objectName: z.string(),
+    actionType: z.enum(['examine', 'investigate', 'interact']).default('examine'),
+    lastResult: z.string(), // Hash or summary of the result text
+    examineCount: z.number().int().default(1),
+    firstExamineTurn: z.number().int(),
+    lastExamineTurn: z.number().int(),
+  })).default([]),
+
   // Random seed for deterministic replay
   seed: z.number().int(),
 });

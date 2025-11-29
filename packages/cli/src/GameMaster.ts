@@ -41,6 +41,16 @@ export class GameMaster {
   private player: PlayerCharacter | undefined;
   private npcs: Record<string, CharacterDefinition> = {};
   private history: Turn[] = [];
+  private examinationHistory: Array<{
+    locationId: string;
+    objectId: string;
+    objectName: string;
+    actionType: 'examine' | 'investigate' | 'interact';
+    lastResult: string;
+    examineCount: number;
+    firstExamineTurn: number;
+    lastExamineTurn: number;
+  }> = [];
   private config: GameMasterConfig;
   private consecutiveFailures: number = 0;
 
@@ -218,7 +228,18 @@ export class GameMaster {
     // Update World State
     this.worldManager.state.theme = theme;
     this.worldManager.setLocation(startingLocation);
-    
+
+    // Generate initial world region with multiple connected locations
+    console.log("Generating initial world region...");
+    const additionalLocations = await this.contentGenerator.generateInitialWorldRegion(theme, startingLocation);
+    for (const loc of additionalLocations) {
+      this.worldManager.setLocation(loc);
+    }
+    console.log(`Generated ${additionalLocations.length} additional starting locations`);
+
+    // Calculate dead-end status for all locations to help AI avoid isolated areas
+    this.contentGenerator.calculateDeadEndStatus(this.worldManager.state);
+
     // Set initial time (numeric string for proper increment)
     this.worldManager.setTime("0", "Day 1, morning");
 
@@ -1458,7 +1479,85 @@ export class GameMaster {
         }
     });
 
-    return this.finalizeTurn(turn, narration, resolution.outcome, playerReasoning);
+    // Track examinations for saturation detection
+    let finalNarration = narration;
+
+    // If this was an overcome action or examination-related action, record it
+    if ((fateAction === 'overcome' || playerAction.toLowerCase().includes('examine') ||
+         playerAction.toLowerCase().includes('investigate')) &&
+        resolution.outcome === 'success') {
+      const currentLocation = this.currentScene
+        ? this.worldManager.getLocation(this.currentScene.locationId)
+        : null;
+
+      if (currentLocation) {
+        // Try to extract the object name from the player action
+        // Common patterns: "I examine [the] [adjective] noun" or "I look at [the] noun"
+        const objectMatch = playerAction.match(/(?:examine|investigate|look at|study|search|inspect)\s+(?:the\s+)?(.+?)(?:\s+for|\s+to|\s+in|\s+on|$)/i);
+        if (objectMatch) {
+          const objectName = objectMatch[1].trim();
+          const objectId = `obj-${objectName.replace(/\s+/g, '-').toLowerCase()}`;
+
+          // Track examination for saturation detection
+          const resultHash = narration
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .trim()
+            .substring(0, 100);
+
+          const actionType = fateAction === 'create_advantage' ? 'investigate' : 'examine';
+          const currentTurn = turn.turnNumber;
+
+          const existingIndex = this.examinationHistory.findIndex(
+            (record) =>
+              record.locationId === currentLocation.id &&
+              record.objectId === objectId &&
+              record.actionType === actionType
+          );
+
+          // Add graduated feedback if this is a re-examination
+          let feedbackPrefix = '';
+          if (existingIndex !== -1) {
+            const existing = this.examinationHistory[existingIndex];
+            const count = existing.examineCount;
+
+            if (count === 1) {
+              feedbackPrefix = `🔍 You notice nothing new examining "${objectName}" again. `;
+            } else if (count === 2) {
+              feedbackPrefix = `⚠️ Further examination of "${objectName}" reveals nothing new. You've thoroughly explored this already. `;
+            } else {
+              feedbackPrefix = `❌ You already understand "${objectName}" completely. Re-examining it would be a waste of time. `;
+            }
+
+            // Update existing record
+            existing.lastResult = resultHash;
+            existing.examineCount++;
+            existing.lastExamineTurn = currentTurn;
+          } else {
+            // Create new record
+            this.examinationHistory.push({
+              locationId: currentLocation.id,
+              objectId,
+              objectName,
+              actionType,
+              lastResult: resultHash,
+              examineCount: 1,
+              firstExamineTurn: currentTurn,
+              lastExamineTurn: currentTurn,
+            });
+          }
+
+          // Prepend feedback to narration if this was a re-examination
+          if (feedbackPrefix && actionType === 'examine') {
+            // Only prepend feedback for passive examine actions, not active investigation
+            // This gives the AI feedback about repetition while still getting results
+            finalNarration = feedbackPrefix + narration;
+          }
+        }
+      }
+    }
+
+    return this.finalizeTurn(turn, finalNarration, resolution.outcome, playerReasoning);
   }
 
   async processAIPlayerAction(action: string, reasoning?: string, fatePointsSpent?: number, aspectInvokes?: Array<{aspectName: string, bonus: '+2' | 'reroll'}>): Promise<any> {

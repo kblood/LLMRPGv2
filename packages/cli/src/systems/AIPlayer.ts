@@ -139,7 +139,11 @@ function analyzeRecentHistory(history: Turn[] | undefined, currentScene: any): A
   result.sceneType = detectSceneType(currentScene, allEvents);
 
   // Extract recent player actions and track targets
-  for (const turn of recentTurns) {
+  let lastInventoryCheckTurn = -100; // Track when inventory was last checked
+  const inventoryChecksTurn: number[] = [];
+
+  for (let i = 0; i < recentTurns.length; i++) {
+    const turn = recentTurns[i];
     const extracted = extractPlayerAction(turn);
     if (extracted) {
       result.recentActions.push(extracted.action);
@@ -147,8 +151,20 @@ function analyzeRecentHistory(history: Turn[] | undefined, currentScene: any): A
       if (extracted.target) {
         result.attemptedTargets[extracted.target] = (result.attemptedTargets[extracted.target] || 0) + 1;
       }
+
+      // Detect inventory checks for spam prevention
+      if (extracted.action.toLowerCase().includes('inventory') ||
+          extracted.action.toLowerCase().includes('check my belongings') ||
+          extracted.action.toLowerCase().includes('what do i have')) {
+        inventoryChecksTurn.push(i);
+        lastInventoryCheckTurn = i;
+      }
     }
   }
+
+  // Detect inventory spam: multiple checks within 5 turns
+  const recentInventoryChecks = inventoryChecksTurn.filter(turn => turn >= inventoryChecksTurn.length - 5);
+  (result as any).inventoryCheckSpam = recentInventoryChecks.length > 1;
   
   // Count consecutive failures (from most recent)
   for (let i = recentTurns.length - 1; i >= 0; i--) {
@@ -169,16 +185,44 @@ function analyzeRecentHistory(history: Turn[] | undefined, currentScene: any): A
     const normalized = normalizeActionText(action).substring(0, 40);
     actionCounts[normalized] = (actionCounts[normalized] || 0) + 1;
   }
-  
+
   // Find patterns that appear 3+ times
   result.repeatedPatterns = Object.entries(actionCounts)
     .filter(([_, count]) => count >= 3)
     .map(([pattern, count]) => `"${pattern}" (${count} times)`);
-  
+
+  // Find feature saturation: same feature examined 3+ times
+  const featureSaturation: string[] = [];
+  for (const [target, count] of Object.entries(result.attemptedTargets)) {
+    if (count >= 3) {
+      featureSaturation.push(`"${target}" (${count} times)`);
+    }
+  }
+  (result as any).featureSaturation = featureSaturation;
+
+  // Check for inventory spam
+  const inventorySpam = (result as any).inventoryCheckSpam;
+
   // Generate feedback based on analysis
-  if (result.repeatedPatterns.length > 0 && result.sceneType !== 'combat') {
+  if (inventorySpam) {
+    result.feedbackMessage = `⚠️ ACTION SPAM DETECTED: You've checked your inventory multiple times recently. You already know what you're carrying - focus on something else!`;
+    result.suggestedApproaches = [
+      'Interact with the environment or an NPC',
+      'Move to a different location',
+      'Examine a specific object or feature',
+      'Try using one of your skills on a challenge'
+    ];
+  } else if (featureSaturation.length > 0) {
+    result.feedbackMessage = `⚠️ FEATURE SATURATION: You've examined these features excessively: ${featureSaturation.join(', ')}. These won't reveal anything new. Try something different!`;
+    result.suggestedApproaches = [
+      'Move to a different location',
+      'Interact with a different object or person',
+      'Try a skill-based action (Overcome, Create Advantage, etc.)',
+      'Explore an area you haven\'t been to yet'
+    ];
+  } else if (result.repeatedPatterns.length > 0 && result.sceneType !== 'combat') {
     result.feedbackMessage = `⚠️ You've been repeating similar actions: ${result.repeatedPatterns.join(', ')}. This approach doesn't seem to be working.`;
-    
+
     // Generate suggestions based on scene type
     if (result.sceneType === 'social') {
       result.suggestedApproaches = [
@@ -299,7 +343,69 @@ export class AIPlayer {
 
     // Sort exits: untried first, then by attempt count
     exitConnections.sort((a: any, b: any) => a.attemptCount - b.attemptCount);
+
+    // Build detailed exit information with status indicators
+    const formattedExits = exitConnections.map((e: any) => {
+      if (e.attemptCount === 0) {
+        return `✨ ${e.direction} → ${e.description} [NEW]`;
+      } else if (e.attemptCount === 1) {
+        return `↔️ ${e.direction} → ${e.description} [visited]`;
+      } else {
+        return `${e.direction} → ${e.description} [visited ${e.attemptCount} times]`;
+      }
+    });
+
     const availableExits = exitConnections.map((e: any) => e.text).join(', ');
+    const detailedExits = formattedExits.join('\n');
+
+    // Show investigation-worthy aspects (Fate-aligned discovery)
+    // Players can invoke these aspects or use Create Advantage to discover opportunities
+    const investigationAspects = knownLocation?.aspects
+      ?.filter((a: any) => a.name?.includes('Path') || a.name?.includes('Hidden') || a.name?.includes('Unexplored') || a.name?.includes('Passage') || a.name?.includes('Investigation') || a.name?.includes('Secret'))
+      ?.map((a: any) => a.name)
+      .join(', ') || '';
+
+    const investigationSection = investigationAspects
+      ? `\n🔍 INVESTIGATION OPPORTUNITIES (you can invoke these aspects or use Create Advantage to investigate):\n${investigationAspects}\n`
+      : '';
+
+    // Warn about dead-end locations to help AI avoid loops
+    const deadEndWarning = knownLocation?.isDeadEnd
+      ? `\n⚠️ DEAD-END WARNING: This location only has one exit! You may want to explore other locations to avoid getting stuck here.\n`
+      : '';
+
+    // Build location memory: track visited locations and identify dead-ends
+    const visitedLocations = new Map<string, number>(); // location name -> visit count
+    if (history) {
+      history.forEach((turn, index) => {
+        const location = (turn as any).location?.name || (worldState?.locations?.[Object.keys(worldState.locations || {})[0]]?.name);
+        if (location) {
+          visitedLocations.set(location, (visitedLocations.get(location) || 0) + 1);
+        }
+      });
+    }
+
+    // Find dead-end locations that have been visited to warn the AI
+    const knownDeadEnds: string[] = [];
+    Object.values(worldState?.locations || {}).forEach((loc: any) => {
+      if (loc.isDeadEnd && visitedLocations.has(loc.name) && loc.name !== locationName) {
+        knownDeadEnds.push(`${loc.name} (only exit: ${loc.connections?.[0]?.direction || 'unknown'})`);
+      }
+    });
+
+    const locationMemorySection = knownDeadEnds.length > 0
+      ? `\n📍 LOCATION MEMORY - Known Dead-Ends (avoid unless necessary):\n${knownDeadEnds.map((d, i) => `  ${i + 1}. ${d}`).join('\n')}\n`
+      : '';
+
+    // Check for saturated (over-examined) objects at current location
+    const examinationHistory = (worldState as any)?.examinationHistory || [];
+    const saturatedObjectsAtLocation = examinationHistory
+      .filter((record: any) => record.locationId === knownLocation?.id && record.examineCount >= 3)
+      .map((record: any) => record.objectName);
+
+    const saturationSection = saturatedObjectsAtLocation.length > 0
+      ? `\n🔄 EXAMINED THOROUGHLY (no new information):\n${saturatedObjectsAtLocation.map((obj: string, i: number) => `  ${i + 1}. "${obj}" (thoroughly explored)`).join('\n')}\nFocus on something else!\n`
+      : '';
 
     // Build objectives string
     const objectivesText = objectives && objectives.length > 0
@@ -429,8 +535,12 @@ ${presentNPCs.length > 0 ? `People Present: ${presentNPCs.map((n: any) => n.name
 ${markedFeatures.length > 0 ? `Notable Features:\n${markedFeatures.map((f: string, i: number) => `  ${i + 1}. ${f}`).join('\n')}` : ''}
 
 🚪 TRAVEL OPTIONS:
-${availableExits ? `Available Exits: ${availableExits}
-You can move to a new location by traveling via any of these exits (e.g., "I head north down the winding path").` : 'No obvious exits visible. You might search for hidden passages or alternative routes.'}
+${detailedExits ? `Available Exits:
+${detailedExits}
+
+You can travel to any of these locations. Exits marked with ✨ [NEW] are unexplored. Prioritize new exits to discover fresh opportunities!` : 'No obvious exits visible. You might search for hidden passages or alternative routes.'}
+${deadEndWarning}
+${locationMemorySection}${saturationSection}
 
 ${objectivesText}
 ${actionFeedbackSection}
