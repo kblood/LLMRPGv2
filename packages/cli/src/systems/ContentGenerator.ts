@@ -108,7 +108,7 @@ JSON with fields:
           targetId: `loc-${Math.random().toString(36).substr(2, 9)}`,
           direction: c.direction,
           description: c.description,
-          discovered: false
+          isBlocked: false  // Starting location connections are not blocked, so they're visible
         })),
         presentNPCs: [],
         features: data.features.map((f: any) => ({

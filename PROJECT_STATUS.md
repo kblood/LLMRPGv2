@@ -183,23 +183,50 @@ See `PHASE_26_IMPLEMENTATION.md` for detailed implementation notes.
 - ✅ Freshness ordering: Sort exits by attempt count (untried first)
 - ✅ Explicit guidance: Show "[tried 3 times - this is NOT working, pick something else]"
 
-**Remaining Critical Issue (🔴):**
-- **AI Still Gets Stuck Despite Context Cues**: Success rate slightly improved (26.1% → 34.3%) but AI continues repetitive patterns
-  - Example: Tries "examine ancient tome" 4 consecutive times despite feedback
-  - Root cause: LLM interprets context but doesn't follow "pick something else" directive
-  - Temperature: Currently 0.8 (might need experiment with different values)
-  - Pattern: Even with explicit warnings, LLM sticks to comfort zone
+**ROOT CAUSE IDENTIFIED - WORLD GENERATION BUG (🔴 CRITICAL):**
 
-**Analysis:**
-The context optimizations show marginal improvement (8.2% increase in success rate). However, the core issue is that the LLM generates actions that ignore the context about what's been tried. Two possible solutions:
-1. **Stronger prompt constraints**: Require action to NOT be in recent history (constrain output space)
-2. **Temperature tuning**: Lower temp to make LLM more deterministic, higher to increase randomness
-3. **Mandatory action restrictions**: Force specific action types based on attempt history
+The AI isn't broken - **the world being generated is broken!** Starting location has NO visible exits.
+
+**The Bug Chain:**
+1. `ContentGenerator.generateStartingLocation()` (line 111) creates connections with `discovered: false`
+   ```typescript
+   connections: (data.connections || []).map((c: any) => ({
+     targetId: `loc-${Math.random().toString(36).substr(2, 9)}`,
+     direction: c.direction,
+     description: c.description,
+     discovered: false  ← ALL CONNECTIONS HIDDEN FROM PLAYER
+   }))
+   ```
+
+2. `AIPlayer.decideAction()` (line 291) filters to only show discovered exits
+   ```typescript
+   .filter((c: any) => c.discovered !== false)  ← Hides undiscovered connections
+   ```
+
+3. **Result in Debug Logs:**
+   ```
+   AVAILABLE EXITS: (empty)  ← Player sees NO exits!
+   MARKED FEATURES:
+     1. Temple of the Abyssal Eye
+     2. Glimmering Pool of Forgotten Tears
+   ```
+
+**Why AI Appears Broken:**
+- No visible exits = no travel options = stuck in location
+- Only features available = repeated examination of same objects
+- When "examine feature" fails 3+ times = AI trapped with no escape
+
+**Proof:** LLM outputs are fresh (not cached), the problem is the WORLD STATE, not the AI.
+
+**Fix Required:**
+1. Set `discovered: true` for starting location connections to make initial exits visible
+2. Ensure adjacent locations are generated (lazy loading via `travelToLocation()` already works)
+3. Verify all locations generate with at least one valid exit
 
 **Next Steps for Phase 27:**
-1. Add constraint: "Your action must NOT attempt the same target as your last 3 actions"
-2. Test with temperature variations (0.3 for deterministic, 1.0+ for variety)
-3. Profile context window to ensure recent history is preserved
+1. Fix ContentGenerator line 111: Set `discovered: true` for starting connections
+2. Test: Verify AI can now see and navigate available exits
+3. Validate: Run gameplay test to confirm AI can escape and explore
 
 ### Phase 23: Extended World Persistence (Complete ✅)
 
