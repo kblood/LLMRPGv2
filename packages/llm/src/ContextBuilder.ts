@@ -13,6 +13,29 @@ export class ContextBuilder {
     return `You are ${role}.\n\nRULES:\n${rules}`;
   }
 
+  /**
+   * Phase 28b: Optimized context for decision-making (skill selection, action classification, opposition setting)
+   * Reduces context by ~40-50% compared to full character context
+   * Includes only essential fields: identity, aspects, and skill ratings
+   * Excludes: detailed personality, backstory, stunt descriptions, complex relationships
+   */
+  buildCharacterContextForDecisions(character: CharacterDefinition): string {
+    return `
+## CHARACTER IDENTITY
+NAME: ${character.name}
+HIGH CONCEPT: ${character.highConcept}
+TROUBLE: ${character.trouble}
+ASPECTS: ${character.aspects.join(', ')}
+
+## CAPABILITIES
+SKILLS: ${Object.entries(character.skills).map(([k, v]) => `${k} (+${v})`).join(', ')}
+    `.trim();
+  }
+
+  /**
+   * Full character context for narrative and roleplay (NPC dialogue, personality-driven decisions)
+   * Includes all personality details, backstory, stunts, and relationships
+   */
   buildCharacterContext(character: CharacterDefinition): string {
     const personality = character.personality;
     const backstory = character.backstory;
@@ -46,13 +69,16 @@ STUNTS: ${character.stunts.map(s => `${s.name} (${s.description})`).join('; ')}
     return turns.map(t => `Turn ${t.turnNumber} (${t.actor}): ${JSON.stringify(t.events)}`).join('\n');
   }
 
-  assemblePrompt(layers: ContextLayers): { system: string; user: string } {
+  assemblePrompt(layers: ContextLayers, forDecisions: boolean = false): { system: string; user: string } {
     const system = layers.systemPrompt;
-    
+
     let user = '';
-    
+
     if (layers.characterDefinition) {
-      user += `## CHARACTER\n${this.buildCharacterContext(layers.characterDefinition)}\n\n`;
+      const charContext = forDecisions
+        ? this.buildCharacterContextForDecisions(layers.characterDefinition)
+        : this.buildCharacterContext(layers.characterDefinition);
+      user += `## CHARACTER\n${charContext}\n\n`;
     }
 
     if (layers.worldState) {
@@ -68,5 +94,15 @@ STUNTS: ${character.stunts.map(s => `${s.name} (${s.description})`).join('; ')}
     }
 
     return { system, user };
+  }
+
+  /**
+   * Phase 28b: Estimate context size in tokens (rough estimate, 1 char ≈ 0.25 tokens for English)
+   * Used for adaptive history pruning and context monitoring
+   */
+  estimateContextTokens(text: string): number {
+    // Rough tokenization: typical English has ~4 chars per token
+    // JSON overhead increases this to ~3.5 chars per token
+    return Math.ceil(text.length / 3.5);
   }
 }

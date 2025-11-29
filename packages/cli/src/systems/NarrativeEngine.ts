@@ -129,7 +129,7 @@ Narrate what happens as a result. Describe the ${outcomeDescriptions[outcome] ||
       return response.content;
     } catch (error) {
       console.error("Action resolution narration failed after retries:", error);
-      return this.getFallbackNarration(outcome, playerAction);
+      throw new Error(`Failed to generate narrative for action resolution: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -184,7 +184,7 @@ CONSTRAINTS:
       return response.content;
     } catch (error) {
       console.error("Narrative generation failed after retries:", error);
-      return "The Game Master is silent. (Error generating narrative)";
+      throw new Error(`Failed to generate narrative for events: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -230,7 +230,7 @@ Describe this scene as the player enters.`;
       return response.content;
     } catch (error) {
       console.error("Scene intro narration failed after retries:", error);
-      return `You find yourself in ${location.name}.`;
+      throw new Error(`Failed to generate scene introduction for "${location.name}": ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -256,23 +256,7 @@ Describe this scene as the player enters.`;
       return response.content;
     } catch (error) {
       console.error("Travel narration generation failed:", error);
-      return `You head ${direction} and after some time, you arrive at ${toLocation.name}.`;
-    }
-  }
-
-  private getFallbackNarration(outcome: string, action: string): string {
-    switch (outcome) {
-      case 'success_with_style':
-        return `Your attempt to ${action} succeeds brilliantly, exceeding all expectations.`;
-      case 'success':
-        return `You manage to ${action} successfully.`;
-      case 'tie':
-        return `You ${action}, but not without some difficulty or complication.`;
-      case 'failure':
-        return `Your attempt to ${action} doesn't go as planned.`;
-      default:
-        return `You attempt to ${action}. The outcome is uncertain.`;
+      throw new Error(`Failed to generate travel narration from "${fromLocation.name}" to "${toLocation.name}": ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }
-

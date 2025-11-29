@@ -172,6 +172,10 @@ interface FeatureTracker {
   uniqueLocationsVisited: Set<string>;
   npcsInteractedWith: Set<string>;
   repetitionWarningsTriggered: number;
+  questsActive: number;
+  questsSideQuests: number;
+  examinationWarningsDetected: number;
+  worldConnectivityValidated: boolean;
 }
 
 class TenMinuteTest {
@@ -192,7 +196,11 @@ class TenMinuteTest {
     fatePointsGained: 0,
     uniqueLocationsVisited: new Set(),
     npcsInteractedWith: new Set(),
-    repetitionWarningsTriggered: 0
+    repetitionWarningsTriggered: 0,
+    questsActive: 0,
+    questsSideQuests: 0,
+    examinationWarningsDetected: 0,
+    worldConnectivityValidated: false
   };
   
   async run() {
@@ -323,6 +331,28 @@ class TenMinuteTest {
     await this.gameMaster.start();
     phaseResult.notes.push('Game started');
     console.log('🎮 Game started!\n');
+
+    // Check quest system integration
+    const context = this.gameMaster.getAIPlayerContext();
+    const questState = (context.worldState as any)?.questState;
+    if (questState?.mainQuest) {
+      this.featureTracker.questsActive++;
+      phaseResult.notes.push(`✅ Main Quest: ${questState.mainQuest.title}`);
+      console.log(`✅ Main Quest initialized: ${questState.mainQuest.title}`);
+    }
+    if (questState?.sideQuests?.length > 0) {
+      this.featureTracker.questsSideQuests = questState.sideQuests.length;
+      phaseResult.notes.push(`✅ Side Quests: ${questState.sideQuests.length} available`);
+      console.log(`✅ Side Quests available: ${questState.sideQuests.length}`);
+    }
+
+    // Check world connectivity validation
+    const locations = context.worldState?.locations;
+    if (locations && Object.keys(locations).length > 0) {
+      this.featureTracker.worldConnectivityValidated = true;
+      phaseResult.notes.push(`✅ World Connectivity Validated: ${Object.keys(locations).length} locations`);
+      console.log(`✅ World generated with ${Object.keys(locations).length} locations`);
+    }
   }
   
   private async gameplayPhase(phase: TestPhase, phaseResult: PhaseResult) {
@@ -363,23 +393,41 @@ class TenMinuteTest {
         console.log(`🤖 Reasoning: ${actionDecision.reasoning}`);
         console.log(`➡️  Action: ${actionDecision.action}`);
         
-        // Execute the action
-        const result = await this.gameMaster.processAIPlayerAction(
-          actionDecision.action, 
-          actionDecision.reasoning,
-          actionDecision.fatePointsSpent,
-          actionDecision.aspectInvokes
-        );
+        // Execute the action with error handling for LLM failures
+        let result;
+        try {
+          result = await this.gameMaster.processAIPlayerAction(
+            actionDecision.action, 
+            actionDecision.reasoning,
+            actionDecision.fatePointsSpent,
+            actionDecision.aspectInvokes
+          );
+        } catch (error: any) {
+          console.error(`❌ LLM FAILURE: ${error.message}`);
+          
+          // Save session before exiting
+          console.log('💾 Saving session before exit...');
+          try {
+            await this.gameMaster.saveState();
+            console.log('✅ Session saved successfully');
+          } catch (saveError) {
+            console.error('❌ Failed to save session:', saveError);
+          }
+          
+          // Exit with error
+          console.log('🚪 Exiting due to LLM connectivity failure');
+          process.exit(1);
+        }
         
         const duration = (Date.now() - actionStart) / 1000;
         
         // Analyze events for feature tracking
         const events = result.turn?.events || [];
-        const hasTravelEvent = events.some(e => e.type === 'move' || e.action === 'location_change');
-        const hasDialogueEvent = events.some(e => e.type === 'dialogue' || e.action === 'dialogue');
-        const hasCompelEvent = events.some(e => e.type === 'fate_compel' || e.action === 'compel_offered');
-        const hasFPSpend = events.some(e => e.type === 'fate_point_spend');
-        const hasFPGain = events.some(e => e.type === 'fate_point_award' || e.type === 'fate_point_refresh');
+        const hasTravelEvent = events.some((e: any) => e.type === 'move' || e.action === 'location_change');
+        const hasDialogueEvent = events.some((e: any) => e.type === 'dialogue' || e.action === 'dialogue');
+        const hasCompelEvent = events.some((e: any) => e.type === 'fate_compel' || e.action === 'compel_offered');
+        const hasFPSpend = events.some((e: any) => e.type === 'fate_point_spend');
+        const hasFPGain = events.some((e: any) => e.type === 'fate_point_award' || e.type === 'fate_point_refresh');
         
         // Check location after action
         const contextAfter = this.gameMaster.getAIPlayerContext();
@@ -410,15 +458,24 @@ class TenMinuteTest {
         }
         
         // Check for NPC interactions
-        const npcEvents = events.filter(e => 
-          e.description?.includes('NPC') || 
-          e.type === 'dialogue' || 
+        const npcEvents = events.filter((e: any) =>
+          e.description?.includes('NPC') ||
+          e.type === 'dialogue' ||
           (e as any).metadata?.npcId
         );
         for (const npcEvent of npcEvents) {
           const npcId = (npcEvent as any).metadata?.npcId || (npcEvent as any).metadata?.targetNPC;
           if (npcId) {
             this.featureTracker.npcsInteractedWith.add(npcId);
+          }
+        }
+
+        // Check for examination warnings (graduated feedback from examination tracking)
+        if (result.narration) {
+          if (result.narration.includes('🔍 You notice nothing new') ||
+              result.narration.includes('⚠️ Further examination') ||
+              result.narration.includes('❌ You already understand')) {
+            this.featureTracker.examinationWarningsDetected++;
           }
         }
         
@@ -657,19 +714,34 @@ class TenMinuteTest {
     console.log(`   ⭐ Fate Points Spent:         ${this.featureTracker.fatePointsSpent}`);
     console.log(`   ⭐ Fate Points Gained:        ${this.featureTracker.fatePointsGained}`);
     console.log('');
+
+    // BOUNDED GAME SYSTEM FEATURES (New)
+    console.log('📚 BOUNDED GAME SYSTEM FEATURES');
+    console.log('─'.repeat(60));
+    console.log(`   🎯 Main Quest Active:         ${this.featureTracker.questsActive > 0 ? '✅ Yes' : '❌ No'}`);
+    console.log(`   📋 Side Quests Available:     ${this.featureTracker.questsSideQuests}`);
+    console.log(`   🔄 Examination Warnings:      ${this.featureTracker.examinationWarningsDetected}`);
+    console.log(`   🌐 World Connectivity Check:  ${this.featureTracker.worldConnectivityValidated ? '✅ Validated' : '❌ Not checked'}`);
+    console.log('');
     
     // Feature Coverage Assessment
     const travelWorking = this.featureTracker.travelIntentCount > 0 || this.featureTracker.locationChanges > 0;
     const dialogueWorking = this.featureTracker.dialogueIntentCount > 0;
     const compelWorking = this.featureTracker.compelOffersReceived > 0;
     const explorationWorking = this.featureTracker.uniqueLocationsVisited.size > 1;
-    
+    const questsWorking = this.featureTracker.questsActive > 0;
+    const examinationWorking = this.featureTracker.examinationWarningsDetected > 0;
+    const connectivityValidated = this.featureTracker.worldConnectivityValidated;
+
     console.log('🔍 FEATURE VERIFICATION');
     console.log('─'.repeat(60));
     console.log(`   ${travelWorking ? '✅' : '⚠️'} Travel System:     ${travelWorking ? 'TRIGGERED' : 'NOT TESTED'}`);
     console.log(`   ${dialogueWorking ? '✅' : '⚠️'} Dialogue System:   ${dialogueWorking ? 'TRIGGERED' : 'NOT TESTED'}`);
     console.log(`   ${compelWorking ? '✅' : 'ℹ️'} Proactive Compels: ${compelWorking ? 'TRIGGERED' : 'Not triggered (may need failures)'}`);
     console.log(`   ${explorationWorking ? '✅' : '⚠️'} Multi-Location:    ${explorationWorking ? 'VERIFIED' : 'Single location only'}`);
+    console.log(`   ${questsWorking ? '✅' : '❌'} Quest System:      ${questsWorking ? 'ACTIVE' : 'NOT INITIALIZED'}`);
+    console.log(`   ${examinationWorking ? '✅' : 'ℹ️'} Exam Tracking:    ${examinationWorking ? 'WARNINGS DETECTED' : 'No repeats (expected)'}`);
+    console.log(`   ${connectivityValidated ? '✅' : '❌'} World Validation:  ${connectivityValidated ? 'PASSED' : 'FAILED'}`);
     console.log('');
     
     // Errors

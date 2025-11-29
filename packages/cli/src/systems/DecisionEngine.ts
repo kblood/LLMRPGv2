@@ -18,9 +18,25 @@ export interface WorldUpdate {
 
 export class DecisionEngine {
   private contextBuilder: ContextBuilder;
+  private enableContextLogging: boolean = false; // Phase 28b: Set to true for development debugging
 
   constructor(private llm: LLMProvider) {
     this.contextBuilder = new ContextBuilder();
+  }
+
+  /**
+   * Phase 28b: Log context size metrics for optimization tracking
+   */
+  private logContextSize(operation: string, prompt: { system: string; user: string }) {
+    if (!this.enableContextLogging) return;
+
+    const systemTokens = this.contextBuilder.estimateContextTokens(prompt.system);
+    const userTokens = this.contextBuilder.estimateContextTokens(prompt.user);
+    const totalTokens = systemTokens + userTokens;
+
+    console.log(
+      `📊 [${operation}] System: ${systemTokens} tokens, User: ${userTokens} tokens, Total: ${totalTokens} tokens`
+    );
   }
 
   /**
@@ -73,11 +89,14 @@ OUTPUT FORMAT:
 Return ONLY the exact name of the skill.`
     );
 
+    // Phase 28b: Use optimized character context for decision-making
     const prompt = this.contextBuilder.assemblePrompt({
       systemPrompt,
       characterDefinition: context.player,
       immediateContext: `Action: "${context.action.description}"\n\nSelect the skill.`
-    });
+    }, true); // forDecisions: true for optimized context
+
+    this.logContextSize('selectSkill', prompt);
 
     try {
       const response = await withRetry(
@@ -607,14 +626,16 @@ OUTPUT FORMAT:
 Return ONLY the action name in lowercase: "overcome", "create_advantage", "attack", or "defend".`
     );
 
+    // Phase 28b: Use optimized character context and pruned world state for decision-making
     const prompt = this.contextBuilder.assemblePrompt({
       systemPrompt,
       characterDefinition: context.player,
-      // Phase 28: Use pruned world state and compact JSON (no pretty-printing)
       worldState: context.worldState ? JSON.stringify(this.pruneWorldStateForDecisions(context.worldState)) : undefined,
       history: context.history,
       immediateContext: `Player Input: "${playerInput}"\n\nClassify this action based on the rules above.`
-    });
+    }, true); // forDecisions: true for optimized context
+
+    this.logContextSize('classifyAction', prompt);
 
     try {
       const response = await this.llm.generate({
@@ -713,13 +734,16 @@ OUTPUT FORMAT:
 Return ONLY the integer number (e.g., 2).`
     );
 
+    // Phase 28b: Use optimized character context and pruned world state for difficulty setting
     const prompt = this.contextBuilder.assemblePrompt({
       systemPrompt,
       characterDefinition: context.player,
-      worldState: context.worldState ? JSON.stringify(context.worldState, null, 2) : undefined,
+      worldState: context.worldState ? JSON.stringify(this.pruneWorldStateForDecisions(context.worldState)) : undefined,
       history: context.history,
       immediateContext: `Determine the difficulty for this action:\n${JSON.stringify(context.action)}\n\nReturn only a number representing the difficulty on the Fate Ladder (e.g., 2 for Fair, 4 for Great).`
-    });
+    }, true); // forDecisions: true for optimized context
+
+    this.logContextSize('setOpposition', prompt);
 
     try {
       const response = await this.llm.generate({
@@ -767,13 +791,17 @@ JSON with fields:
 - target: string (Target name)`
     );
 
+    // Phase 28b: Use full context for allies (roleplay-driven), optimized for opposition (tactical)
+    const isAlly = side === 'player';
     const prompt = this.contextBuilder.assemblePrompt({
       systemPrompt,
-      characterDefinition: npc, // Use NPC as the character context
-      worldState: context.worldState ? JSON.stringify(context.worldState, null, 2) : undefined,
+      characterDefinition: npc,
+      worldState: context.worldState ? JSON.stringify(this.pruneWorldStateForDecisions(context.worldState)) : undefined,
       history: context.history,
       immediateContext: `It is ${npc.name}'s turn. The player is present. Decide the action.`
-    });
+    }, !isAlly); // Use optimized context for opposition NPCs, full context for allies
+
+    this.logContextSize(`decideNPCAction(${npc.name}, ${side})`, prompt);
 
     try {
       const response = await this.llm.generate({

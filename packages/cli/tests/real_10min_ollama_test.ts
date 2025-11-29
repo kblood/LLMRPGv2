@@ -113,12 +113,30 @@ async function runRealSession() {
 
         // Execute the action with real LLM narration
         const execStart = Date.now();
-        const result = await gameMaster.processAIPlayerAction(
-          actionDecision.action,
-          actionDecision.reasoning,
-          actionDecision.fatePointsSpent,
-          actionDecision.aspectInvokes
-        );
+        let result;
+        try {
+          result = await gameMaster.processAIPlayerAction(
+            actionDecision.action,
+            actionDecision.reasoning,
+            actionDecision.fatePointsSpent,
+            actionDecision.aspectInvokes
+          );
+        } catch (error: any) {
+          console.error(`❌ LLM FAILURE: ${error.message}`);
+          
+          // Save session before exiting
+          console.log('💾 Saving session before exit...');
+          try {
+            await gameMaster.saveState();
+            console.log('✅ Session saved successfully');
+          } catch (saveError) {
+            console.error('❌ Failed to save session:', saveError);
+          }
+          
+          // Exit with error
+          console.log('🚪 Exiting due to LLM connectivity failure');
+          process.exit(1);
+        }
         const execTime = Date.now() - execStart;
 
         console.log(`     ✓ Action executed in ${(execTime / 1000).toFixed(1)}s`);

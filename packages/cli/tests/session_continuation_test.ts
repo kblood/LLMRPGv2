@@ -227,13 +227,31 @@ class SessionContinuationTest {
         console.log(`🤖 ${actionDecision.reasoning.substring(0, 80)}...`);
         console.log(`➡️  ${actionDecision.action}`);
 
-        // Execute the action
-        const result = await this.gameMaster.processAIPlayerAction(
-          actionDecision.action,
-          actionDecision.reasoning,
-          actionDecision.fatePointsSpent,
-          actionDecision.aspectInvokes
-        );
+        // Execute the action with error handling
+        let result;
+        try {
+          result = await this.gameMaster.processAIPlayerAction(
+            actionDecision.action,
+            actionDecision.reasoning,
+            actionDecision.fatePointsSpent,
+            actionDecision.aspectInvokes
+          );
+        } catch (error: any) {
+          console.error(`❌ LLM FAILURE: ${error.message}`);
+          
+          // Save session before exiting
+          console.log('💾 Saving session before exit...');
+          try {
+            await this.gameMaster.saveState();
+            console.log('✅ Session saved successfully');
+          } catch (saveError) {
+            console.error('❌ Failed to save session:', saveError);
+          }
+          
+          // Exit with error
+          console.log('🚪 Exiting due to LLM connectivity failure');
+          process.exit(1);
+        }
 
         const turnDuration = (Date.now() - turnStart) / 1000;
 
